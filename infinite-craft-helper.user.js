@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Infinite Craft Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2-dev
+// @version      1.0.3-dev
 // @description  Control panel overlay for Infinite Craft with GameInterface foundation
 // @author       You
 // @match        https://neal.fun/infinite-craft/*
@@ -18,7 +18,7 @@
 
     // Get version info from userscript metadata
     function getVersionInfo() {
-        const version = '1.0.2-dev';  // Add -dev suffix for feature branch
+        const version = '1.0.3-dev';  // Add -dev suffix for feature branch
         const isDevVersion = version.includes('-') || version.includes('dev') || version.includes('test');
         
         return {
@@ -176,6 +176,194 @@
             initialX = currentX;
             initialY = currentY;
             isDragging = false;
+        }
+    }
+
+    // Log entry data structure
+    class LogEntry {
+        constructor(level, message, args = []) {
+            this.id = this.generateId();
+            this.timestamp = new Date();
+            this.level = level;
+            this.message = message;
+            this.args = args;
+            this.source = 'userscript';
+        }
+
+        generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        toString() {
+            const timestamp = this.timestamp.toLocaleTimeString();
+            return `[${timestamp}] ${this.level.toUpperCase()}: ${this.message}`;
+        }
+    }
+
+    // LogManager class for log storage, rotation, and event system
+    class LogManager {
+        constructor(maxLogs = 100) {
+            this.logs = [];
+            this.maxLogs = maxLogs;
+            this.listeners = [];
+            
+            console.log('[LogManager] Initialized with maxLogs:', maxLogs);
+        }
+
+        addLog(level, message, args = []) {
+            const logEntry = new LogEntry(level, message, args);
+            
+            // Add to logs array
+            this.logs.unshift(logEntry); // Add to beginning for newest-first order
+            
+            // Rotate logs if we exceed maxLogs
+            if (this.logs.length > this.maxLogs) {
+                const removed = this.logs.splice(this.maxLogs);
+                console.log('[LogManager] Rotated logs, removed', removed.length, 'old entries');
+            }
+            
+            // Notify listeners
+            this.notifyListeners('logAdded', logEntry);
+            
+            console.log('[LogManager] Added log:', logEntry.toString());
+            return logEntry;
+        }
+
+        clearLogs() {
+            const clearedCount = this.logs.length;
+            this.logs = [];
+            
+            // Notify listeners
+            this.notifyListeners('logsCleared', { clearedCount });
+            
+            console.log('[LogManager] Cleared', clearedCount, 'logs');
+            return clearedCount;
+        }
+
+        getLogs() {
+            return [...this.logs]; // Return copy to prevent external modification
+        }
+
+        getLogCount() {
+            return this.logs.length;
+        }
+
+        getLogsByLevel(level) {
+            return this.logs.filter(log => log.level === level);
+        }
+
+        subscribe(callback) {
+            if (typeof callback !== 'function') {
+                console.error('[LogManager] Subscribe callback must be a function');
+                return null;
+            }
+            
+            this.listeners.push(callback);
+            console.log('[LogManager] Added listener, total listeners:', this.listeners.length);
+            
+            // Return unsubscribe function
+            return () => {
+                const index = this.listeners.indexOf(callback);
+                if (index > -1) {
+                    this.listeners.splice(index, 1);
+                    console.log('[LogManager] Removed listener, total listeners:', this.listeners.length);
+                }
+            };
+        }
+
+        notifyListeners(event, data) {
+            this.listeners.forEach(callback => {
+                try {
+                    callback(event, data);
+                } catch (error) {
+                    console.error('[LogManager] Error in listener callback:', error);
+                }
+            });
+        }
+
+        // Utility methods for testing and debugging
+        getLogStats() {
+            const stats = {
+                total: this.logs.length,
+                byLevel: {}
+            };
+
+            // Count logs by level
+            this.logs.forEach(log => {
+                stats.byLevel[log.level] = (stats.byLevel[log.level] || 0) + 1;
+            });
+
+            return stats;
+        }
+
+        // Test methods for unit testing functionality
+        runLogManagerTests() {
+            console.log('[LogManager] === RUNNING LOG MANAGER TESTS ===');
+            
+            try {
+                // Test 1: Basic log addition
+                console.log('Test 1: Basic log addition');
+                const initialCount = this.getLogCount();
+                this.addLog('info', 'Test log message');
+                const afterAddCount = this.getLogCount();
+                console.log('✓ Log added successfully:', afterAddCount === initialCount + 1);
+
+                // Test 2: Log rotation
+                console.log('Test 2: Log rotation');
+                const originalMaxLogs = this.maxLogs;
+                this.maxLogs = 3; // Temporarily set low limit for testing
+                
+                this.addLog('info', 'Log 1');
+                this.addLog('warn', 'Log 2');
+                this.addLog('error', 'Log 3');
+                this.addLog('debug', 'Log 4'); // This should trigger rotation
+                
+                const rotationTestCount = this.getLogCount();
+                console.log('✓ Log rotation working:', rotationTestCount === 3);
+                
+                this.maxLogs = originalMaxLogs; // Restore original limit
+
+                // Test 3: Event system
+                console.log('Test 3: Event system');
+                let eventReceived = false;
+                const unsubscribe = this.subscribe((event, data) => {
+                    if (event === 'logAdded') {
+                        eventReceived = true;
+                    }
+                });
+                
+                this.addLog('info', 'Event test log');
+                console.log('✓ Event system working:', eventReceived);
+                unsubscribe();
+
+                // Test 4: Log filtering
+                console.log('Test 4: Log filtering');
+                this.clearLogs();
+                this.addLog('error', 'Error message');
+                this.addLog('warn', 'Warning message');
+                this.addLog('error', 'Another error');
+                
+                const errorLogs = this.getLogsByLevel('error');
+                const warnLogs = this.getLogsByLevel('warn');
+                console.log('✓ Log filtering working:', errorLogs.length === 2 && warnLogs.length === 1);
+
+                // Test 5: Log stats
+                console.log('Test 5: Log stats');
+                const stats = this.getLogStats();
+                console.log('✓ Log stats working:', stats.total === 3 && stats.byLevel.error === 2);
+
+                // Test 6: Clear logs
+                console.log('Test 6: Clear logs');
+                const clearedCount = this.clearLogs();
+                const finalCount = this.getLogCount();
+                console.log('✓ Clear logs working:', clearedCount === 3 && finalCount === 0);
+
+                console.log('[LogManager] ✅ ALL LOG MANAGER TESTS PASSED');
+                return true;
+            } catch (error) {
+                console.error('[LogManager] ❌ TEST FAILED:', error);
+                return false;
+            }
         }
     }
 
@@ -435,6 +623,17 @@
         // Initialize GameInterface for testing
         console.log('Infinite Craft Helper v1.0.1-game-interface-foundation loaded successfully!');
         
+        // Initialize LogManager
+        console.log('[Init] Initializing LogManager...');
+        const logManager = new LogManager(100);
+        
+        // Run LogManager tests
+        logManager.runLogManagerTests();
+        
+        // Make logManager available globally for debugging
+        window.logManager = logManager;
+        console.log('[Init] LogManager available as window.logManager for debugging');
+
         // Wait a moment for the game to fully load, then initialize GameInterface
         setTimeout(() => {
             console.log('[Init] Initializing GameInterface...');

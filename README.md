@@ -12,6 +12,8 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 - **Game State Monitoring**: Real-time detection of game ready/loading states
 - **Element Tracking**: Comprehensive monitoring of sidebar and play area elements
 - **Position & Bounds Calculation**: Precise element positioning for automation
+- **Advanced Logging System**: Built-in LogManager with log storage, rotation, and event system
+- **Log Management**: Automatic log rotation, filtering by level, and memory management
 - **Debug Console**: Extensive logging and testing tools for development
 - **Automated Testing Suite**: Built-in functionality tests for reliability
 - **Extensible Framework**: Ready for additional control features and enhancements
@@ -77,8 +79,9 @@ You need a userscript manager installed in your browser. We recommend:
 
 ### Developer Console Commands
 
-Once the script loads, you can interact with the game interface through the console:
+Once the script loads, you can interact with the game interface and logging system through the console:
 
+#### GameInterface API
 ```javascript
 // Get comprehensive game state analysis
 gameInterface.logGameState()
@@ -110,6 +113,33 @@ gameInterface.getElementBounds(fireElement);    // Get position/size
 // Run comprehensive automated tests
 gameInterface.runBasicTests()
 // Tests all functionality and reports results to console
+```
+
+#### LogManager API
+```javascript
+// Access the logging system
+logManager.addLog('info', 'Custom log message')
+logManager.addLog('error', 'Something went wrong', [additionalData])
+
+// Get current logs
+logManager.getLogs()           // Returns array of all log entries
+logManager.getLogCount()       // Returns total number of logs
+logManager.getLogsByLevel('error')  // Filter logs by level
+
+// Log management
+logManager.clearLogs()         // Clear all logs
+logManager.getLogStats()       // Get statistics by log level
+
+// Event system - subscribe to log events
+const unsubscribe = logManager.subscribe((event, data) => {
+    if (event === 'logAdded') {
+        console.log('New log added:', data.toString());
+    }
+});
+
+// Run comprehensive logging tests
+logManager.runLogManagerTests()
+// Tests log storage, rotation, events, and filtering
 ```
 
 ## Development
@@ -284,6 +314,59 @@ Each element returned by the API includes:
 }
 ```
 
+### LogManager API
+
+The script includes a robust logging system with the `LogManager` class for comprehensive log management:
+
+#### Core Features:
+- **Log Storage**: Efficient in-memory log storage with automatic rotation
+- **Event System**: Subscribe to log events for real-time updates
+- **Log Filtering**: Filter logs by level (error, warn, info, log, debug)
+- **Memory Management**: Automatic log rotation to prevent memory leaks
+- **Statistics**: Get detailed statistics about log distribution
+- **Testing Suite**: Built-in tests for all logging functionality
+
+#### Key Methods:
+- `addLog(level, message, args)` - Add new log entry with level and optional arguments
+- `getLogs()` - Get copy of all current logs (newest first)
+- `getLogCount()` - Get total number of stored logs
+- `getLogsByLevel(level)` - Filter logs by specific level
+- `clearLogs()` - Clear all logs and notify listeners
+- `subscribe(callback)` - Subscribe to log events (returns unsubscribe function)
+- `getLogStats()` - Get statistics showing total and count by level
+- `runLogManagerTests()` - Comprehensive test suite for all functionality
+
+#### LogEntry Data Structure:
+Each log entry includes:
+```javascript
+{
+    id: "unique-id",           // Unique identifier for the log entry
+    timestamp: Date,           // When the log was created
+    level: "info",             // Log level (error, warn, info, log, debug)
+    message: "Log message",    // The main log message
+    args: [],                  // Additional arguments passed to the log
+    source: "userscript"       // Source of the log entry
+}
+```
+
+#### Event System:
+```javascript
+// Subscribe to log events
+const unsubscribe = logManager.subscribe((event, data) => {
+    switch(event) {
+        case 'logAdded':
+            console.log('New log:', data.toString());
+            break;
+        case 'logsCleared':
+            console.log('Cleared', data.clearedCount, 'logs');
+            break;
+    }
+});
+
+// Unsubscribe when done
+unsubscribe();
+```
+
 ### Version Management
 
 The script now includes intelligent version management that automatically handles development vs production versions:
@@ -375,23 +458,32 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Changelog
 
 ### v1.0.2-dev (Development)
-- **CURRENT DEVELOPMENT BRANCH**: `feature/game-interface-foundation`
-- **NEW**: Enhanced version detection system that analyzes script source URL
-- **NEW**: Automatic development mode detection for feature branch installations
-- **NEW**: Smart version management with both version format and URL-based detection
-- **NEW**: Visual version indicators - "DEV" tag and orange styling for development versions
-- **NEW**: Dynamic version display formatting based on version type
-- **NEW**: Complete GameInterface class foundation for game interaction
-- **NEW**: Comprehensive DOM query methods for sidebar and play area elements
-- **NEW**: Element detection, counting, and validation utilities
-- **NEW**: Game state monitoring (ready/loading detection)
-- **NEW**: Element positioning and bounds calculation
-- **NEW**: Debug console with detailed logging and testing tools
-- **NEW**: Global `window.gameInterface` API for manual testing and development
-- **NEW**: Automated basic functionality testing suite
+- **CURRENT DEVELOPMENT BRANCH**: `feature/control-panel-logging`
+- **NEW**: Advanced LogManager class with comprehensive log storage and rotation
+- **NEW**: LogEntry data structure with timestamps, levels, and unique IDs
+- **NEW**: Event-driven logging system with subscribe/unsubscribe functionality
+- **NEW**: Automatic log rotation to prevent memory leaks (configurable max logs)
+- **NEW**: Log filtering by level (error, warn, info, log, debug)
+- **NEW**: Log statistics and analytics with getLogStats() method
+- **NEW**: Global `window.logManager` API for manual testing and development
+- **NEW**: Comprehensive LogManager test suite with automated validation
+- **NEW**: Memory management with automatic cleanup and rotation
+- **ENHANCED**: Enhanced version detection system that analyzes script source URL
+- **ENHANCED**: Automatic development mode detection for feature branch installations
+- **ENHANCED**: Smart version management with both version format and URL-based detection
+- **ENHANCED**: Visual version indicators - "DEV" tag and orange styling for development versions
+- **ENHANCED**: Dynamic version display formatting based on version type
+- **ENHANCED**: Complete GameInterface class foundation for game interaction
+- **ENHANCED**: Comprehensive DOM query methods for sidebar and play area elements
+- **ENHANCED**: Element detection, counting, and validation utilities
+- **ENHANCED**: Game state monitoring (ready/loading detection)
+- **ENHANCED**: Element positioning and bounds calculation
+- **ENHANCED**: Debug console with detailed logging and testing tools
+- **ENHANCED**: Global `window.gameInterface` API for manual testing and development
+- **ENHANCED**: Automated basic functionality testing suite
 - **ENHANCED**: Improved element tracking with name, position, and state data
 - **ENHANCED**: Better error handling and logging throughout
-- Foundation prepared for upcoming auto-play engine and advanced features
+- Foundation prepared for upcoming control panel logging UI and advanced features
 
 ### v1.0.1 (Production)
 - Added GitHub integration for automatic updates
