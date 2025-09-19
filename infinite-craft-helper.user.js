@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Infinite Craft Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3-dev
+// @version      1.0.4-dev
 // @description  Control panel overlay for Infinite Craft with GameInterface foundation
 // @author       You
 // @match        https://neal.fun/infinite-craft/*
@@ -18,7 +18,7 @@
 
     // Get version info from userscript metadata
     function getVersionInfo() {
-        const version = '1.0.3-dev';  // Add -dev suffix for feature branch
+        const version = '1.0.4-dev';  // Add -dev suffix for feature branch
         const isDevVersion = version.includes('-') || version.includes('dev') || version.includes('test');
 
         return {
