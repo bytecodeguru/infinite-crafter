@@ -6,10 +6,14 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 
 - **Draggable Control Panel**: Moveable overlay positioned in the top-left corner
 - **Modern UI Design**: Semi-transparent background with blur effects and gradient styling
-- **Version Display**: Shows current script version in the panel header
-- **Game Interface Detection**: Automatically detects and analyzes game elements and state
-- **Element Tracking**: Monitors available elements in sidebar and play area
-- **Debug Console**: Comprehensive logging and testing tools for development
+- **Smart Version Display**: Automatically detects and displays development vs production versions with visual indicators
+- **GameInterface Foundation**: Complete API for game interaction and automation
+- **Element Detection & Analysis**: Automatically detects and analyzes all game elements
+- **Game State Monitoring**: Real-time detection of game ready/loading states
+- **Element Tracking**: Comprehensive monitoring of sidebar and play area elements
+- **Position & Bounds Calculation**: Precise element positioning for automation
+- **Debug Console**: Extensive logging and testing tools for development
+- **Automated Testing Suite**: Built-in functionality tests for reliability
 - **Extensible Framework**: Ready for additional control features and enhancements
 - **Automatic Updates**: Seamless updates via GitHub integration
 
@@ -18,14 +22,19 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 The control panel appears as a sleek overlay that you can drag around the screen:
 
 ```
-┌─────────────────────────────┐
-│ Infinite Craft Helper v1.0.1│
-├─────────────────────────────┤
-│ Control panel ready!        │
-│                             │
-│ <!-- Future controls here -->│
-└─────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ Infinite Craft Helper v1.0.1-game-int... DEV │
+├─────────────────────────────────────────┤
+│ Control panel ready!                    │
+│                                         │
+│ GameInterface foundation loaded         │
+│ Check console for debug tools          │
+└─────────────────────────────────────────┘
 ```
+
+**Version Indicators:**
+- **Production versions**: Clean version display (e.g., "v1.0.2")
+- **Development versions**: Full version with orange "DEV" tag (e.g., "1.0.1-feature-name DEV")
 
 ## Installation
 
@@ -38,10 +47,16 @@ You need a userscript manager installed in your browser. We recommend:
 
 ### Method 1: Direct Install from GitHub (Recommended)
 
+**Production Version (Stable):**
 1. **Click this link**: [Install Infinite Craft Helper](https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js)
 2. Your userscript manager will automatically detect the script and show an installation dialog
 3. Click **Install** to add the script
 4. Visit [neal.fun/infinite-craft](https://neal.fun/infinite-craft/) to see the control panel
+
+**Development Version (Latest Features):**
+1. **Click this link**: [Install Development Version](https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/game-interface-foundation/infinite-craft-helper.user.js)
+2. This includes the latest GameInterface foundation and upcoming features
+3. May be less stable but includes cutting-edge functionality
 
 ### Method 2: Manual Installation
 
@@ -65,20 +80,36 @@ You need a userscript manager installed in your browser. We recommend:
 Once the script loads, you can interact with the game interface through the console:
 
 ```javascript
-// Get current game state
+// Get comprehensive game state analysis
 gameInterface.logGameState()
 
-// Count elements
+// Count elements by location
 gameInterface.getElementCount()
+// Returns: { total: 15, available: 12, inPlayArea: 3 }
 
-// Find specific elements
+// Find specific elements by name
 gameInterface.findElementByName("Fire")
+// Returns: HTMLElement or null
 
-// Get all available elements
+// Get all available elements with metadata
 gameInterface.getAvailableElements()
+// Returns: Array of element objects with name, position, DOM reference
 
-// Run comprehensive tests
+// Get elements currently in play area
+gameInterface.getPlayAreaElements()
+
+// Check game state
+gameInterface.isGameReady()    // true if game is loaded and interactive
+gameInterface.isLoading()     // true if game is still loading
+
+// Element interaction utilities
+const fireElement = gameInterface.findElementByName("Fire");
+gameInterface.isElementDraggable(fireElement);  // Check if draggable
+gameInterface.getElementBounds(fireElement);    // Get position/size
+
+// Run comprehensive automated tests
 gameInterface.runBasicTests()
+// Tests all functionality and reports results to console
 ```
 
 ## Development
@@ -165,31 +196,88 @@ The control panel is designed to be easily extensible. To add new controls:
 
 1. Modify the `panel-content` section in the `createControlPanel()` function
 2. Add corresponding event listeners and functionality
-3. Update the version number in the userscript header
+3. Update the version in the `getVersionInfo()` function (the display will automatically adapt)
 4. Commit and push changes for automatic distribution
+
+#### Version Management for Features
+
+When working on features, use descriptive version names:
+```javascript
+// In getVersionInfo() function
+const version = '1.0.1-your-feature-name';  // Shows "DEV" tag automatically
+```
+
+The system will automatically:
+- Display the full version with "DEV" tag
+- Apply orange highlighting to indicate development status
+- Switch to clean formatting when you use production versions (e.g., '1.0.2')
 
 ### GameInterface API
 
-The script includes a comprehensive `GameInterface` class that provides:
+The script includes a comprehensive `GameInterface` class that provides a complete foundation for game automation:
 
-- **Element Detection**: Find and analyze game elements
-- **DOM Queries**: Reliable selectors for sidebar and play area
-- **Game State Monitoring**: Check if game is ready or loading
-- **Element Validation**: Verify draggable elements and positions
-- **Debug Tools**: Comprehensive logging and testing methods
+#### Core Features:
+- **Element Detection**: Find and analyze all game elements with metadata
+- **DOM Queries**: Reliable selectors for sidebar and play area interactions
+- **Game State Monitoring**: Real-time detection of game ready/loading states
+- **Element Validation**: Verify draggable elements and interaction capabilities
+- **Position Tracking**: Calculate precise element bounds and center points
+- **Debug Tools**: Extensive logging and automated testing methods
 
-Key methods:
-- `getAvailableElements()` - Get all elements in sidebar
-- `getPlayAreaElements()` - Get all elements in play area
-- `findElementByName(name)` - Find specific element by name
-- `isGameReady()` - Check if game is fully loaded
-- `runBasicTests()` - Run comprehensive functionality tests
+#### Key Methods:
+- `getAvailableElements()` - Get all elements in sidebar with names, positions, and states
+- `getPlayAreaElements()` - Get all elements in play area with full metadata
+- `findElementByName(name)` - Find specific element by exact name match
+- `isGameReady()` - Check if game is fully loaded and interactive
+- `isElementDraggable(element)` - Verify if element can be dragged
+- `getElementBounds(element)` - Get precise position and dimensions
+- `getElementCount()` - Count elements by location (total, available, play area)
+- `logGameState()` - Comprehensive debug output of current game state
+- `runBasicTests()` - Automated test suite for all functionality
+
+#### Element Data Structure:
+Each element returned by the API includes:
+```javascript
+{
+    name: "Fire",              // Element name as displayed
+    domElement: HTMLElement,   // Direct DOM reference
+    position: {                // Calculated bounds
+        x: 100, y: 200,
+        width: 80, height: 40,
+        centerX: 140, centerY: 220
+    },
+    isNew: false              // Whether element has 'new' class
+}
+```
 
 ### Version Management
 
-- Update the `@version` field in the userscript header
-- Update version displays in the code
-- Tampermonkey will automatically notify users of updates
+The script now includes intelligent version management that automatically handles development vs production versions:
+
+#### Automatic Version Detection
+- **Development versions**: Any version containing `-`, `dev`, or `test` (e.g., `1.0.1-feature-name`)
+- **Production versions**: Clean semantic versions (e.g., `1.0.2`)
+
+#### Visual Indicators
+- **Development versions**: Display full version with orange "DEV" tag and highlighted styling
+- **Production versions**: Clean "v1.0.2" format without special styling
+
+#### Updating Versions
+1. Update the `version` constant in the `getVersionInfo()` function
+2. The display and styling will automatically adapt based on the version format
+3. Tampermonkey will automatically notify users of updates
+
+#### Version Format Examples
+```javascript
+// Development versions (shows DEV tag)
+const version = '1.0.1-auto-play';
+const version = '1.0.2-dev';
+const version = '1.1.0-test-feature';
+
+// Production versions (clean display)
+const version = '1.0.2';
+const version = '1.1.0';
+```
 
 ## Browser Compatibility
 
@@ -241,18 +329,30 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Changelog
 
-### v1.0.1
+### v1.0.1-game-interface-foundation (Development)
+- **CURRENT DEVELOPMENT BRANCH**: `feature/game-interface-foundation`
+- **NEW**: Smart version management system with automatic dev/production detection
+- **NEW**: Visual version indicators - "DEV" tag and orange styling for development versions
+- **NEW**: Dynamic version display formatting based on version type
+- **NEW**: Complete GameInterface class foundation for game interaction
+- **NEW**: Comprehensive DOM query methods for sidebar and play area elements
+- **NEW**: Element detection, counting, and validation utilities
+- **NEW**: Game state monitoring (ready/loading detection)
+- **NEW**: Element positioning and bounds calculation
+- **NEW**: Debug console with detailed logging and testing tools
+- **NEW**: Global `window.gameInterface` API for manual testing and development
+- **NEW**: Automated basic functionality testing suite
+- **ENHANCED**: Improved element tracking with name, position, and state data
+- **ENHANCED**: Better error handling and logging throughout
+- Foundation prepared for upcoming auto-play engine and advanced features
+
+### v1.0.1 (Production)
 - Added GitHub integration for automatic updates
 - Added support and homepage URLs
 - Improved installation process
-- **NEW**: GameInterface class for game state detection and element analysis
-- **NEW**: Comprehensive DOM query methods for sidebar and play area
-- **NEW**: Element counting, validation, and positioning utilities
-- **NEW**: Debug console with detailed logging and testing tools
-- **NEW**: Global `window.gameInterface` API for manual testing
 - **NEW**: Branch helper utility for streamlined development workflow
 - **NEW**: Automated branch management with URL switching and version control
-- Foundation laid for auto-play engine development
+- Basic GameInterface foundation
 
 ### v1.0.0
 - Initial release
