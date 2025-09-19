@@ -252,19 +252,43 @@ The logging system creates the following DOM structure for developers:
 
 ### Multi-File Build System
 
-The project now includes a comprehensive build system that transforms modular ES6 source files into a single userscript while maintaining all functionality. This enables better code organization and maintainability.
+The project includes a comprehensive build system that transforms modular ES6 source files into a single userscript while maintaining all functionality. This enables better code organization and maintainability.
 
 #### Build System Features
 
 - **Modular Development**: Split large userscript into focused, maintainable modules
-- **ES6 Module Support**: Use import/export statements for clean dependency management
+- **ES6 Module Support**: Full import/export parsing with dependency resolution
+- **Dependency Management**: Automatic dependency graph creation and topological sorting
+- **Circular Dependency Detection**: Prevents build issues with clear error reporting
+- **Import/Export Validation**: Ensures all imports resolve to existing exports
 - **File Size Policy**: Enforced limits (250 lines per file, 50 lines per function)
 - **Branch-Aware URLs**: Automatic URL generation based on Git branch
 - **Watch Mode**: Automatic rebuilds on file changes during development
 - **Build Validation**: Syntax checking and policy enforcement
 - **Comprehensive Logging**: Configurable logging with timestamps and colors
 
-#### Quick Start
+#### Implementation Status
+
+**✅ Completed Components:**
+- ModuleResolver class with full ES6 import/export parsing
+- Dependency graph creation and circular dependency detection
+- BuildManager class with build orchestration framework
+- Comprehensive error handling and logging system
+- File system utilities and path resolution
+
+**🚧 In Development:**
+- File concatenation and userscript generation
+- Branch-aware URL template system
+- File size policy enforcement
+- Watch mode for automatic rebuilds
+
+**📋 Planned Features:**
+- Source file structure creation
+- npm script integration
+- Comprehensive test suite
+- Documentation and migration guides
+
+#### Quick Start (When Complete)
 
 ```bash
 # Install build dependencies
@@ -350,12 +374,16 @@ src/
 #### Build Process
 
 The build system:
-1. **Parses ES6 modules** and resolves import/export dependencies
-2. **Validates file sizes** against policy limits (warns if exceeded)
-3. **Determines build order** based on dependency graph
-4. **Concatenates files** while preserving JavaScript scope
-5. **Injects metadata** with branch-specific URLs and versions
-6. **Generates userscript** that matches original functionality
+1. **Scans source directory** recursively for all JavaScript files
+2. **Parses ES6 modules** using regex patterns for import/export statements
+3. **Resolves dependencies** by matching import paths to actual files
+4. **Validates imports** ensuring all imported names exist in target modules
+5. **Detects circular dependencies** using depth-first search algorithm
+6. **Calculates execution order** via topological sort of dependency graph
+7. **Validates file sizes** against policy limits (warns if exceeded)
+8. **Concatenates files** while preserving JavaScript scope
+9. **Injects metadata** with branch-specific URLs and versions
+10. **Generates userscript** that matches original functionality
 
 #### Development Workflow
 
@@ -400,13 +428,34 @@ The build system automatically:
 #### Error Handling
 
 Comprehensive error reporting includes:
-- **Syntax validation** of generated userscript
-- **Import/export validation** to catch missing dependencies
-- **Circular dependency detection** with clear error messages
+- **Import resolution errors** with specific file and import path details
+- **Export validation errors** showing missing exports in target modules
+- **Circular dependency detection** with complete dependency cycle paths
 - **File system error handling** for missing files and permissions
-- **Build context information** with file locations and line numbers
+- **Module parsing errors** with file location and error context
+- **Build context information** with timestamps and detailed logging
 
 ### Testing
+
+#### Build System Testing
+
+The ModuleResolver can be tested independently:
+
+```bash
+# Run unit tests for ModuleResolver
+npm test -- test/unit/module-resolver.test.js
+
+# Test module resolution manually in Node.js
+node -e "
+import { ModuleResolver } from './build/ModuleResolver.js';
+const resolver = new ModuleResolver('./src', { 
+  log: (level, msg) => console.log(\`[\${level}] \${msg}\`)
+});
+// Test with sample source files when available
+"
+```
+
+#### Application Testing
 
 The project includes comprehensive testing infrastructure to ensure reliability and functionality:
 
@@ -505,6 +554,7 @@ infinite-crafter/
 │       └── branch-helper.js          # Branch management utility
 ├── build/
 │   ├── BuildManager.js               # Core build orchestration
+│   ├── ModuleResolver.js             # ES6 module parsing and dependency resolution
 │   └── build.js                      # Build script entry point
 ├── src/                              # Source files (when using build system)
 │   ├── header.js                     # Userscript metadata template
@@ -625,6 +675,39 @@ git push origin main
 - **Rapid Iteration**: Auto-commit feature for quick development cycles
 - **Debug Tools**: Test utilities for validating version management logic
 
+#### ModuleResolver API
+
+The build system includes a sophisticated ModuleResolver class that handles ES6 module parsing and dependency resolution:
+
+**Core Methods:**
+- `resolveModules()` - Main resolution method returning modules in execution order
+- `findJavaScriptFiles(dir)` - Recursively scans directory for .js files
+- `parseModule(filePath)` - Parses individual module for imports/exports
+- `validateImports()` - Ensures all imports resolve to existing exports
+- `detectCircularDependencies()` - Finds circular dependency cycles
+- `calculateExecutionOrder()` - Topological sort for proper module ordering
+
+**Import/Export Support:**
+- Named imports: `import { name } from 'module'`
+- Default imports: `import name from 'module'`
+- Namespace imports: `import * as name from 'module'`
+- Side-effect imports: `import 'module'`
+- Named exports: `export function name() {}`
+- Default exports: `export default value`
+- Re-exports: `export { name } from 'module'`
+
+**Path Resolution:**
+- Relative imports: `./file.js`, `../dir/file.js`
+- Absolute imports: `/core/module.js` (from src root)
+- Automatic .js extension handling
+- External module skipping (node_modules, etc.)
+
+**Error Detection:**
+- Missing import files with clear error messages
+- Undefined exports in target modules
+- Circular dependency cycles with full path traces
+- File system access errors with context
+
 ### Development Approaches
 
 The project supports two development approaches:
@@ -641,7 +724,9 @@ The project supports two development approaches:
 - **Pros**: Better organization, enforced file size limits, ES6 modules, automated builds
 - **Cons**: Requires build step, additional tooling setup
 
-**Migration Path**: The build system is designed to eventually replace the single-file approach. New features should preferably use the multi-file structure.
+**Current Status**: The build system foundation is complete with ModuleResolver and BuildManager classes implemented. Module parsing, dependency resolution, and circular dependency detection are fully functional. File concatenation and userscript generation are in development.
+
+**Migration Path**: The build system is designed to eventually replace the single-file approach. New features should preferably use the multi-file structure once file concatenation is complete.
 
 ### Adding New Features
 

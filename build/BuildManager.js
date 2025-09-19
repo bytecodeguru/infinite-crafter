@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';
+import { ModuleResolver } from './ModuleResolver.js';
 
 /**
  * BuildManager orchestrates the entire build process for the userscript
@@ -39,8 +40,16 @@ export class BuildManager {
             // Validate source directory exists
             await this.validateSourceDirectory();
             
-            // TODO: Implement module resolution and concatenation
-            // This will be implemented in subsequent tasks
+            // Resolve modules and dependencies
+            const moduleResolver = new ModuleResolver(this.config.srcDir, {
+                log: this.log.bind(this)
+            });
+            
+            const modules = await moduleResolver.resolveModules();
+            buildContext.sourceFiles = modules.map(m => m.relativePath);
+            
+            this.log('info', `Resolved ${modules.length} modules in dependency order`);
+            this.log('debug', 'Module order:', modules.map(m => m.relativePath));
             
             const buildTime = Date.now() - this.buildStartTime;
             this.log('info', `Build completed successfully in ${buildTime}ms`);
