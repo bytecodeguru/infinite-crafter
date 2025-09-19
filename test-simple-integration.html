@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Logging Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Simple Logging Integration Test</h1>
+    <div id="test-results"></div>
+    
+    <script src="infinite-craft-helper.user.js"></script>
+    <script>
+        function addResult(message, success = true) {
+            const div = document.createElement('div');
+            div.className = 'test';
+            div.style.color = success ? '#4caf50' : '#f44336';
+            div.textContent = (success ? '✓ ' : '✗ ') + message;
+            document.getElementById('test-results').appendChild(div);
+        }
+
+        // Wait for initialization
+        setTimeout(() => {
+            // Test 1: Verify logging system is initialized
+            if (window.Logger && window.logManager && window.logDisplay) {
+                addResult('Logging system components initialized');
+            } else {
+                addResult('Logging system components missing', false);
+                return;
+            }
+
+            // Test 2: Verify system starts with empty logs (Requirement 4.3)
+            // Note: We need to wait a bit for the initialization cleanup to complete
+            setTimeout(() => {
+                const initialCount = window.logManager.getLogCount();
+                if (initialCount === 0) {
+                    addResult('System starts with empty log history (Requirement 4.3)');
+                } else {
+                    addResult(`System should start with 0 logs, but has ${initialCount}`, false);
+                }
+
+                // Continue with other tests after verifying empty state
+                runRemainingTests();
+            }, 200);
+        }, 50);
+
+        function runRemainingTests() {
+
+            // Test 3: Test Logger API integration (Requirement 1.2)
+            window.Logger.log('Test message for requirement 1.2');
+            
+            setTimeout(() => {
+                const newCount = window.logManager.getLogCount();
+                if (newCount === 1) {
+                    addResult('Logger API successfully adds messages to LogManager (Requirement 1.2)');
+                } else {
+                    addResult(`Logger API failed. Expected 1 log, got ${newCount}`, false);
+                }
+
+                // Test 4: Verify message appears in UI
+                const logEntries = document.querySelectorAll('.log-entry');
+                if (logEntries.length > 0) {
+                    addResult('Messages appear in logs section UI (Requirement 1.2)');
+                } else {
+                    addResult('Messages do not appear in logs section UI', false);
+                }
+
+                // Test 5: Test different log levels
+                window.Logger.warn('Warning test');
+                window.Logger.error('Error test');
+                
+                setTimeout(() => {
+                    const finalCount = window.logManager.getLogCount();
+                    if (finalCount === 3) {
+                        addResult('All Logger API methods working (log, warn, error)');
+                    } else {
+                        addResult(`Expected 3 logs, got ${finalCount}`, false);
+                    }
+
+                    addResult('Integration test completed!');
+                }, 100);
+            }, 100);
+        }
+    </script>
+</body>
+</html>

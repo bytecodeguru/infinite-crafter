@@ -138,6 +138,12 @@
 
             #infinite-craft-control-panel .panel-content {
                 padding: 16px;
+                border-radius: 0;
+            }
+
+            /* When panel-content is the last element (no logs section) */
+            #infinite-craft-control-panel .panel-content:last-child {
+                border-radius: 0 0 6px 6px;
             }
 
             #infinite-craft-control-panel .panel-content p {
@@ -150,6 +156,16 @@
             #infinite-craft-control-panel .logs-section {
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
                 background: rgba(0, 0, 0, 0.2);
+                border-radius: 0 0 6px 6px;
+            }
+
+            /* Ensure logs section completes the panel's rounded corners */
+            #infinite-craft-control-panel .logs-section:last-child {
+                border-radius: 0 0 6px 6px;
+            }
+
+            #infinite-craft-control-panel .logs-section .logs-content:last-child {
+                border-radius: 0 0 6px 6px;
             }
 
             #infinite-craft-control-panel .logs-header {
@@ -181,23 +197,40 @@
                 border-radius: 4px;
                 font-size: 11px;
                 cursor: pointer;
-                transition: background 0.2s;
+                transition: background 0.2s ease;
+                font-family: Arial, sans-serif;
+                font-weight: normal;
             }
 
             #infinite-craft-control-panel .logs-controls button:hover {
                 background: rgba(74, 144, 226, 1);
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            #infinite-craft-control-panel .logs-controls button:active {
+                transform: translateY(0);
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             }
 
             #infinite-craft-control-panel .logs-controls button:disabled {
                 background: rgba(100, 100, 100, 0.5);
                 cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            #infinite-craft-control-panel .logs-controls button:disabled:hover {
+                background: rgba(100, 100, 100, 0.5);
+                transform: none;
+                box-shadow: none;
             }
 
             #infinite-craft-control-panel .logs-toggle {
                 width: 20px;
                 padding: 4px 2px !important;
                 font-size: 10px !important;
-                transition: transform 0.2s;
+                transition: transform 0.2s ease;
             }
 
             #infinite-craft-control-panel .logs-toggle.collapsed {
@@ -205,18 +238,46 @@
             }
 
             #infinite-craft-control-panel .logs-content {
-                max-height: 200px;
+                max-height: 150px;
                 overflow-y: auto;
-                transition: max-height 0.3s ease;
+                overflow-x: hidden;
+                transition: max-height 0.3s ease, opacity 0.2s ease;
+                scroll-behavior: smooth;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(74, 144, 226, 0.6) rgba(0, 0, 0, 0.2);
+                background: rgba(0, 0, 0, 0.1);
+            }
+
+            /* Webkit scrollbar styling - consistent with panel theme */
+            #infinite-craft-control-panel .logs-content::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            #infinite-craft-control-panel .logs-content::-webkit-scrollbar-track {
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 3px;
+            }
+
+            #infinite-craft-control-panel .logs-content::-webkit-scrollbar-thumb {
+                background: rgba(74, 144, 226, 0.6);
+                border-radius: 3px;
+                transition: background 0.2s ease;
+            }
+
+            #infinite-craft-control-panel .logs-content::-webkit-scrollbar-thumb:hover {
+                background: rgba(74, 144, 226, 0.8);
             }
 
             #infinite-craft-control-panel .logs-content.collapsed {
                 max-height: 0;
                 overflow: hidden;
+                opacity: 0;
             }
 
             #infinite-craft-control-panel .logs-list {
                 padding: 8px;
+                min-height: 40px;
+                font-family: Arial, sans-serif;
             }
 
             #infinite-craft-control-panel .logs-empty {
@@ -225,16 +286,26 @@
                 text-align: center;
                 padding: 20px;
                 font-size: 12px;
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: 4px;
+                margin: 4px;
             }
 
             #infinite-craft-control-panel .log-entry {
                 display: flex;
                 align-items: flex-start;
                 gap: 8px;
-                padding: 4px 0;
+                padding: 6px 8px;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                 font-size: 11px;
                 line-height: 1.4;
+                border-radius: 3px;
+                margin: 1px 0;
+                transition: background 0.1s ease;
+            }
+
+            #infinite-craft-control-panel .log-entry:hover {
+                background: rgba(255, 255, 255, 0.03);
             }
 
             #infinite-craft-control-panel .log-entry:last-child {
@@ -260,13 +331,23 @@
                 color: #e0e0e0;
             }
 
-            /* Log Level Colors */
+            /* Log Level Colors - consistent with panel theme */
+            #infinite-craft-control-panel .log-entry.error {
+                border-left: 2px solid #ff6b6b;
+                background: rgba(255, 107, 107, 0.05);
+            }
+
             #infinite-craft-control-panel .log-entry.error .log-level {
                 color: #ff6b6b;
             }
 
             #infinite-craft-control-panel .log-entry.error .log-message {
                 color: #ffcccb;
+            }
+
+            #infinite-craft-control-panel .log-entry.warn {
+                border-left: 2px solid #ffa726;
+                background: rgba(255, 167, 38, 0.05);
             }
 
             #infinite-craft-control-panel .log-entry.warn .log-level {
@@ -277,12 +358,22 @@
                 color: #ffe0b3;
             }
 
+            #infinite-craft-control-panel .log-entry.info {
+                border-left: 2px solid #4a90e2;
+                background: rgba(74, 144, 226, 0.05);
+            }
+
             #infinite-craft-control-panel .log-entry.info .log-level {
-                color: #42a5f5;
+                color: #4a90e2;
             }
 
             #infinite-craft-control-panel .log-entry.info .log-message {
                 color: #cce7ff;
+            }
+
+            #infinite-craft-control-panel .log-entry.debug {
+                border-left: 2px solid #9e9e9e;
+                background: rgba(158, 158, 158, 0.05);
             }
 
             #infinite-craft-control-panel .log-entry.debug .log-level {
@@ -293,8 +384,40 @@
                 color: #bbb;
             }
 
+            #infinite-craft-control-panel .log-entry.log {
+                border-left: 2px solid #e0e0e0;
+                background: rgba(224, 224, 224, 0.03);
+            }
+
             #infinite-craft-control-panel .log-entry.log .log-level {
                 color: #e0e0e0;
+            }
+
+            #infinite-craft-control-panel .log-entry.log .log-message {
+                color: #e0e0e0;
+            }
+
+            /* Activity indicator styles - consistent with panel theme */
+            #infinite-craft-control-panel .logs-activity-indicator {
+                color: #ffa726;
+                font-size: 12px;
+                font-weight: normal;
+                animation: pulse-activity 2s infinite;
+                background: rgba(255, 167, 38, 0.1);
+                padding: 2px 6px;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 167, 38, 0.3);
+            }
+
+            @keyframes pulse-activity {
+                0%, 100% { 
+                    opacity: 1; 
+                    transform: scale(1);
+                }
+                50% { 
+                    opacity: 0.7;
+                    transform: scale(0.98);
+                }
             }
         `;
         document.head.appendChild(style);
@@ -544,12 +667,14 @@
         constructor(container, logManager) {
             this.container = container;
             this.logManager = logManager;
-            this.isCollapsed = false;
+            this.isCollapsed = this.loadCollapseState();
             this.logsList = null;
             this.logsContent = null;
             this.toggleButton = null;
             this.copyButton = null;
             this.clearButton = null;
+            this.activityIndicator = null;
+            this.newLogsSinceCollapse = 0;
 
             // Store original console for internal logging to prevent recursion
             this.originalConsole = {
@@ -567,7 +692,7 @@
                 debug: '🔍'
             };
 
-            this.originalConsole.log('[LogDisplay] Initialized');
+            this.originalConsole.log('[LogDisplay] Initialized with collapse state:', this.isCollapsed);
         }
 
         initialize() {
@@ -583,13 +708,22 @@
                     throw new Error('Required DOM elements not found');
                 }
 
+                // Create activity indicator
+                this.createActivityIndicator();
+
                 // Set up event listeners
                 this.setupEventListeners();
+
+                // Set up scrolling behavior for draggable panel
+                this.ensureScrollingWorksInDraggablePanel();
 
                 // Subscribe to log manager events
                 this.logManager.subscribe((event, data) => {
                     this.handleLogEvent(event, data);
                 });
+
+                // Apply saved collapse state
+                this.applyCollapseState();
 
                 // Initial render
                 this.updateDisplay();
@@ -624,27 +758,45 @@
                 case 'logAdded':
                     this.addLogEntry(data);
                     this.updateButtonStates();
+                    // Track new logs when collapsed for activity indicator
+                    if (this.isCollapsed) {
+                        this.newLogsSinceCollapse++;
+                        this.updateActivityIndicator();
+                    }
                     break;
                 case 'logsCleared':
                     this.originalConsole.log(`[LogDisplay] Logs cleared: ${data.clearedCount} entries`);
+                    this.newLogsSinceCollapse = 0;
                     this.updateDisplay();
                     this.updateButtonStates();
+                    this.updateActivityIndicator();
                     break;
             }
         }
 
         toggleCollapse() {
             this.isCollapsed = !this.isCollapsed;
+            this.saveCollapseState();
 
             if (this.isCollapsed) {
                 this.logsContent.classList.add('collapsed');
                 this.toggleButton.classList.add('collapsed');
                 this.toggleButton.title = 'Expand logs';
+                this.newLogsSinceCollapse = 0; // Reset counter when collapsing
             } else {
                 this.logsContent.classList.remove('collapsed');
                 this.toggleButton.classList.remove('collapsed');
                 this.toggleButton.title = 'Collapse logs';
+                this.newLogsSinceCollapse = 0; // Reset counter when expanding
+                
+                // Auto-scroll to newest when expanding
+                setTimeout(() => {
+                    this.scrollToNewest();
+                }, 300); // Wait for CSS transition to complete
             }
+
+            this.updateActivityIndicator();
+            this.updateButtonStates();
         }
 
         addLogEntry(logEntry) {
@@ -662,7 +814,7 @@
 
             // Auto-scroll to show newest entry if not collapsed
             if (!this.isCollapsed) {
-                this.logsContent.scrollTop = 0;
+                this.scrollToNewest();
             }
         }
 
@@ -707,6 +859,11 @@
                     const entryElement = this.createLogEntryElement(log);
                     this.logsList.appendChild(entryElement);
                 });
+
+                // Auto-scroll to newest entry if not collapsed
+                if (!this.isCollapsed) {
+                    this.scrollToNewest();
+                }
             }
 
             this.updateButtonStates();
@@ -731,6 +888,78 @@
                     header.textContent = 'Console Logs';
                 }
             }
+        }
+
+        // Scrolling and height management methods
+        scrollToNewest() {
+            if (!this.logsContent || this.isCollapsed) {
+                return;
+            }
+
+            // Use requestAnimationFrame to ensure DOM has updated
+            requestAnimationFrame(() => {
+                try {
+                    // Scroll to top since newest logs are at the top
+                    this.logsContent.scrollTop = 0;
+                } catch (error) {
+                    this.originalConsole.error('[LogDisplay] Error scrolling to newest:', error);
+                }
+            });
+        }
+
+        scrollToOldest() {
+            if (!this.logsContent || this.isCollapsed) {
+                return;
+            }
+
+            requestAnimationFrame(() => {
+                try {
+                    // Scroll to bottom to show oldest logs
+                    this.logsContent.scrollTop = this.logsContent.scrollHeight;
+                } catch (error) {
+                    this.originalConsole.error('[LogDisplay] Error scrolling to oldest:', error);
+                }
+            });
+        }
+
+        ensureScrollingWorksInDraggablePanel() {
+            if (!this.logsContent) {
+                return;
+            }
+
+            // Prevent drag events from interfering with scrolling
+            this.logsContent.addEventListener('mousedown', (e) => {
+                // Stop propagation to prevent dragging when scrolling
+                e.stopPropagation();
+            });
+
+            this.logsContent.addEventListener('wheel', (e) => {
+                // Stop propagation to prevent dragging when scrolling with mouse wheel
+                e.stopPropagation();
+            });
+
+            // Ensure touch scrolling works on mobile
+            this.logsContent.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+            });
+
+            this.logsContent.addEventListener('touchmove', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        getScrollInfo() {
+            if (!this.logsContent) {
+                return null;
+            }
+
+            return {
+                scrollTop: this.logsContent.scrollTop,
+                scrollHeight: this.logsContent.scrollHeight,
+                clientHeight: this.logsContent.clientHeight,
+                isAtTop: this.logsContent.scrollTop === 0,
+                isAtBottom: this.logsContent.scrollTop + this.logsContent.clientHeight >= this.logsContent.scrollHeight - 1
+            };
         }
 
         copyLogsToClipboard() {
@@ -804,6 +1033,62 @@
             return div.innerHTML;
         }
 
+        // Collapse state persistence methods
+        loadCollapseState() {
+            try {
+                const saved = localStorage.getItem('infinite-craft-helper-logs-collapsed');
+                return saved === 'true';
+            } catch (error) {
+                this.originalConsole.warn('[LogDisplay] Failed to load collapse state:', error);
+                return false;
+            }
+        }
+
+        saveCollapseState() {
+            try {
+                localStorage.setItem('infinite-craft-helper-logs-collapsed', this.isCollapsed.toString());
+            } catch (error) {
+                this.originalConsole.warn('[LogDisplay] Failed to save collapse state:', error);
+            }
+        }
+
+        applyCollapseState() {
+            if (this.isCollapsed) {
+                this.logsContent.classList.add('collapsed');
+                this.toggleButton.classList.add('collapsed');
+                this.toggleButton.title = 'Expand logs';
+            } else {
+                this.logsContent.classList.remove('collapsed');
+                this.toggleButton.classList.remove('collapsed');
+                this.toggleButton.title = 'Collapse logs';
+            }
+            this.updateActivityIndicator();
+        }
+
+        // Activity indicator methods
+        createActivityIndicator() {
+            this.activityIndicator = document.createElement('span');
+            this.activityIndicator.className = 'logs-activity-indicator';
+            this.activityIndicator.style.display = 'none';
+            
+            // Insert after the header title
+            const header = this.container.querySelector('.logs-header h4');
+            if (header) {
+                header.appendChild(this.activityIndicator);
+            }
+        }
+
+        updateActivityIndicator() {
+            if (!this.activityIndicator) return;
+
+            if (this.isCollapsed && this.newLogsSinceCollapse > 0) {
+                this.activityIndicator.textContent = ` (${this.newLogsSinceCollapse} new)`;
+                this.activityIndicator.style.display = 'inline';
+            } else {
+                this.activityIndicator.style.display = 'none';
+            }
+        }
+
         // Test log display functionality
         runDisplayTests() {
             console.log('[LogDisplay] === RUNNING LOG DISPLAY TESTS ===');
@@ -834,6 +1119,23 @@
                 const toggleWorked = this.isCollapsed !== wasCollapsed;
                 this.toggleCollapse(); // Reset
                 console.log('✓ Toggle functionality working:', toggleWorked);
+
+                // Test 5: Scrolling functionality
+                console.log('Test 5: Scrolling functionality');
+                // Add multiple logs to test scrolling
+                for (let i = 0; i < 10; i++) {
+                    this.logManager.addLog('info', `Scroll test message ${i + 1}`);
+                }
+                this.updateDisplay();
+                
+                const scrollInfo = this.getScrollInfo();
+                console.log('✓ Scroll info available:', !!scrollInfo);
+                
+                this.scrollToOldest();
+                setTimeout(() => {
+                    this.scrollToNewest();
+                    console.log('✓ Scrolling methods working');
+                }, 100);
 
                 console.log('[LogDisplay] ✅ ALL LOG DISPLAY TESTS PASSED');
                 return true;
@@ -1263,6 +1565,39 @@
         }
     }
 
+    // Logger API - Simple logging functions for the userscript to call
+    // Will be initialized with LogManager instance in init()
+    let Logger = {
+        log(message) {
+            console.log('[Logger] Not initialized yet:', message);
+        },
+        
+        warn(message) {
+            console.warn('[Logger] Not initialized yet:', message);
+        },
+        
+        error(message) {
+            console.error('[Logger] Not initialized yet:', message);
+        }
+    };
+
+    // Function to create Logger API connected to LogManager
+    function createLogger(logManager) {
+        return {
+            log(message) {
+                logManager.addLog('info', message);
+            },
+            
+            warn(message) {
+                logManager.addLog('warn', message);
+            },
+            
+            error(message) {
+                logManager.addLog('error', message);
+            }
+        };
+    }
+
     // Initialize the script
     function init() {
         // Wait for the page to load
@@ -1270,6 +1605,8 @@
             document.addEventListener('DOMContentLoaded', init);
             return;
         }
+
+        console.log('[Init] Starting Infinite Craft Helper initialization...');
 
         // Add styles
         addStyles();
@@ -1281,31 +1618,71 @@
         // Make it draggable
         makeDraggable(panel);
 
-        // Initialize GameInterface for testing
-        console.log('Infinite Craft Helper v1.0.1-game-interface-foundation loaded successfully!');
-
-        // Initialize LogManager
-        console.log('[Init] Initializing LogManager...');
+        // Initialize logging system components
+        console.log('[Init] Initializing logging system...');
+        
+        // 1. Initialize LogManager
+        console.log('[Init] Creating LogManager...');
         const logManager = new LogManager(100);
 
-        // Initialize LogDisplay
+        // 2. Connect Logger API to LogManager
+        console.log('[Init] Connecting Logger API to LogManager...');
+        Logger = createLogger(logManager);
+
+        // 3. Initialize LogDisplay with the control panel and LogManager
         console.log('[Init] Initializing LogDisplay...');
         const logDisplay = new LogDisplay(panel, logManager);
-        logDisplay.initialize();
-
-        // Initialize LogCapture
-        console.log('[Init] Initializing LogCapture...');
-        const logCapture = new LogCapture(logManager);
-
-        // Start console interception
-        logCapture.startCapturing();
+        const displayInitialized = logDisplay.initialize();
+        
+        if (!displayInitialized) {
+            console.error('[Init] Failed to initialize LogDisplay');
+            return;
+        }
 
         // Make components available globally for debugging
         window.logManager = logManager;
-        window.logCapture = logCapture;
         window.logDisplay = logDisplay;
+        window.Logger = Logger;
         window.gameInterface = null; // Will be set later
-        console.log('[Init] Logging system components available globally for debugging');
+
+        console.log('[Init] Logging system initialized successfully!');
+        console.log('[Init] Components available globally: logManager, logDisplay, Logger');
+
+        // Test the Logger API integration (before console capture starts)
+        console.log('[Init] Testing Logger API integration...');
+        Logger.log('Logger API test: info message - logging system is working!');
+        Logger.warn('Logger API test: warning message - this should appear in the logs panel');
+        Logger.error('Logger API test: error message - with proper styling');
+
+        // Test integration with existing control panel functionality
+        console.log('[Init] Testing control panel integration...');
+        Logger.log('Control panel is draggable and logs section should be visible');
+        Logger.log('Collapse/expand, copy, and clear buttons should be functional');
+
+        console.log('Infinite Craft Helper v1.0.4-dev loaded successfully!');
+
+        // 4. Initialize LogCapture for console interception (after initial tests)
+        console.log('[Init] Initializing LogCapture...');
+        const logCapture = new LogCapture(logManager);
+
+        // 5. Start console interception (now that setup is complete)
+        console.log('[Init] Starting console capture...');
+        console.log('[Init] Console capture will start after this message');
+        
+        logCapture.startCapturing();
+
+        // Add LogCapture to global scope
+        window.logCapture = logCapture;
+
+        // Clear initialization logs to start with empty log history (Requirement 4.3)
+        // This ensures the user starts with a clean slate while preserving initialization logging for development
+        setTimeout(() => {
+            const clearedCount = logManager.clearLogs();
+            // Use original console to avoid capturing this cleanup message
+            if (logCapture.originalConsole && logCapture.originalConsole.log) {
+                logCapture.originalConsole.log(`[Init] Cleared ${clearedCount} initialization logs - starting with empty log history`);
+            }
+        }, 100);
 
         // Wait a moment for the game to fully load, then initialize GameInterface
         setTimeout(() => {
@@ -1315,6 +1692,9 @@
             // Make gameInterface available globally for debugging
             window.gameInterface = gameInterface;
             console.log('[Init] GameInterface available as window.gameInterface for debugging');
+            
+            // Log successful GameInterface initialization
+            Logger.log('GameInterface initialized and ready for use');
         }, 2000);
     }
 

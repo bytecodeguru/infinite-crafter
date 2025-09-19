@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Empty Logs Test - Requirement 4.3</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 4px; }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>Empty Logs Test - Requirement 4.3</h1>
+    <p>Testing that the system starts with empty log history when userscript is reloaded.</p>
+    <div id="test-results"></div>
+    
+    <script src="infinite-craft-helper.user.js"></script>
+    <script>
+        function addResult(message, success = true) {
+            const div = document.createElement('div');
+            div.className = 'test ' + (success ? 'success' : 'error');
+            div.textContent = (success ? '✓ ' : '✗ ') + message;
+            document.getElementById('test-results').appendChild(div);
+        }
+
+        // Test immediately after initialization
+        setTimeout(() => {
+            addResult('Testing immediately after initialization...');
+            
+            if (window.logManager) {
+                const immediateCount = window.logManager.getLogCount();
+                addResult(`Immediate log count: ${immediateCount} (may include initialization logs)`);
+            } else {
+                addResult('LogManager not available', false);
+            }
+        }, 50);
+
+        // Test after initialization cleanup (should be empty per requirement 4.3)
+        setTimeout(() => {
+            addResult('Testing after initialization cleanup...');
+            
+            if (window.logManager) {
+                const finalCount = window.logManager.getLogCount();
+                if (finalCount === 0) {
+                    addResult('✅ REQUIREMENT 4.3 SATISFIED: System starts with empty log history');
+                } else {
+                    addResult(`❌ REQUIREMENT 4.3 FAILED: Expected 0 logs, got ${finalCount}`, false);
+                }
+
+                // Test that new logs still work
+                window.Logger.log('Test message after cleanup');
+                
+                setTimeout(() => {
+                    const afterTestCount = window.logManager.getLogCount();
+                    if (afterTestCount === 1) {
+                        addResult('✅ Logger API still works after cleanup');
+                    } else {
+                        addResult(`❌ Logger API broken after cleanup: Expected 1 log, got ${afterTestCount}`, false);
+                    }
+                }, 50);
+            } else {
+                addResult('LogManager not available for final test', false);
+            }
+        }, 200);
+    </script>
+</body>
+</html>

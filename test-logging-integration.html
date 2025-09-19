@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logging System Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(74, 144, 226, 0.1);
+            border-radius: 8px;
+            border: 1px solid #4a90e2;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .test-results {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Logging System Integration Test</h1>
+    <p>This page tests the logging system integration for the Infinite Craft Helper userscript.</p>
+    
+    <div class="test-controls">
+        <h3>Test Controls</h3>
+        <button onclick="testLoggerAPI()">Test Logger API</button>
+        <button onclick="testLogLevels()">Test Log Levels</button>
+        <button onclick="testLogManager()">Test LogManager</button>
+        <button onclick="testLogDisplay()">Test LogDisplay</button>
+        <button onclick="testIntegration()">Test Full Integration</button>
+        <button onclick="clearTestResults()">Clear Results</button>
+    </div>
+
+    <div class="test-results" id="test-results">
+        <h3>Test Results</h3>
+        <div id="results-content">Ready to run tests...</div>
+    </div>
+
+    <script>
+        // Load the userscript content for testing
+        // Note: In a real scenario, this would be loaded by Tampermonkey
+    </script>
+    
+    <!-- Include the userscript for testing -->
+    <script src="infinite-craft-helper.user.js"></script>
+    
+    <script>
+        let testResults = [];
+
+        function addTestResult(message, success = true) {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push({
+                timestamp,
+                message,
+                success
+            });
+            updateTestResults();
+        }
+
+        function updateTestResults() {
+            const resultsContent = document.getElementById('results-content');
+            if (testResults.length === 0) {
+                resultsContent.innerHTML = 'Ready to run tests...';
+                return;
+            }
+
+            const html = testResults.map(result => {
+                const color = result.success ? '#4caf50' : '#f44336';
+                const icon = result.success ? '✓' : '✗';
+                return `<div style="color: ${color}; margin: 5px 0;">
+                    [${result.timestamp}] ${icon} ${result.message}
+                </div>`;
+            }).join('');
+            
+            resultsContent.innerHTML = html;
+        }
+
+        function clearTestResults() {
+            testResults = [];
+            updateTestResults();
+        }
+
+        function testLoggerAPI() {
+            addTestResult('Testing Logger API...');
+            
+            try {
+                if (typeof window.Logger === 'undefined') {
+                    addTestResult('Logger API not found in window object', false);
+                    return;
+                }
+
+                // Test Logger methods exist
+                if (typeof window.Logger.log !== 'function') {
+                    addTestResult('Logger.log method not found', false);
+                    return;
+                }
+                if (typeof window.Logger.warn !== 'function') {
+                    addTestResult('Logger.warn method not found', false);
+                    return;
+                }
+                if (typeof window.Logger.error !== 'function') {
+                    addTestResult('Logger.error method not found', false);
+                    return;
+                }
+
+                addTestResult('Logger API methods found successfully');
+
+                // Test Logger calls
+                window.Logger.log('Test log message from integration test');
+                window.Logger.warn('Test warning message from integration test');
+                window.Logger.error('Test error message from integration test');
+
+                addTestResult('Logger API calls executed successfully');
+
+            } catch (error) {
+                addTestResult(`Logger API test failed: ${error.message}`, false);
+            }
+        }
+
+        function testLogLevels() {
+            addTestResult('Testing different log levels...');
+            
+            try {
+                window.Logger.log('Info level message');
+                window.Logger.warn('Warning level message');
+                window.Logger.error('Error level message');
+                
+                addTestResult('All log levels tested successfully');
+            } catch (error) {
+                addTestResult(`Log levels test failed: ${error.message}`, false);
+            }
+        }
+
+        function testLogManager() {
+            addTestResult('Testing LogManager functionality...');
+            
+            try {
+                if (typeof window.logManager === 'undefined') {
+                    addTestResult('LogManager not found in window object', false);
+                    return;
+                }
+
+                const initialCount = window.logManager.getLogCount();
+                addTestResult(`Initial log count: ${initialCount}`);
+
+                // Add a test log
+                window.logManager.addLog('info', 'Direct LogManager test message');
+                
+                const newCount = window.logManager.getLogCount();
+                if (newCount === initialCount + 1) {
+                    addTestResult('LogManager addLog working correctly');
+                } else {
+                    addTestResult(`LogManager addLog failed. Expected ${initialCount + 1}, got ${newCount}`, false);
+                }
+
+                // Test log stats
+                const stats = window.logManager.getLogStats();
+                addTestResult(`Log stats: ${JSON.stringify(stats)}`);
+
+            } catch (error) {
+                addTestResult(`LogManager test failed: ${error.message}`, false);
+            }
+        }
+
+        function testLogDisplay() {
+            addTestResult('Testing LogDisplay functionality...');
+            
+            try {
+                if (typeof window.logDisplay === 'undefined') {
+                    addTestResult('LogDisplay not found in window object', false);
+                    return;
+                }
+
+                // Check if logs panel exists in DOM
+                const logsSection = document.querySelector('.logs-section');
+                if (!logsSection) {
+                    addTestResult('Logs section not found in DOM', false);
+                    return;
+                }
+
+                addTestResult('Logs section found in DOM');
+
+                // Check if control buttons exist
+                const toggleButton = document.querySelector('.logs-toggle');
+                const copyButton = document.querySelector('.logs-copy');
+                const clearButton = document.querySelector('.logs-clear');
+
+                if (toggleButton && copyButton && clearButton) {
+                    addTestResult('All log control buttons found');
+                } else {
+                    addTestResult('Some log control buttons missing', false);
+                }
+
+                // Test adding a log entry through LogDisplay
+                window.Logger.log('LogDisplay integration test message');
+                addTestResult('LogDisplay integration test completed');
+
+            } catch (error) {
+                addTestResult(`LogDisplay test failed: ${error.message}`, false);
+            }
+        }
+
+        function testIntegration() {
+            addTestResult('Testing full logging system integration...');
+            
+            try {
+                // Test the complete flow: Logger API -> LogManager -> LogDisplay
+                const initialCount = window.logManager.getLogCount();
+                
+                // Send messages through Logger API
+                window.Logger.log('Integration test: Logger -> LogManager -> LogDisplay');
+                window.Logger.warn('Integration test: Warning message flow');
+                window.Logger.error('Integration test: Error message flow');
+                
+                // Verify logs were added to LogManager
+                const finalCount = window.logManager.getLogCount();
+                if (finalCount === initialCount + 3) {
+                    addTestResult('Full integration test: Logger API -> LogManager working');
+                } else {
+                    addTestResult(`Integration test failed: Expected ${initialCount + 3} logs, got ${finalCount}`, false);
+                }
+
+                // Test that logs appear in the UI
+                setTimeout(() => {
+                    const logEntries = document.querySelectorAll('.log-entry');
+                    if (logEntries.length > 0) {
+                        addTestResult(`Integration test: ${logEntries.length} log entries visible in UI`);
+                    } else {
+                        addTestResult('Integration test: No log entries visible in UI', false);
+                    }
+                }, 100);
+
+                addTestResult('Full integration test completed');
+
+            } catch (error) {
+                addTestResult(`Integration test failed: ${error.message}`, false);
+            }
+        }
+
+        // Run initial tests when page loads
+        setTimeout(() => {
+            addTestResult('Page loaded, running initial tests...');
+            testLoggerAPI();
+            testLogManager();
+            testLogDisplay();
+            testIntegration();
+        }, 1000);
+    </script>
+</body>
+</html>

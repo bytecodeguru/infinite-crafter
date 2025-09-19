@@ -16,6 +16,8 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 - **Console Log Display**: Real-time console log capture and display within the control panel
 - **Log Management**: Automatic log rotation, filtering by level, and memory management
 - **Interactive Log Controls**: Collapse/expand, copy to clipboard, and clear logs functionality
+- **Persistent Collapse State**: Logs section remembers its collapsed/expanded state across sessions
+- **Activity Indicator**: Shows "(X new)" indicator when collapsed and new logs arrive
 - **Visual Log Levels**: Color-coded log entries with icons for error, warn, info, and debug messages
 - **Debug Console**: Extensive logging and testing tools for development
 - **Automated Testing Suite**: Built-in functionality tests for reliability
@@ -86,6 +88,8 @@ You need a userscript manager installed in your browser. We recommend:
 3. **Drag the panel**: Click and drag the header to move it around the screen
 4. **View Console Logs**: All console messages appear in the logs section with timestamps and color-coded levels
 5. **Manage Logs**: Use the collapse/expand button (▼), copy logs to clipboard, or clear all logs
+   - The logs section remembers your collapsed/expanded preference
+   - When collapsed, an activity indicator shows "(X new)" for new log entries
 6. **Debug Console**: Open browser developer tools (F12) to see detailed game analysis
 7. **GameInterface API**: Access `window.gameInterface` in console for manual testing
 
@@ -154,6 +158,17 @@ logManager.runLogManagerTests()
 // Tests log storage, rotation, events, and filtering with detailed output
 ```
 
+#### Logger API
+```javascript
+// Simple logging functions for userscript use
+Logger.log('Information message')     // Add info-level log entry
+Logger.warn('Warning message')        // Add warning-level log entry  
+Logger.error('Error message')         // Add error-level log entry
+
+// Logger is initialized during script startup and connected to LogManager
+// Before initialization, calls are logged to console with "Not initialized yet" prefix
+```
+
 #### LogCapture API
 ```javascript
 // Access the console capture system
@@ -178,10 +193,17 @@ The control panel includes a built-in console log viewer with the following feat
 
 **Interactive Controls:**
 - **Collapse/Expand**: Toggle button (▼) to show/hide the logs section
+- **Persistent State**: Remembers collapsed/expanded preference across browser sessions
+- **Activity Indicator**: Shows "(X new)" when collapsed and new logs arrive
 - **Copy to Clipboard**: Copy all logs in readable format with timestamps
 - **Clear Logs**: Remove all current log entries
-- **Auto-scroll**: Automatically shows newest log entries
+- **Auto-scroll**: Automatically shows newest log entries with smooth scrolling behavior and optimized display height
 - **Log Count**: Shows number of logs when collapsed
+
+**Smart Console Capture:**
+- **Clean Initialization**: Console capture starts after setup is complete, preventing initialization logs from cluttering the display
+- **Selective Logging**: Only captures console messages after the logging system is fully initialized
+- **Original Console Preserved**: All original console functionality remains intact for debugging
 
 **Log Format:**
 Each log entry displays:
@@ -513,8 +535,11 @@ This project is open source and available under the [MIT License](LICENSE).
 - **NEW**: Copy logs to clipboard with formatted timestamps and levels
 - **NEW**: Clear logs functionality with immediate UI updates
 - **NEW**: Visual log level indicators with color-coded styling and icons
-- **NEW**: Auto-scrolling to newest log entries with smooth animations
+- **NEW**: Auto-scrolling to newest log entries with smooth animations and optimized height management
 - **NEW**: LogDisplay class for comprehensive UI management
+- **NEW**: Persistent collapse state using localStorage to remember user preferences
+- **NEW**: Activity indicator showing "(X new)" when logs section is collapsed and new logs arrive
+- **NEW**: Enhanced state management with automatic activity tracking
 - **NEW**: Console interception system that preserves original console functionality
 - **NEW**: Recursive logging prevention for system stability using originalConsole methods
 - **NEW**: Advanced LogManager class with comprehensive log storage and rotation
@@ -526,6 +551,9 @@ This project is open source and available under the [MIT License](LICENSE).
 - **NEW**: Global `window.logManager` API for manual testing and development
 - **NEW**: Comprehensive LogManager test suite with automated validation
 - **NEW**: Memory management with automatic cleanup and rotation
+- **NEW**: Logger API with simple log(), warn(), and error() functions for userscript logging
+- **NEW**: Proper Logger initialization pattern that connects to LogManager during script startup
+- **NEW**: Optimized initialization sequence - console capture starts after setup is complete to prevent capturing initialization logs
 - **ENHANCED**: Enhanced version detection system that analyzes script source URL
 - **ENHANCED**: Automatic development mode detection for feature branch installations
 - **ENHANCED**: Smart version management with both version format and URL-based detection
@@ -543,6 +571,10 @@ This project is open source and available under the [MIT License](LICENSE).
 - **ENHANCED**: Better error handling and logging throughout with recursive prevention
 - **ENHANCED**: Control panel UI extended with logs section and responsive design
 - **ENHANCED**: Code formatting improvements and consistent spacing throughout
+- **ENHANCED**: Improved logs section scrolling with optimized height (150px max), smooth scroll behavior, and hidden horizontal overflow
+- **ENHANCED**: Polished button interactions with hover effects, active states, and proper disabled button styling
+- **ENHANCED**: Smooth CSS transitions and micro-interactions for better user experience
+- **ENHANCED**: Consistent font family and styling across all logs section controls
 
 ### v1.0.1 (Production)
 - Added GitHub integration for automatic updates
