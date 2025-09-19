@@ -1,0 +1,17 @@
+{
+  "name": "infinite-craft-helper",
+  "version": "1.0.0",
+  "description": "Tampermonkey userscript for enhancing the Infinite Craft game",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "install-browsers": "playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "keywords": ["userscript", "tampermonkey", "infinite-craft", "browser-extension"],
+  "author": "",
+  "license": "MIT"
+}
