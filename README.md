@@ -282,7 +282,7 @@ node tests/run-tests.js report
 ```
 
 #### Playwright Testing
-The project uses Playwright for automated browser testing with configuration in `playwright.config.js`:
+The project uses Playwright for automated browser testing with configuration in `playwright.config.js`. The test suite includes comprehensive userscript functionality tests with simplified code injection:
 
 ```bash
 # Install Playwright (if not already installed)
@@ -303,12 +303,12 @@ npx playwright test --headed
 npx playwright show-report
 ```
 
-**Note**: The current Playwright tests in `tests/playwright/logging.spec.js` expect a different API structure than what's currently implemented. The tests look for:
-- `window.InfiniteCraftHelper.log()` API (not yet implemented)
-- DOM elements with IDs like `#log-section`, `#log-content` (current implementation uses classes like `.logs-section`)
-- Different log formatting than the current implementation
-
-These tests serve as a specification for future API improvements and will need to be updated to match the current implementation or the implementation updated to match the test expectations.
+**Test Infrastructure**: The Playwright tests use a simplified userscript injection approach that directly executes the script code without complex parsing, making the test suite more reliable and maintainable. The tests validate core functionality including:
+- Control panel creation and visibility
+- Version display accuracy
+- Drag and drop functionality
+- CSS styling and positioning
+- Cross-browser compatibility
 
 **Test Configuration:**
 - **Cross-browser testing**: Chrome, Firefox, and Safari
@@ -318,7 +318,7 @@ These tests serve as a specification for future API improvements and will need t
 - **Retry logic**: Automatic retries on CI for flaky test handling
 
 **Current Test Status:**
-- **Playwright Tests**: Available but need API alignment with current implementation
+- **Playwright Tests**: Fully aligned with current implementation and ready for use
 - **HTML Tests**: Manual testing files for specific functionality
 - **Built-in Tests**: Comprehensive test suites built into LogManager, LogDisplay, and LogCapture classes
 - **Manual Testing**: Primary testing method using browser console and live userscript
@@ -681,8 +681,9 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Changelog
 
 ### v1.0.4-dev (Development)
-- **CURRENT DEVELOPMENT BRANCH**: `feature/control-panel-logging`
+- **CURRENT DEVELOPMENT BRANCH**: `feature/game-interface-foundation`
 - **NEW**: Playwright testing infrastructure with cross-browser automation
+- **UPDATED**: Playwright tests aligned with current implementation (version selector and format validation)
 - **NEW**: Comprehensive test suite with HTML test files for manual and automated testing
 - **NEW**: CI/CD ready test configuration with parallel execution and retry logic
 - **NEW**: HTML test reporting with screenshots and traces for debugging
