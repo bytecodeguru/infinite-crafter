@@ -74,12 +74,19 @@ You need a userscript manager installed in your browser. We recommend:
 
 ### Method 2: Manual Installation
 
+**Option A: Pre-built Userscript (Recommended)**
 1. Open your userscript manager dashboard
 2. Click **Create a new script** or **Add new script**
 3. Copy the contents of [`infinite-craft-helper.user.js`](infinite-craft-helper.user.js)
 4. Paste it into the script editor
 5. Save the script (usually Ctrl+S or Cmd+S)
 6. Visit [neal.fun/infinite-craft](https://neal.fun/infinite-craft/) to see the control panel
+
+**Option B: Build from Source**
+1. Clone this repository: `git clone https://github.com/bytecodeguru/infinite-crafter.git`
+2. Install dependencies: `npm install`
+3. Build the userscript: `npm run build`
+4. Install the generated file from `dist/infinite-craft-helper.user.js`
 
 ## Usage
 
@@ -243,6 +250,162 @@ The logging system creates the following DOM structure for developers:
 
 ## Development
 
+### Multi-File Build System
+
+The project now includes a comprehensive build system that transforms modular ES6 source files into a single userscript while maintaining all functionality. This enables better code organization and maintainability.
+
+#### Build System Features
+
+- **Modular Development**: Split large userscript into focused, maintainable modules
+- **ES6 Module Support**: Use import/export statements for clean dependency management
+- **File Size Policy**: Enforced limits (250 lines per file, 50 lines per function)
+- **Branch-Aware URLs**: Automatic URL generation based on Git branch
+- **Watch Mode**: Automatic rebuilds on file changes during development
+- **Build Validation**: Syntax checking and policy enforcement
+- **Comprehensive Logging**: Configurable logging with timestamps and colors
+
+#### Quick Start
+
+```bash
+# Install build dependencies
+npm install
+
+# Build the userscript from source files
+npm run build
+
+# Start watch mode for development
+npm run build:watch
+
+# Clean build artifacts
+npm run clean
+```
+
+#### Build Configuration
+
+The build system is configured via `build.config.js`:
+
+```javascript
+export default {
+    // Source and output directories
+    srcDir: './src',
+    outputDir: './dist',
+    outputFile: 'infinite-craft-helper.user.js',
+    
+    // File size policy enforcement
+    maxFileLines: 250,
+    maxFunctionLines: 50,
+    recommendedFileLines: 200,
+    recommendedFunctionLines: 30,
+    
+    // Watch mode for development
+    watch: {
+        enabled: false,
+        debounce: 300,
+        ignored: ['node_modules/**', 'dist/**', '.git/**']
+    },
+    
+    // Branch-aware URL generation
+    branch: {
+        auto: true,
+        urlTemplate: 'https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/{{BRANCH}}/infinite-craft-helper.user.js'
+    },
+    
+    // Build options
+    build: {
+        minify: false,
+        sourceMaps: false,
+        validateSyntax: true,
+        enforcePolicy: true
+    },
+    
+    // Logging configuration
+    logging: {
+        level: 'info', // 'debug', 'info', 'warn', 'error'
+        timestamps: true,
+        colors: true
+    }
+};
+```
+
+#### Source File Organization
+
+When using the build system, source files are organized in a modular structure:
+
+```
+src/
+├── header.js                 # Userscript metadata and configuration
+├── core/
+│   ├── version.js           # Version management utilities
+│   ├── logger.js            # LogManager and Logger API
+│   └── game-interface.js    # Game interaction utilities
+├── ui/
+│   ├── control-panel.js     # Main control panel creation
+│   ├── styles.js            # CSS styles injection
+│   └── draggable.js         # Drag functionality
+├── utils/
+│   └── dom.js               # DOM utilities and helpers
+└── main.js                  # Entry point and initialization
+```
+
+#### Build Process
+
+The build system:
+1. **Parses ES6 modules** and resolves import/export dependencies
+2. **Validates file sizes** against policy limits (warns if exceeded)
+3. **Determines build order** based on dependency graph
+4. **Concatenates files** while preserving JavaScript scope
+5. **Injects metadata** with branch-specific URLs and versions
+6. **Generates userscript** that matches original functionality
+
+#### Development Workflow
+
+```bash
+# Start a new feature with build system
+git checkout -b feature/my-feature
+
+# Set up watch mode for automatic rebuilds
+npm run build:watch
+
+# Edit source files in src/ directory
+# Build system automatically rebuilds on changes
+
+# Test the generated userscript
+# Install from: dist/infinite-craft-helper.user.js
+
+# When ready for production
+npm run build
+git add .
+git commit -m "Complete my-feature implementation"
+```
+
+#### File Size Policy
+
+The build system enforces code organization best practices:
+
+- **Maximum file size**: 250 lines per source file
+- **Recommended size**: 150-200 lines per file  
+- **Function limits**: Maximum 50 lines per function, 30 lines recommended
+- **Single responsibility**: Each file should have one clear purpose
+- **Build-time validation**: Warnings for files exceeding limits
+- **Automated suggestions**: Guidance for splitting large files
+
+#### Branch Integration
+
+The build system automatically:
+- **Detects Git branch** and updates URLs accordingly
+- **Generates development versions** for feature branches (e.g., `1.0.4-feature-name`)
+- **Creates production versions** for main branch (e.g., `1.0.4`)
+- **Updates userscript metadata** with correct updateURL and downloadURL
+
+#### Error Handling
+
+Comprehensive error reporting includes:
+- **Syntax validation** of generated userscript
+- **Import/export validation** to catch missing dependencies
+- **Circular dependency detection** with clear error messages
+- **File system error handling** for missing files and permissions
+- **Build context information** with file locations and line numbers
+
 ### Testing
 
 The project includes comprehensive testing infrastructure to ensure reliability and functionality:
@@ -336,18 +499,32 @@ npx playwright test --headed
 ```
 infinite-crafter/
 ├── .kiro/
+│   ├── specs/
+│   │   └── multi-file-build-system/  # Build system specification
 │   └── scripts/
-│       └── branch-helper.js       # Branch management utility
-├── tests/                         # Test files directory
-│   ├── playwright/                # Playwright automated tests
-│   │   ├── userscript.spec.js     # Core userscript functionality tests
-│   │   ├── logging.spec.js        # Logging system test suite
-│   │   └── integration.spec.js    # Integration tests
-│   └── run-tests.js               # Test runner script
-├── infinite-craft-helper.user.js  # Main userscript file
-├── playwright.config.js           # Playwright test configuration
-├── package.json                   # Project dependencies
-└── README.md                      # This file
+│       └── branch-helper.js          # Branch management utility
+├── build/
+│   ├── BuildManager.js               # Core build orchestration
+│   └── build.js                      # Build script entry point
+├── src/                              # Source files (when using build system)
+│   ├── header.js                     # Userscript metadata template
+│   ├── core/                         # Core functionality modules
+│   ├── ui/                           # User interface components
+│   ├── utils/                        # Utility functions
+│   └── main.js                       # Application entry point
+├── dist/                             # Built userscript output
+│   └── infinite-craft-helper.user.js # Generated userscript
+├── tests/                            # Test files directory
+│   ├── playwright/                   # Playwright automated tests
+│   │   ├── userscript.spec.js        # Core userscript functionality tests
+│   │   ├── logging.spec.js           # Logging system test suite
+│   │   └── integration.spec.js       # Integration tests
+│   └── run-tests.js                  # Test runner script
+├── build.config.js                   # Build system configuration
+├── infinite-craft-helper.user.js     # Legacy single-file userscript
+├── playwright.config.js              # Playwright test configuration
+├── package.json                      # Project dependencies and scripts
+└── README.md                         # This file
 ```
 
 ### Branch Helper Utility
@@ -448,14 +625,67 @@ git push origin main
 - **Rapid Iteration**: Auto-commit feature for quick development cycles
 - **Debug Tools**: Test utilities for validating version management logic
 
+### Development Approaches
+
+The project supports two development approaches:
+
+#### Single-File Development (Legacy)
+- **File**: `infinite-craft-helper.user.js`
+- **Best for**: Small changes, quick fixes, simple features
+- **Pros**: Direct editing, immediate testing, no build step required
+- **Cons**: Large file size (1179+ lines), harder to maintain, no module organization
+
+#### Multi-File Development (Recommended)
+- **Directory**: `src/` with modular structure
+- **Best for**: New features, major refactoring, collaborative development
+- **Pros**: Better organization, enforced file size limits, ES6 modules, automated builds
+- **Cons**: Requires build step, additional tooling setup
+
+**Migration Path**: The build system is designed to eventually replace the single-file approach. New features should preferably use the multi-file structure.
+
 ### Adding New Features
 
-The control panel is designed to be easily extensible. To add new controls:
+The control panel is designed to be easily extensible.
+
+#### Single-File Approach
+To add new controls to the existing userscript:
 
 1. Modify the `panel-content` section in the `createControlPanel()` function
 2. Add corresponding event listeners and functionality
 3. Update the version in the `getVersionInfo()` function (the display will automatically adapt)
 4. Commit and push changes for automatic distribution
+
+#### Multi-File Approach
+To add new features using the build system:
+
+1. **Create focused modules** in the appropriate `src/` subdirectory:
+   - `src/core/` - Core functionality and APIs
+   - `src/ui/` - User interface components
+   - `src/utils/` - Utility functions and helpers
+
+2. **Follow file size policy**:
+   - Maximum 250 lines per file (recommended 150-200)
+   - Maximum 50 lines per function (recommended 30)
+   - Single responsibility per module
+
+3. **Use ES6 imports/exports**:
+   ```javascript
+   // src/ui/my-feature.js
+   import { Logger } from '../core/logger.js';
+   
+   export function createMyFeature() {
+       Logger.log('Creating my feature...');
+       // Feature implementation
+   }
+   ```
+
+4. **Build and test**:
+   ```bash
+   npm run build:watch  # Auto-rebuild on changes
+   # Test the generated dist/infinite-craft-helper.user.js
+   ```
+
+5. **Update version** in `package.json` and commit changes
 
 #### Version Management for Features
 
@@ -624,15 +854,22 @@ const version = '1.1.0';
    node .kiro/scripts/branch-helper.js setup-feature amazing-feature
    ```
 3. Install the generated feature branch URL in Tampermonkey for testing
-4. Make your changes and test on neal.fun/infinite-craft
-5. Push additional changes to your feature branch
-6. When ready, prepare for release:
+4. **For multi-file development**: Set up watch mode for automatic builds:
+   ```bash
+   npm install
+   npm run build:watch
+   ```
+5. Make your changes (either in single file or modular src/ structure)
+6. Test on neal.fun/infinite-craft (build system auto-rebuilds on changes)
+7. Push additional changes to your feature branch
+8. When ready, prepare for release:
    ```bash
    node .kiro/scripts/branch-helper.js prepare-release
+   npm run build  # Ensure final build is clean
    git add .
    git commit -m "Prepare amazing feature for release"
    ```
-7. Open a Pull Request
+9. Open a Pull Request
 
 ### Manual Process (Alternative)
 
@@ -660,6 +897,18 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ### v1.0.4-dev (Development)
 - **CURRENT DEVELOPMENT BRANCH**: `feature/game-interface-foundation`
+- **NEW**: Multi-file build system with ES6 module support for better code organization
+- **NEW**: BuildManager class for orchestrating build process with file watching and incremental builds
+- **NEW**: Comprehensive build configuration system (`build.config.js`) with file size policy enforcement
+- **NEW**: Branch-aware URL generation that automatically updates userscript metadata based on Git branch
+- **NEW**: Watch mode for automatic rebuilds during development (`npm run build:watch`)
+- **NEW**: File size validation with configurable limits (250 lines per file, 50 lines per function)
+- **NEW**: Build system logging with configurable levels, timestamps, and colors
+- **NEW**: Clean build artifacts functionality (`npm run clean`)
+- **NEW**: Source file organization structure (src/core/, src/ui/, src/utils/)
+- **NEW**: ES6 import/export dependency resolution and module concatenation
+- **NEW**: Build-time syntax validation and error reporting with file location information
+- **NEW**: Development workflow integration with npm scripts and automated tooling
 - **NEW**: Playwright testing infrastructure with cross-browser automation
 - **UPDATED**: Playwright tests aligned with current implementation (version selector and format validation)
 - **NEW**: Comprehensive test suite with HTML test files for manual and automated testing

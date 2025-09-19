@@ -1,17 +1,26 @@
 {
   "name": "infinite-craft-helper",
-  "version": "1.0.0",
-  "description": "Tampermonkey userscript for enhancing the Infinite Craft game",
+  "version": "1.0.4",
+  "description": "Control panel overlay for Infinite Craft with GameInterface foundation",
+  "main": "infinite-craft-helper.user.js",
+  "type": "module",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "install-browsers": "playwright install"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "build": "node build/build.js",
+    "build:watch": "node build/build.js --watch",
+    "clean": "node build/build.js --clean",
+    "test": "node --test test/**/*.test.js"
   },
   "keywords": ["userscript", "tampermonkey", "infinite-craft", "browser-extension"],
-  "author": "",
-  "license": "MIT"
+  "author": "You",
+  "license": "MIT",
+  "devDependencies": {
+    "chokidar": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bytecodeguru/infinite-crafter.git"
+  }
 }
