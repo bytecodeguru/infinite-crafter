@@ -2,16 +2,15 @@
 
 ## Overview
 
-The Control Panel Logging feature extends the existing Infinite Craft Helper userscript by adding a comprehensive logging system directly within the control panel. This design integrates seamlessly with the current architecture while providing real-time log capture, display, and clipboard functionality. The logging system intercepts console messages and presents them in a user-friendly interface that eliminates the need to open Chrome DevTools.
+The Control Panel Logging feature extends the existing Infinite Craft Helper userscript by adding a simple logging display directly within the control panel. This design provides a dedicated logging API for the userscript to display applicative messages, eliminating the need to open Chrome DevTools to see what the userscript is doing. The system focuses on simplicity and ease of use rather than comprehensive console interception.
 
 ## Architecture
 
 ### Core Components
 
-1. **LogCapture System**: Intercepts and captures console messages
+1. **Logger API**: Simple logging functions for the userscript to call
 2. **LogDisplay Component**: Renders logs within the control panel
-3. **LogManager**: Manages log storage, filtering, and cleanup
-4. **ClipboardHandler**: Handles copying logs to clipboard with formatting
+3. **LogManager**: Manages log storage and cleanup
 
 ### Integration Points
 
@@ -23,39 +22,38 @@ The logging system integrates with the existing userscript architecture:
 
 ## Components and Interfaces
 
-### LogCapture System
+### Logger API
 
 ```javascript
-class LogCapture {
-    constructor(logManager) {
-        this.logManager = logManager;
-        this.originalConsole = {};
-        this.isCapturing = false;
-    }
+const Logger = {
+    log(message) {
+        // Add info-level log entry
+        logManager.addLog('info', message, new Date());
+    },
     
-    startCapturing() {
-        // Intercept console methods (log, warn, error, debug, info)
-        // Forward to original console and capture for display
-    }
+    warn(message) {
+        // Add warning-level log entry
+        logManager.addLog('warn', message, new Date());
+    },
     
-    stopCapturing() {
-        // Restore original console methods
+    error(message) {
+        // Add error-level log entry
+        logManager.addLog('error', message, new Date());
     }
-}
+};
 ```
 
 ### LogManager
 
 ```javascript
 class LogManager {
-    constructor(maxLogs = 100) {
+    constructor() {
         this.logs = [];
-        this.maxLogs = maxLogs;
         this.listeners = [];
     }
     
     addLog(level, message, timestamp) {
-        // Add log entry and manage size limits
+        // Add log entry
         // Notify listeners of new log
     }
     
@@ -81,12 +79,12 @@ class LogDisplay {
         this.container = container;
         this.logManager = logManager;
         this.isCollapsed = false;
-        this.maxDisplayHeight = 200;
+        this.maxDisplayHeight = 150;
     }
     
     render() {
         // Create logs section HTML structure
-        // Set up event listeners for collapse/expand and copy
+        // Set up event listeners for collapse/expand, clear, and copy
     }
     
     updateDisplay() {
@@ -95,7 +93,7 @@ class LogDisplay {
     }
     
     formatLogForDisplay(log) {
-        // Format individual log entry with styling
+        // Format individual log entry with basic styling
     }
     
     copyLogsToClipboard() {
@@ -126,61 +124,53 @@ class LogDisplay {
 const LOG_STYLES = {
     error: { color: '#ff6b6b', icon: '❌' },
     warn: { color: '#ffa726', icon: '⚠️' },
-    info: { color: '#42a5f5', icon: 'ℹ️' },
-    log: { color: '#e0e0e0', icon: '📝' },
-    debug: { color: '#9e9e9e', icon: '🔍' }
+    info: { color: '#e0e0e0', icon: 'ℹ️' }
 };
 ```
 
 ## Error Handling
 
-### Console Interception Safety
-- Wrap console method overrides in try-catch blocks
-- Ensure original console functionality is never broken
-- Provide fallback if log capture fails
-- Gracefully handle circular references in logged objects
-
 ### Memory Management
-- Implement automatic log rotation when maxLogs is reached
 - Clear logs on userscript reload/reinitialize
-- Handle potential memory leaks from retained log objects
+- Keep log objects lightweight (just level, message, timestamp)
 
 ### UI Error Handling
 - Handle clipboard API failures gracefully
 - Provide fallback text selection if clipboard API unavailable
 - Manage DOM manipulation errors during log display updates
+- Handle edge cases with very long log messages
 
 ## Testing Strategy
 
-### Unit Testing Approach
+### Manual Testing Approach
 Since this is a userscript, testing will be done through:
 
-1. **Console Integration Tests**
-   - Verify all console methods are properly intercepted
-   - Test that original console functionality remains intact
-   - Validate log capture accuracy and formatting
+1. **Logger API Tests**
+   - Test Logger.log(), Logger.warn(), and Logger.error() functions
+   - Verify messages appear correctly in the control panel
+   - Test with various message types and lengths
 
 2. **UI Component Tests**
-   - Test log display rendering with various log types
+   - Test log display rendering with different log levels
    - Verify collapse/expand functionality
    - Test scrolling behavior with many logs
-   - Validate copy-to-clipboard functionality
+   - Validate clear functionality
+   - Test copy-to-clipboard functionality
 
 3. **Memory and Performance Tests**
-   - Test log rotation with maximum log limits
    - Verify memory cleanup on clear operations
-   - Test performance with high-frequency logging
+   - Test performance with frequent logging
 
 4. **Integration Tests**
    - Test compatibility with existing control panel functionality
    - Verify dragging works with expanded logs section
-   - Test initialization and cleanup during page navigation
+   - Test initialization during page load
 
 ### Manual Testing Scenarios
-- Generate various types of console messages
-- Test with existing GameInterface logging
+- Call Logger functions from different parts of the userscript
+- Test with rapid successive log calls
 - Verify functionality across different browsers
-- Test clipboard functionality with different content types
+- Test UI responsiveness with many log entries
 
 ## Implementation Notes
 
@@ -194,11 +184,10 @@ The logs section will extend the existing panel styles:
 ### Performance Considerations
 - Debounce log display updates to prevent excessive DOM manipulation
 - Use document fragments for efficient log entry rendering
-- Implement virtual scrolling if log volume becomes excessive
-- Minimize memory footprint of stored log objects
+- Keep log storage lightweight with simple objects
 
 ### Browser Compatibility
 - Use modern clipboard API with fallback for older browsers
-- Ensure console interception works across Chrome, Firefox, Safari, Edge
+- Use standard DOM APIs for maximum compatibility
 - Test backdrop-filter compatibility with logs section styling
 - Validate userscript manager compatibility (Tampermonkey, Greasemonkey, Violentmonkey)
