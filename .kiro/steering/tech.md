@@ -53,10 +53,13 @@ git push origin main
 ```
 
 ### Version Management
-- Update `@version` in userscript header for releases
-- Use branch-specific versions for testing (e.g., `1.0.0-feature-branch`)
-- Update version display in panel HTML
-- Update changelog in README.md
+- **Version Policy**: `1.minor.dev` format
+- **New feature branches**: Increment minor version (e.g., `1.0.0` -> `1.1.0`)
+- **Feature branch updates**: Increment dev version (e.g., `1.1.0` -> `1.1.1` -> `1.1.2`)
+- **Production releases**: Clean version format (e.g., `1.1.0`)
+- Use branch helper script: `node .kiro/scripts/branch-helper.js`
+- Update version display in panel HTML automatically
+- Update changelog in README.md for releases
 - Switch URLs between feature branch and main for testing vs production
 
 ## Browser Compatibility

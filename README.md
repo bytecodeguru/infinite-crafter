@@ -6,7 +6,7 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 
 - **Draggable Control Panel**: Moveable overlay positioned in the top-left corner
 - **Modern UI Design**: Semi-transparent background with blur effects and gradient styling
-- **Smart Version Display**: Automatically detects and displays development vs production versions with visual indicators
+- **Smart Version Display**: Automatically detects development vs production versions by analyzing both version format and script source URL
 - **GameInterface Foundation**: Complete API for game interaction and automation
 - **Element Detection & Analysis**: Automatically detects and analyzes all game elements
 - **Game State Monitoring**: Real-time detection of game ready/loading states
@@ -122,6 +122,7 @@ infinite-crafter/
 │   └── scripts/
 │       └── branch-helper.js       # Branch management utility
 ├── infinite-craft-helper.user.js  # Main userscript file
+├── test-version.js                # Version management testing utility
 └── README.md                      # This file
 ```
 
@@ -148,6 +149,25 @@ This command will:
 4. Commit and push the changes
 5. Display the installation URL for testing
 
+**Incrementing development version:**
+```bash
+node .kiro/scripts/branch-helper.js increment-dev
+```
+
+This command will:
+1. Increment the dev version number (e.g., `1.1.0` -> `1.1.1`)
+2. Only works on feature branches for safety
+
+**Auto-commit with version increment:**
+```bash
+node .kiro/scripts/branch-helper.js auto-commit
+```
+
+This command will:
+1. Increment the dev version automatically
+2. Commit and push changes to the current feature branch
+3. Useful for rapid iteration during development
+
 **Preparing for production release:**
 ```bash
 node .kiro/scripts/branch-helper.js prepare-release
@@ -155,8 +175,19 @@ node .kiro/scripts/branch-helper.js prepare-release
 
 This command will:
 1. Update userscript URLs back to the main branch
-2. Increment the version number for production
+2. Clean up version number for production
 3. Prepare files for final commit and merge
+
+**Testing version management:**
+```bash
+node test-version.js
+```
+
+This utility script will:
+1. Display current branch and version information
+2. Test version parsing and increment logic
+3. Validate branch type detection
+4. Useful for debugging version management issues
 
 #### Example Workflow
 
@@ -189,6 +220,9 @@ git push origin main
 - **Version Control**: Automatic version numbering for development and production
 - **Testing Workflow**: Easy installation of feature branches for testing
 - **Consistent Process**: Standardized workflow for all contributors
+- **Development Safety**: Version increment commands only work on feature branches
+- **Rapid Iteration**: Auto-commit feature for quick development cycles
+- **Debug Tools**: Test utilities for validating version management logic
 
 ### Adding New Features
 
@@ -255,12 +289,23 @@ Each element returned by the API includes:
 The script now includes intelligent version management that automatically handles development vs production versions:
 
 #### Automatic Version Detection
-- **Development versions**: Any version containing `-`, `dev`, or `test` (e.g., `1.0.1-feature-name`)
-- **Production versions**: Clean semantic versions (e.g., `1.0.2`)
+The system uses dual detection methods for maximum reliability:
+
+1. **Version Format Analysis**: Versions containing `-`, `dev`, or `test` (e.g., `1.0.1-feature-name`)
+2. **URL Source Detection**: Scripts loaded from feature branch URLs (`/feature/`, `/fix/`, `/refactor/`)
+
+**Development versions**: Triggered by either detection method
+**Production versions**: Clean semantic versions loaded from main branch (e.g., `1.0.2`)
 
 #### Visual Indicators
 - **Development versions**: Display full version with orange "DEV" tag and highlighted styling
 - **Production versions**: Clean "v1.0.2" format without special styling
+
+#### Branch-Based Detection Benefits
+- **Automatic**: No manual version editing required when switching branches
+- **Reliable**: Works even if version format doesn't include dev indicators
+- **Consistent**: Feature branches always show as development versions
+- **Safe**: Prevents accidental production releases from feature branches
 
 #### Updating Versions
 1. Update the `version` constant in the `getVersionInfo()` function
@@ -329,9 +374,11 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Changelog
 
-### v1.0.1-game-interface-foundation (Development)
+### v1.0.2-dev (Development)
 - **CURRENT DEVELOPMENT BRANCH**: `feature/game-interface-foundation`
-- **NEW**: Smart version management system with automatic dev/production detection
+- **NEW**: Enhanced version detection system that analyzes script source URL
+- **NEW**: Automatic development mode detection for feature branch installations
+- **NEW**: Smart version management with both version format and URL-based detection
 - **NEW**: Visual version indicators - "DEV" tag and orange styling for development versions
 - **NEW**: Dynamic version display formatting based on version type
 - **NEW**: Complete GameInterface class foundation for game interaction

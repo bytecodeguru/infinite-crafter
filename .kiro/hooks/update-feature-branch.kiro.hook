@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Update Feature Branch",
+  "description": "Automatically increments dev version, commits and pushes changes to the current feature branch when the userscript is modified",
+  "version": "1",
+  "when": {
+    "type": "fileSaved",
+    "patterns": [
+      "infinite-craft-helper.user.js"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The userscript file has been saved. If we're on a feature branch (not main), automatically handle version increment and commit:\n\n1. Check if we're currently on a feature branch (not main)\n2. If on a feature branch:\n   - Use the branch helper to increment the dev version (1.minor.dev format)\n   - Stage the userscript file\n   - Commit with version increment message\n   - Push to the feature branch\n   - Inform user of the new version and that Tampermonkey will auto-update\n3. If on main branch, warn user to create a feature branch first\n\nVersion Policy:\n- Feature branches use format: 1.minor.dev\n- Each save increments the dev number\n- Example: 1.1.0 -> 1.1.1 -> 1.1.2\n\nUse command: node .kiro/scripts/branch-helper.js auto-commit\n\nSafety Checks:\n- Only auto-commit if on a feature branch\n- Don't auto-commit if there are other staged changes\n- Provide clear feedback about version increment and commit"
+  }
+}
