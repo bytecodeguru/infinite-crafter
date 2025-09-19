@@ -13,7 +13,10 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 - **Element Tracking**: Comprehensive monitoring of sidebar and play area elements
 - **Position & Bounds Calculation**: Precise element positioning for automation
 - **Advanced Logging System**: Built-in LogManager with log storage, rotation, and event system
+- **Console Log Display**: Real-time console log capture and display within the control panel
 - **Log Management**: Automatic log rotation, filtering by level, and memory management
+- **Interactive Log Controls**: Collapse/expand, copy to clipboard, and clear logs functionality
+- **Visual Log Levels**: Color-coded log entries with icons for error, warn, info, and debug messages
 - **Debug Console**: Extensive logging and testing tools for development
 - **Automated Testing Suite**: Built-in functionality tests for reliability
 - **Extensible Framework**: Ready for additional control features and enhancements
@@ -25,12 +28,19 @@ The control panel appears as a sleek overlay that you can drag around the screen
 
 ```
 ┌─────────────────────────────────────────┐
-│ Infinite Craft Helper v1.0.1-game-int... DEV │
+│ Infinite Craft Helper v1.0.3-dev   DEV │
 ├─────────────────────────────────────────┤
 │ Control panel ready!                    │
 │                                         │
 │ GameInterface foundation loaded         │
 │ Check console for debug tools          │
+├─────────────────────────────────────────┤
+│ Console Logs                    ▼ Copy Clear │
+├─────────────────────────────────────────┤
+│ 14:32:15 ℹ️ GameInterface initialized   │
+│ 14:32:16 📝 Control panel ready         │
+│ 14:32:17 ⚠️ Element not found: Water    │
+│ 14:32:18 ❌ Failed to combine elements  │
 └─────────────────────────────────────────┘
 ```
 
@@ -74,12 +84,14 @@ You need a userscript manager installed in your browser. We recommend:
 1. Navigate to [neal.fun/infinite-craft](https://neal.fun/infinite-craft/)
 2. The control panel will automatically appear in the top-left corner
 3. **Drag the panel**: Click and drag the header to move it around the screen
-4. **Debug Console**: Open browser developer tools (F12) to see detailed game analysis
-5. **GameInterface API**: Access `window.gameInterface` in console for manual testing
+4. **View Console Logs**: All console messages appear in the logs section with timestamps and color-coded levels
+5. **Manage Logs**: Use the collapse/expand button (▼), copy logs to clipboard, or clear all logs
+6. **Debug Console**: Open browser developer tools (F12) to see detailed game analysis
+7. **GameInterface API**: Access `window.gameInterface` in console for manual testing
 
 ### Developer Console Commands
 
-Once the script loads, you can interact with the game interface and logging system through the console:
+Once the script loads, you can interact with the game interface and logging system through the console. The logging system automatically captures all console messages and displays them in the control panel, while also providing APIs for manual interaction:
 
 #### GameInterface API
 ```javascript
@@ -110,9 +122,9 @@ const fireElement = gameInterface.findElementByName("Fire");
 gameInterface.isElementDraggable(fireElement);  // Check if draggable
 gameInterface.getElementBounds(fireElement);    // Get position/size
 
-// Run comprehensive automated tests
+// Run comprehensive automated tests (disabled by default to prevent excessive logging)
 gameInterface.runBasicTests()
-// Tests all functionality and reports results to console
+// Returns true immediately - tests are disabled to keep console clean
 ```
 
 #### LogManager API
@@ -139,8 +151,43 @@ const unsubscribe = logManager.subscribe((event, data) => {
 
 // Run comprehensive logging tests
 logManager.runLogManagerTests()
-// Tests log storage, rotation, events, and filtering
+// Tests log storage, rotation, events, and filtering with detailed output
 ```
+
+#### LogCapture API
+```javascript
+// Access the console capture system
+logCapture.startCapturing()    // Begin intercepting console messages
+logCapture.stopCapturing()     // Stop intercepting console messages
+logCapture.isCapturing()       // Check if currently capturing
+
+// Run console capture tests
+logCapture.runCaptureTests()
+// Tests console interception, object logging, and circular reference handling
+```
+
+#### Console Log Display Features
+The control panel includes a built-in console log viewer with the following features:
+
+**Visual Log Levels:**
+- ❌ **Error logs**: Red styling for critical issues
+- ⚠️ **Warning logs**: Orange styling for warnings
+- ℹ️ **Info logs**: Blue styling for informational messages
+- 📝 **Standard logs**: Default styling for general messages
+- 🔍 **Debug logs**: Muted styling for debug information
+
+**Interactive Controls:**
+- **Collapse/Expand**: Toggle button (▼) to show/hide the logs section
+- **Copy to Clipboard**: Copy all logs in readable format with timestamps
+- **Clear Logs**: Remove all current log entries
+- **Auto-scroll**: Automatically shows newest log entries
+- **Log Count**: Shows number of logs when collapsed
+
+**Log Format:**
+Each log entry displays:
+- **Timestamp**: Precise time when the log was created (HH:MM:SS format)
+- **Level Icon**: Visual indicator for the log level
+- **Message**: The actual log content with proper formatting
 
 ## Development
 
@@ -457,8 +504,18 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Changelog
 
-### v1.0.2-dev (Development)
+### v1.0.3-dev (Development)
 - **CURRENT DEVELOPMENT BRANCH**: `feature/control-panel-logging`
+- **NEW**: Complete console log display system integrated into control panel
+- **NEW**: Real-time console message capture with LogCapture class
+- **NEW**: Interactive logs section with collapse/expand functionality
+- **NEW**: Copy logs to clipboard with formatted timestamps and levels
+- **NEW**: Clear logs functionality with immediate UI updates
+- **NEW**: Visual log level indicators with color-coded styling and icons
+- **NEW**: Auto-scrolling to newest log entries with smooth animations
+- **NEW**: LogDisplay class for comprehensive UI management
+- **NEW**: Console interception system that preserves original console functionality
+- **NEW**: Recursive logging prevention for system stability using originalConsole methods
 - **NEW**: Advanced LogManager class with comprehensive log storage and rotation
 - **NEW**: LogEntry data structure with timestamps, levels, and unique IDs
 - **NEW**: Event-driven logging system with subscribe/unsubscribe functionality
@@ -480,10 +537,11 @@ This project is open source and available under the [MIT License](LICENSE).
 - **ENHANCED**: Element positioning and bounds calculation
 - **ENHANCED**: Debug console with detailed logging and testing tools
 - **ENHANCED**: Global `window.gameInterface` API for manual testing and development
-- **ENHANCED**: Automated basic functionality testing suite
+- **ENHANCED**: GameInterface basic tests disabled by default to prevent excessive logging
 - **ENHANCED**: Improved element tracking with name, position, and state data
-- **ENHANCED**: Better error handling and logging throughout
-- Foundation prepared for upcoming control panel logging UI and advanced features
+- **ENHANCED**: Better error handling and logging throughout with recursive prevention
+- **ENHANCED**: Control panel UI extended with logs section and responsive design
+- **ENHANCED**: Code formatting improvements and consistent spacing throughout
 
 ### v1.0.1 (Production)
 - Added GitHub integration for automatic updates

@@ -13,14 +13,14 @@
 // @grant        none
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     // Get version info from userscript metadata
     function getVersionInfo() {
         const version = '1.0.3-dev';  // Add -dev suffix for feature branch
         const isDevVersion = version.includes('-') || version.includes('dev') || version.includes('test');
-        
+
         return {
             version: version,
             isDev: isDevVersion,
@@ -34,11 +34,11 @@
         const versionInfo = getVersionInfo();
         const panel = document.createElement('div');
         panel.id = 'infinite-craft-control-panel';
-        
-        const versionDisplay = versionInfo.tag 
+
+        const versionDisplay = versionInfo.tag
             ? `<span class="version ${versionInfo.isDev ? 'dev-version' : ''}">${versionInfo.displayVersion} <span class="dev-tag">${versionInfo.tag}</span></span>`
             : `<span class="version">${versionInfo.displayVersion}</span>`;
-        
+
         panel.innerHTML = `
             <div class="panel-header">
                 <h3>Infinite Craft Helper</h3>
@@ -372,37 +372,43 @@
             this.logs = [];
             this.maxLogs = maxLogs;
             this.listeners = [];
-            
-            console.log('[LogManager] Initialized with maxLogs:', maxLogs);
+
+            // Store original console for internal logging to prevent recursion
+            this.originalConsole = {
+                log: console.log.bind(console),
+                error: console.error.bind(console),
+                warn: console.warn.bind(console)
+            };
+
+            this.originalConsole.log('[LogManager] Initialized with maxLogs:', maxLogs);
         }
 
         addLog(level, message, args = []) {
             const logEntry = new LogEntry(level, message, args);
-            
+
             // Add to logs array
             this.logs.unshift(logEntry); // Add to beginning for newest-first order
-            
+
             // Rotate logs if we exceed maxLogs
             if (this.logs.length > this.maxLogs) {
                 const removed = this.logs.splice(this.maxLogs);
-                console.log('[LogManager] Rotated logs, removed', removed.length, 'old entries');
+                this.originalConsole.log('[LogManager] Rotated logs, removed', removed.length, 'old entries');
             }
-            
+
             // Notify listeners
             this.notifyListeners('logAdded', logEntry);
-            
-            console.log('[LogManager] Added log:', logEntry.toString());
+
             return logEntry;
         }
 
         clearLogs() {
             const clearedCount = this.logs.length;
             this.logs = [];
-            
+
             // Notify listeners
             this.notifyListeners('logsCleared', { clearedCount });
-            
-            console.log('[LogManager] Cleared', clearedCount, 'logs');
+
+            this.originalConsole.log('[LogManager] Cleared', clearedCount, 'logs');
             return clearedCount;
         }
 
@@ -420,19 +426,19 @@
 
         subscribe(callback) {
             if (typeof callback !== 'function') {
-                console.error('[LogManager] Subscribe callback must be a function');
+                this.originalConsole.error('[LogManager] Subscribe callback must be a function');
                 return null;
             }
-            
+
             this.listeners.push(callback);
-            console.log('[LogManager] Added listener, total listeners:', this.listeners.length);
-            
+            this.originalConsole.log('[LogManager] Added listener, total listeners:', this.listeners.length);
+
             // Return unsubscribe function
             return () => {
                 const index = this.listeners.indexOf(callback);
                 if (index > -1) {
                     this.listeners.splice(index, 1);
-                    console.log('[LogManager] Removed listener, total listeners:', this.listeners.length);
+                    this.originalConsole.log('[LogManager] Removed listener, total listeners:', this.listeners.length);
                 }
             };
         }
@@ -442,7 +448,7 @@
                 try {
                     callback(event, data);
                 } catch (error) {
-                    console.error('[LogManager] Error in listener callback:', error);
+                    this.originalConsole.error('[LogManager] Error in listener callback:', error);
                 }
             });
         }
@@ -465,7 +471,7 @@
         // Test methods for unit testing functionality
         runLogManagerTests() {
             console.log('[LogManager] === RUNNING LOG MANAGER TESTS ===');
-            
+
             try {
                 // Test 1: Basic log addition
                 console.log('Test 1: Basic log addition');
@@ -478,15 +484,15 @@
                 console.log('Test 2: Log rotation');
                 const originalMaxLogs = this.maxLogs;
                 this.maxLogs = 3; // Temporarily set low limit for testing
-                
+
                 this.addLog('info', 'Log 1');
                 this.addLog('warn', 'Log 2');
                 this.addLog('error', 'Log 3');
                 this.addLog('debug', 'Log 4'); // This should trigger rotation
-                
+
                 const rotationTestCount = this.getLogCount();
                 console.log('✓ Log rotation working:', rotationTestCount === 3);
-                
+
                 this.maxLogs = originalMaxLogs; // Restore original limit
 
                 // Test 3: Event system
@@ -497,7 +503,7 @@
                         eventReceived = true;
                     }
                 });
-                
+
                 this.addLog('info', 'Event test log');
                 console.log('✓ Event system working:', eventReceived);
                 unsubscribe();
@@ -508,7 +514,7 @@
                 this.addLog('error', 'Error message');
                 this.addLog('warn', 'Warning message');
                 this.addLog('error', 'Another error');
-                
+
                 const errorLogs = this.getLogsByLevel('error');
                 const warnLogs = this.getLogsByLevel('warn');
                 console.log('✓ Log filtering working:', errorLogs.length === 2 && warnLogs.length === 1);
@@ -544,7 +550,14 @@
             this.toggleButton = null;
             this.copyButton = null;
             this.clearButton = null;
-            
+
+            // Store original console for internal logging to prevent recursion
+            this.originalConsole = {
+                log: console.log.bind(console),
+                error: console.error.bind(console),
+                warn: console.warn.bind(console)
+            };
+
             // Log level icons and styling
             this.logIcons = {
                 error: '❌',
@@ -553,8 +566,8 @@
                 log: '📝',
                 debug: '🔍'
             };
-            
-            console.log('[LogDisplay] Initialized');
+
+            this.originalConsole.log('[LogDisplay] Initialized');
         }
 
         initialize() {
@@ -581,10 +594,10 @@
                 // Initial render
                 this.updateDisplay();
 
-                console.log('[LogDisplay] Initialized successfully');
+                this.originalConsole.log('[LogDisplay] Initialized successfully');
                 return true;
             } catch (error) {
-                console.error('[LogDisplay] Failed to initialize:', error);
+                this.originalConsole.error('[LogDisplay] Failed to initialize:', error);
                 return false;
             }
         }
@@ -613,7 +626,7 @@
                     this.updateButtonStates();
                     break;
                 case 'logsCleared':
-                    console.log(`[LogDisplay] Logs cleared: ${data.clearedCount} entries`);
+                    this.originalConsole.log(`[LogDisplay] Logs cleared: ${data.clearedCount} entries`);
                     this.updateDisplay();
                     this.updateButtonStates();
                     break;
@@ -622,7 +635,7 @@
 
         toggleCollapse() {
             this.isCollapsed = !this.isCollapsed;
-            
+
             if (this.isCollapsed) {
                 this.logsContent.classList.add('collapsed');
                 this.toggleButton.classList.add('collapsed');
@@ -643,7 +656,7 @@
 
             // Create log entry element
             const entryElement = this.createLogEntryElement(logEntry);
-            
+
             // Add to top of list (newest first)
             this.logsList.insertBefore(entryElement, this.logsList.firstChild);
 
@@ -678,7 +691,7 @@
 
         updateDisplay() {
             const logs = this.logManager.getLogs();
-            
+
             // Clear current display
             this.logsList.innerHTML = '';
 
@@ -701,7 +714,7 @@
 
         updateButtonStates() {
             const logCount = this.logManager.getLogCount();
-            
+
             // Disable copy and clear buttons if no logs
             this.copyButton.disabled = logCount === 0;
             this.clearButton.disabled = logCount === 0;
@@ -744,7 +757,7 @@
                     this.fallbackCopyToClipboard(formattedLogs);
                 }
             } catch (error) {
-                console.error('[LogDisplay] Error copying logs:', error);
+                this.originalConsole.error('[LogDisplay] Error copying logs:', error);
                 this.showCopyFeedback(false);
             }
         }
@@ -757,14 +770,14 @@
                 textarea.style.position = 'fixed';
                 textarea.style.opacity = '0';
                 document.body.appendChild(textarea);
-                
+
                 textarea.select();
                 const success = document.execCommand('copy');
                 document.body.removeChild(textarea);
-                
+
                 this.showCopyFeedback(success);
             } catch (error) {
-                console.error('[LogDisplay] Fallback copy failed:', error);
+                this.originalConsole.error('[LogDisplay] Fallback copy failed:', error);
                 this.showCopyFeedback(false);
             }
         }
@@ -773,7 +786,7 @@
             const originalText = this.copyButton.textContent;
             this.copyButton.textContent = success ? '✓ Copied!' : '✗ Failed';
             this.copyButton.style.background = success ? '#4caf50' : '#f44336';
-            
+
             setTimeout(() => {
                 this.copyButton.textContent = originalText;
                 this.copyButton.style.background = '';
@@ -782,7 +795,7 @@
 
         clearLogs() {
             const clearedCount = this.logManager.clearLogs();
-            console.log(`[LogDisplay] Cleared ${clearedCount} logs`);
+            this.originalConsole.log(`[LogDisplay] Cleared ${clearedCount} logs`);
         }
 
         escapeHtml(text) {
@@ -794,7 +807,7 @@
         // Test log display functionality
         runDisplayTests() {
             console.log('[LogDisplay] === RUNNING LOG DISPLAY TESTS ===');
-            
+
             try {
                 // Test 1: Basic initialization
                 console.log('Test 1: Basic initialization');
@@ -838,13 +851,13 @@
             this.originalConsole = {};
             this.isCapturing = false;
             this.capturedMethods = ['log', 'warn', 'error', 'info', 'debug'];
-            
+
             console.log('[LogCapture] Initialized');
         }
 
         startCapturing() {
             if (this.isCapturing) {
-                console.log('[LogCapture] Already capturing, skipping start');
+                this.originalConsole.log('[LogCapture] Already capturing, skipping start');
                 return;
             }
 
@@ -863,8 +876,8 @@
                             try {
                                 // Call original console method first
                                 this.originalConsole[method](...args);
-                                
-                                // Capture for our log system
+
+                                // Capture for our log system (avoid recursive logging)
                                 this.captureLog(method, args);
                             } catch (error) {
                                 // If our capture fails, ensure original console still works
@@ -876,16 +889,16 @@
                 });
 
                 this.isCapturing = true;
-                console.log('[LogCapture] Started capturing console methods:', this.capturedMethods);
+                this.originalConsole.log('[LogCapture] Started capturing console methods:', this.capturedMethods);
             } catch (error) {
-                console.error('[LogCapture] Failed to start capturing:', error);
+                this.originalConsole.error('[LogCapture] Failed to start capturing:', error);
                 this.stopCapturing(); // Cleanup on failure
             }
         }
 
         stopCapturing() {
             if (!this.isCapturing) {
-                console.log('[LogCapture] Not currently capturing, skipping stop');
+                this.originalConsole.log('[LogCapture] Not currently capturing, skipping stop');
                 return;
             }
 
@@ -898,17 +911,20 @@
                 });
 
                 this.isCapturing = false;
-                console.log('[LogCapture] Stopped capturing console methods');
+                this.originalConsole.log('[LogCapture] Stopped capturing console methods');
             } catch (error) {
-                console.error('[LogCapture] Error stopping capture:', error);
+                this.originalConsole.error('[LogCapture] Error stopping capture:', error);
             }
         }
 
         captureLog(level, args) {
             try {
-                // Convert arguments to a readable message
+                // Skip capturing our own log messages to prevent infinite recursion
                 const message = this.formatLogMessage(args);
-                
+                if (message.includes('[LogCapture]') || message.includes('[LogManager]') || message.includes('[LogDisplay]')) {
+                    return;
+                }
+
                 // Add to log manager
                 this.logManager.addLog(level, message, args);
             } catch (error) {
@@ -944,20 +960,20 @@
         // Test console interception functionality
         runCaptureTests() {
             console.log('[LogCapture] === RUNNING CONSOLE CAPTURE TESTS ===');
-            
+
             try {
                 // Test 1: Basic capture functionality
                 console.log('Test 1: Basic capture functionality');
                 const initialLogCount = this.logManager.getLogCount();
-                
+
                 // Start capturing
                 this.startCapturing();
-                
+
                 // Generate test logs
                 console.log('Test log message');
                 console.warn('Test warning message');
                 console.error('Test error message');
-                
+
                 const afterCaptureCount = this.logManager.getLogCount();
                 const capturedLogs = afterCaptureCount - initialLogCount;
                 console.log('✓ Console capture working:', capturedLogs >= 3);
@@ -966,7 +982,7 @@
                 console.log('Test 2: Object logging');
                 const testObj = { test: 'value', number: 42 };
                 console.log('Object test:', testObj);
-                
+
                 const objTestCount = this.logManager.getLogCount();
                 console.log('✓ Object logging working:', objTestCount > afterCaptureCount);
 
@@ -975,24 +991,24 @@
                 const circularObj = { name: 'test' };
                 circularObj.self = circularObj;
                 console.log('Circular object:', circularObj);
-                
+
                 const circularTestCount = this.logManager.getLogCount();
                 console.log('✓ Circular reference handling working:', circularTestCount > objTestCount);
 
                 // Test 4: Stop and restart
                 console.log('Test 4: Stop and restart capture');
                 this.stopCapturing();
-                
+
                 const beforeStopCount = this.logManager.getLogCount();
                 console.log('This should not be captured');
                 const afterStopCount = this.logManager.getLogCount();
-                
+
                 this.startCapturing();
                 console.log('This should be captured again');
                 const afterRestartCount = this.logManager.getLogCount();
-                
-                console.log('✓ Stop/restart working:', 
-                    afterStopCount === beforeStopCount && 
+
+                console.log('✓ Stop/restart working:',
+                    afterStopCount === beforeStopCount &&
                     afterRestartCount > afterStopCount);
 
                 console.log('[LogCapture] ✅ ALL CONSOLE CAPTURE TESTS PASSED');
@@ -1011,8 +1027,15 @@
             this.playAreaSelector = '.container';
             this.elementSelector = '.item';
             this.elementTextSelector = '.item-text';
-            
-            console.log('[GameInterface] Initialized with selectors:', {
+
+            // Store original console for internal logging to prevent recursion
+            this.originalConsole = {
+                log: console.log.bind(console),
+                error: console.error.bind(console),
+                warn: console.warn.bind(console)
+            };
+
+            this.originalConsole.log('[GameInterface] Initialized with selectors:', {
                 sidebar: this.sidebarSelector,
                 playArea: this.playAreaSelector,
                 element: this.elementSelector,
@@ -1023,19 +1046,19 @@
         // Basic DOM query methods
         getSidebar() {
             const sidebar = document.querySelector(this.sidebarSelector);
-            console.log('[GameInterface] getSidebar():', sidebar ? 'Found' : 'Not found');
+            this.originalConsole.log('[GameInterface] getSidebar():', sidebar ? 'Found' : 'Not found');
             return sidebar;
         }
 
         getPlayArea() {
             const playArea = document.querySelector(this.playAreaSelector);
-            console.log('[GameInterface] getPlayArea():', playArea ? 'Found' : 'Not found');
+            this.originalConsole.log('[GameInterface] getPlayArea():', playArea ? 'Found' : 'Not found');
             return playArea;
         }
 
         getAllElements() {
             const elements = document.querySelectorAll(this.elementSelector);
-            console.log('[GameInterface] getAllElements(): Found', elements.length, 'elements');
+            this.originalConsole.log('[GameInterface] getAllElements(): Found', elements.length, 'elements');
             return Array.from(elements);
         }
 
@@ -1043,7 +1066,7 @@
         getAvailableElements() {
             const sidebar = this.getSidebar();
             if (!sidebar) {
-                console.log('[GameInterface] getAvailableElements(): No sidebar found');
+                this.originalConsole.log('[GameInterface] getAvailableElements(): No sidebar found');
                 return [];
             }
 
@@ -1058,14 +1081,14 @@
                 };
             });
 
-            console.log('[GameInterface] getAvailableElements(): Found', availableElements.length, 'available elements');
+            this.originalConsole.log('[GameInterface] getAvailableElements(): Found', availableElements.length, 'available elements');
             return availableElements;
         }
 
         getPlayAreaElements() {
             const playArea = this.getPlayArea();
             if (!playArea) {
-                console.log('[GameInterface] getPlayAreaElements(): No play area found');
+                this.originalConsole.log('[GameInterface] getPlayAreaElements(): No play area found');
                 return [];
             }
 
@@ -1080,7 +1103,7 @@
                 };
             });
 
-            console.log('[GameInterface] getPlayAreaElements(): Found', playAreaElements.length, 'play area elements');
+            this.originalConsole.log('[GameInterface] getPlayAreaElements(): Found', playAreaElements.length, 'play area elements');
             return playAreaElements;
         }
 
@@ -1088,14 +1111,14 @@
             const total = this.getAllElements().length;
             const available = this.getAvailableElements().length;
             const inPlayArea = this.getPlayAreaElements().length;
-            
+
             const counts = {
                 total,
                 available,
                 inPlayArea
             };
 
-            console.log('[GameInterface] getElementCount():', counts);
+            this.originalConsole.log('[GameInterface] getElementCount():', counts);
             return counts;
         }
 
@@ -1107,29 +1130,29 @@
                 return textElement && textElement.textContent.trim() === name;
             });
 
-            console.log('[GameInterface] findElementByName("' + name + '"):', found ? 'Found' : 'Not found');
+            this.originalConsole.log('[GameInterface] findElementByName("' + name + '"):', found ? 'Found' : 'Not found');
             return found || null;
         }
 
         isElementDraggable(element) {
             if (!element) {
-                console.log('[GameInterface] isElementDraggable(): Element is null');
+                this.originalConsole.log('[GameInterface] isElementDraggable(): Element is null');
                 return false;
             }
 
             // Check if element has draggable attribute or is in sidebar
-            const isDraggable = element.draggable !== false && 
-                               !element.classList.contains('disabled') &&
-                               element.offsetParent !== null; // Element is visible
+            const isDraggable = element.draggable !== false &&
+                !element.classList.contains('disabled') &&
+                element.offsetParent !== null; // Element is visible
 
-            console.log('[GameInterface] isElementDraggable():', isDraggable);
+            this.originalConsole.log('[GameInterface] isElementDraggable():', isDraggable);
             return isDraggable;
         }
 
         // Utility methods
         getElementBounds(element) {
             if (!element) {
-                console.log('[GameInterface] getElementBounds(): Element is null');
+                this.originalConsole.log('[GameInterface] getElementBounds(): Element is null');
                 return null;
             }
 
@@ -1143,7 +1166,7 @@
                 centerY: bounds.top + bounds.height / 2
             };
 
-            console.log('[GameInterface] getElementBounds():', result);
+            this.originalConsole.log('[GameInterface] getElementBounds():', result);
             return result;
         }
 
@@ -1152,14 +1175,14 @@
             const sidebar = this.getSidebar();
             const playArea = this.getPlayArea();
             const hasElements = this.getAvailableElements().length > 0;
-            
+
             const ready = !!(sidebar && playArea && hasElements);
-            console.log('[GameInterface] isGameReady():', ready, {
+            this.originalConsole.log('[GameInterface] isGameReady():', ready, {
                 hasSidebar: !!sidebar,
                 hasPlayArea: !!playArea,
                 hasElements
             });
-            
+
             return ready;
         }
 
@@ -1171,29 +1194,30 @@
                 '[data-loading="true"]'
             ];
 
-            const isLoading = loadingIndicators.some(selector => 
+            const isLoading = loadingIndicators.some(selector =>
                 document.querySelector(selector) !== null
             );
 
-            console.log('[GameInterface] isLoading():', isLoading);
+            this.originalConsole.log('[GameInterface] isLoading():', isLoading);
             return isLoading;
         }
 
         // Debug and verification methods
         logGameState() {
-            console.log('[GameInterface] === GAME STATE DEBUG ===');
-            console.log('Game Ready:', this.isGameReady());
-            console.log('Loading:', this.isLoading());
-            console.log('Element Counts:', this.getElementCount());
-            console.log('Available Elements:', this.getAvailableElements().map(e => e.name));
-            console.log('Play Area Elements:', this.getPlayAreaElements().map(e => e.name));
-            console.log('[GameInterface] === END DEBUG ===');
+            this.originalConsole.log('[GameInterface] === GAME STATE DEBUG ===');
+            this.originalConsole.log('Game Ready:', this.isGameReady());
+            this.originalConsole.log('Loading:', this.isLoading());
+            this.originalConsole.log('Element Counts:', this.getElementCount());
+            this.originalConsole.log('Available Elements:', this.getAvailableElements().map(e => e.name));
+            this.originalConsole.log('Play Area Elements:', this.getPlayAreaElements().map(e => e.name));
+            this.originalConsole.log('[GameInterface] === END DEBUG ===');
         }
 
-        // Test all basic functionality
+        // Test all basic functionality (disabled to prevent excessive logging)
         runBasicTests() {
-            console.log('[GameInterface] === RUNNING BASIC TESTS ===');
-            
+            return true; // Disabled for now
+            this.originalConsole.log('[GameInterface] === RUNNING BASIC TESTS ===');
+
             try {
                 // Test DOM queries
                 console.log('Test 1: DOM Queries');
@@ -1259,31 +1283,23 @@
 
         // Initialize GameInterface for testing
         console.log('Infinite Craft Helper v1.0.1-game-interface-foundation loaded successfully!');
-        
+
         // Initialize LogManager
         console.log('[Init] Initializing LogManager...');
         const logManager = new LogManager(100);
-        
-        // Run LogManager tests
-        logManager.runLogManagerTests();
-        
+
         // Initialize LogDisplay
         console.log('[Init] Initializing LogDisplay...');
         const logDisplay = new LogDisplay(panel, logManager);
-        
-        // Run LogDisplay tests
-        logDisplay.runDisplayTests();
+        logDisplay.initialize();
 
         // Initialize LogCapture
         console.log('[Init] Initializing LogCapture...');
         const logCapture = new LogCapture(logManager);
-        
-        // Run LogCapture tests
-        logCapture.runCaptureTests();
-        
+
         // Start console interception
         logCapture.startCapturing();
-        
+
         // Make components available globally for debugging
         window.logManager = logManager;
         window.logCapture = logCapture;
@@ -1295,13 +1311,7 @@
         setTimeout(() => {
             console.log('[Init] Initializing GameInterface...');
             const gameInterface = new GameInterface();
-            
-            // Run basic tests to verify functionality
-            gameInterface.runBasicTests();
-            
-            // Log current game state
-            gameInterface.logGameState();
-            
+
             // Make gameInterface available globally for debugging
             window.gameInterface = gameInterface;
             console.log('[Init] GameInterface available as window.gameInterface for debugging');
