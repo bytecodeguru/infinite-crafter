@@ -16,14 +16,33 @@
 (function() {
     'use strict';
 
+    // Get version info from userscript metadata
+    function getVersionInfo() {
+        const version = '1.0.1-game-interface-foundation';
+        const isDevVersion = version.includes('-') || version.includes('dev') || version.includes('test');
+        
+        return {
+            version: version,
+            isDev: isDevVersion,
+            displayVersion: isDevVersion ? version : `v${version}`,
+            tag: isDevVersion ? 'DEV' : null
+        };
+    }
+
     // Create the overlay control panel
     function createControlPanel() {
+        const versionInfo = getVersionInfo();
         const panel = document.createElement('div');
         panel.id = 'infinite-craft-control-panel';
+        
+        const versionDisplay = versionInfo.tag 
+            ? `<span class="version ${versionInfo.isDev ? 'dev-version' : ''}">${versionInfo.displayVersion} <span class="dev-tag">${versionInfo.tag}</span></span>`
+            : `<span class="version">${versionInfo.displayVersion}</span>`;
+        
         panel.innerHTML = `
             <div class="panel-header">
                 <h3>Infinite Craft Helper</h3>
-                <span class="version">v1.0.1</span>
+                ${versionDisplay}
             </div>
             <div class="panel-content">
                 <p>Control panel ready!</p>
@@ -76,6 +95,30 @@
                 border-radius: 12px;
                 font-size: 12px;
                 font-weight: bold;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            #infinite-craft-control-panel .version.dev-version {
+                background: rgba(255, 165, 0, 0.3);
+                border: 1px solid rgba(255, 165, 0, 0.5);
+            }
+
+            #infinite-craft-control-panel .dev-tag {
+                background: #ff6b35;
+                color: white;
+                padding: 1px 6px;
+                border-radius: 8px;
+                font-size: 10px;
+                font-weight: bold;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
             }
 
             #infinite-craft-control-panel .panel-content {
@@ -390,7 +433,7 @@
         makeDraggable(panel);
 
         // Initialize GameInterface for testing
-        console.log('Infinite Craft Helper v1.0.1 loaded successfully!');
+        console.log('Infinite Craft Helper v1.0.1-game-interface-foundation loaded successfully!');
         
         // Wait a moment for the game to fully load, then initialize GameInterface
         setTimeout(() => {
