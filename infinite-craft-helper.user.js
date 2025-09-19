@@ -1,11 +1,15 @@
 // ==UserScript==
 // @name         Infinite Craft Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Control panel overlay for Infinite Craft
 // @author       You
 // @match        https://neal.fun/infinite-craft/*
 // @match        https://neal.fun/infinite-craft
+// @updateURL    https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js
+// @supportURL   https://github.com/bytecodeguru/infinite-crafter/issues
+// @homepageURL  https://github.com/bytecodeguru/infinite-crafter
 // @grant        none
 // ==/UserScript==
 
@@ -19,7 +23,7 @@
         panel.innerHTML = `
             <div class="panel-header">
                 <h3>Infinite Craft Helper</h3>
-                <span class="version">v1.0.0</span>
+                <span class="version">v1.0.1</span>
             </div>
             <div class="panel-content">
                 <p>Control panel ready!</p>
@@ -150,7 +154,7 @@
         // Make it draggable
         makeDraggable(panel);
 
-        console.log('Infinite Craft Helper v1.0.0 loaded successfully!');
+        console.log('Infinite Craft Helper v1.0.1 loaded successfully!');
     }
 
     // Start the script
