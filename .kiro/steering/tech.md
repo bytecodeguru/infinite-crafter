@@ -18,28 +18,46 @@
 
 ## Development Workflow
 
+### Branch Strategy
+- **main**: Production-ready releases only
+- **feature branches**: All development work (e.g., `feature/auto-play`, `feature/ui-improvements`)
+- **testing**: Use feature branch URLs for Tampermonkey testing
+
 ### Testing
 ```bash
-# No automated testing - manual browser testing required
-# 1. Install script in Tampermonkey
-# 2. Navigate to https://neal.fun/infinite-craft/
-# 3. Verify control panel appears and is draggable
+# 1. Create feature branch
+git checkout -b feature/your-feature-name
+
+# 2. Update userscript to point to feature branch
+# Modify @updateURL and @downloadURL in userscript header
+
+# 3. Install/update script in Tampermonkey
+# 4. Navigate to https://neal.fun/infinite-craft/
+# 5. Verify functionality works as expected
 ```
 
 ### Deployment
 ```bash
-# Update version in userscript header
-# Commit and push to main branch
+# Feature development
+git checkout -b feature/feature-name
+# Make changes, test with feature branch URL
 git add .
-git commit -m "Update to v1.0.x"
+git commit -m "Implement feature-name"
+git push origin feature/feature-name
+
+# When ready for production
+git checkout main
+git merge feature/feature-name
 git push origin main
-# Users receive automatic updates via Tampermonkey
+# Update userscript URLs back to main branch
 ```
 
 ### Version Management
-- Update `@version` in userscript header
+- Update `@version` in userscript header for releases
+- Use branch-specific versions for testing (e.g., `1.0.0-feature-branch`)
 - Update version display in panel HTML
 - Update changelog in README.md
+- Switch URLs between feature branch and main for testing vs production
 
 ## Browser Compatibility
 - Chrome, Firefox, Safari, Edge with userscript manager

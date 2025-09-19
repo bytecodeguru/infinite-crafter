@@ -7,6 +7,9 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 - **Draggable Control Panel**: Moveable overlay positioned in the top-left corner
 - **Modern UI Design**: Semi-transparent background with blur effects and gradient styling
 - **Version Display**: Shows current script version in the panel header
+- **Game Interface Detection**: Automatically detects and analyzes game elements and state
+- **Element Tracking**: Monitors available elements in sidebar and play area
+- **Debug Console**: Comprehensive logging and testing tools for development
 - **Extensible Framework**: Ready for additional control features and enhancements
 - **Automatic Updates**: Seamless updates via GitHub integration
 
@@ -54,7 +57,29 @@ You need a userscript manager installed in your browser. We recommend:
 1. Navigate to [neal.fun/infinite-craft](https://neal.fun/infinite-craft/)
 2. The control panel will automatically appear in the top-left corner
 3. **Drag the panel**: Click and drag the header to move it around the screen
-4. The panel is ready for future enhancements and controls
+4. **Debug Console**: Open browser developer tools (F12) to see detailed game analysis
+5. **GameInterface API**: Access `window.gameInterface` in console for manual testing
+
+### Developer Console Commands
+
+Once the script loads, you can interact with the game interface through the console:
+
+```javascript
+// Get current game state
+gameInterface.logGameState()
+
+// Count elements
+gameInterface.getElementCount()
+
+// Find specific elements
+gameInterface.findElementByName("Fire")
+
+// Get all available elements
+gameInterface.getAvailableElements()
+
+// Run comprehensive tests
+gameInterface.runBasicTests()
+```
 
 ## Development
 
@@ -62,9 +87,77 @@ You need a userscript manager installed in your browser. We recommend:
 
 ```
 infinite-crafter/
+├── .kiro/
+│   └── scripts/
+│       └── branch-helper.js       # Branch management utility
 ├── infinite-craft-helper.user.js  # Main userscript file
 └── README.md                      # This file
 ```
+
+### Branch Helper Utility
+
+The project includes a Node.js utility script to streamline branch-based development workflow. This tool automates the process of creating feature branches, updating userscript URLs, and managing versions.
+
+#### Prerequisites
+
+- Node.js installed on your system
+- Git repository properly configured
+
+#### Usage
+
+**Setting up a new feature branch:**
+```bash
+node .kiro/scripts/branch-helper.js setup-feature <feature-name>
+```
+
+This command will:
+1. Create and checkout a new feature branch (`feature/<feature-name>`)
+2. Update userscript URLs to point to the feature branch
+3. Set a development version (`1.0.1-<feature-name>`)
+4. Commit and push the changes
+5. Display the installation URL for testing
+
+**Preparing for production release:**
+```bash
+node .kiro/scripts/branch-helper.js prepare-release
+```
+
+This command will:
+1. Update userscript URLs back to the main branch
+2. Increment the version number for production
+3. Prepare files for final commit and merge
+
+#### Example Workflow
+
+```bash
+# Start working on a new auto-play feature
+node .kiro/scripts/branch-helper.js setup-feature auto-play
+
+# The script outputs:
+# Setting up feature branch: feature/auto-play
+# Updated URLs to point to branch: feature/auto-play
+# Updated version to: 1.0.1-auto-play
+# Feature branch ready! Install userscript from:
+# https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/auto-play/infinite-craft-helper.user.js
+
+# Install the feature branch URL in Tampermonkey for testing
+# Make your changes, test, and iterate...
+
+# When ready for production:
+node .kiro/scripts/branch-helper.js prepare-release
+git add .
+git commit -m "Prepare for release"
+git checkout main
+git merge feature/auto-play
+git push origin main
+```
+
+#### Benefits
+
+- **Automated URL Management**: No manual editing of userscript headers
+- **Version Control**: Automatic version numbering for development and production
+- **Testing Workflow**: Easy installation of feature branches for testing
+- **Consistent Process**: Standardized workflow for all contributors
 
 ### Adding New Features
 
@@ -74,6 +167,23 @@ The control panel is designed to be easily extensible. To add new controls:
 2. Add corresponding event listeners and functionality
 3. Update the version number in the userscript header
 4. Commit and push changes for automatic distribution
+
+### GameInterface API
+
+The script includes a comprehensive `GameInterface` class that provides:
+
+- **Element Detection**: Find and analyze game elements
+- **DOM Queries**: Reliable selectors for sidebar and play area
+- **Game State Monitoring**: Check if game is ready or loading
+- **Element Validation**: Verify draggable elements and positions
+- **Debug Tools**: Comprehensive logging and testing methods
+
+Key methods:
+- `getAvailableElements()` - Get all elements in sidebar
+- `getPlayAreaElements()` - Get all elements in play area
+- `findElementByName(name)` - Find specific element by name
+- `isGameReady()` - Check if game is fully loaded
+- `runBasicTests()` - Run comprehensive functionality tests
 
 ### Version Management
 
@@ -90,13 +200,34 @@ The control panel is designed to be easily extensible. To add new controls:
 
 ## Contributing
 
+### Quick Start with Branch Helper
+
+1. Fork this repository
+2. Use the branch helper to set up your feature:
+   ```bash
+   node .kiro/scripts/branch-helper.js setup-feature amazing-feature
+   ```
+3. Install the generated feature branch URL in Tampermonkey for testing
+4. Make your changes and test on neal.fun/infinite-craft
+5. Push additional changes to your feature branch
+6. When ready, prepare for release:
+   ```bash
+   node .kiro/scripts/branch-helper.js prepare-release
+   git add .
+   git commit -m "Prepare amazing feature for release"
+   ```
+7. Open a Pull Request
+
+### Manual Process (Alternative)
+
 1. Fork this repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Test the script on neal.fun/infinite-craft
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+3. Manually update userscript URLs to point to your feature branch
+4. Make your changes
+5. Test the script on neal.fun/infinite-craft
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
 ## Issues and Support
 
@@ -114,6 +245,14 @@ This project is open source and available under the [MIT License](LICENSE).
 - Added GitHub integration for automatic updates
 - Added support and homepage URLs
 - Improved installation process
+- **NEW**: GameInterface class for game state detection and element analysis
+- **NEW**: Comprehensive DOM query methods for sidebar and play area
+- **NEW**: Element counting, validation, and positioning utilities
+- **NEW**: Debug console with detailed logging and testing tools
+- **NEW**: Global `window.gameInterface` API for manual testing
+- **NEW**: Branch helper utility for streamlined development workflow
+- **NEW**: Automated branch management with URL switching and version control
+- Foundation laid for auto-play engine development
 
 ### v1.0.0
 - Initial release

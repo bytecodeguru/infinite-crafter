@@ -20,5 +20,13 @@ Infinite Craft Helper is a Tampermonkey userscript that enhances the neal.fun/in
 
 ## Distribution
 - Direct installation via GitHub raw URLs
+- Branch-based development with feature branch testing
 - Automatic updates through userscript manager integration
+- Production releases only on main branch
 - Open source MIT licensed project
+
+## Development Strategy
+- All new features developed on dedicated feature branches
+- Feature branches use branch-specific URLs for testing
+- Main branch contains only production-ready code
+- Automated hooks assist with branch management and URL switching
