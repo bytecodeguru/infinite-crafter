@@ -79,6 +79,12 @@ async function main() {
         await runCommand('npx', ['playwright', 'show-report']);
         break;
 
+      case 'report-ci':
+        console.log('Generating test report (no browser)...');
+        await runCommand('npx', ['playwright', 'test', '--reporter=html']);
+        console.log('Report generated at: playwright-report/index.html');
+        break;
+
       case 'help':
       default:
         console.log(`
@@ -94,7 +100,8 @@ Commands:
   integration Run integration tests
   headed      Run tests with visible browser
   debug       Run tests in debug mode
-  report      Open HTML test report
+  report      Open HTML test report in browser
+  report-ci   Generate HTML report without opening browser
   help        Show this help message
 
 Examples:
@@ -102,6 +109,7 @@ Examples:
   node tests/run-tests.js all
   node tests/run-tests.js logging
   node tests/run-tests.js headed
+  node tests/run-tests.js report-ci
         `);
         break;
     }

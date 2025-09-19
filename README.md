@@ -311,7 +311,7 @@ npx playwright show-report
 - Cross-browser compatibility
 
 **Test Configuration:**
-- **Cross-browser testing**: Chrome, Firefox, and Safari
+- **Chromium testing**: Optimized for fast, reliable testing on Chromium engine
 - **Parallel execution**: Tests run in parallel for faster feedback
 - **CI/CD ready**: Configured for continuous integration environments
 - **HTML reporting**: Detailed test reports with screenshots and traces
@@ -323,14 +323,7 @@ npx playwright show-report
 - **Built-in Tests**: Comprehensive test suites built into LogManager, LogDisplay, and LogCapture classes
 - **Manual Testing**: Primary testing method using browser console and live userscript
 
-#### HTML Test Files
-The `tests/` directory contains HTML test files for manual and automated testing:
-- `test-empty-logs.html` - Testing empty log states
-- `test-final-verification.html` - Final integration verification
-- `test-logging-integration.html` - Log system integration tests
-- `test-requirement-4-3.html` - Specific requirement validation
-- `test-scrolling.html` - Scrolling behavior tests
-- `test-simple-integration.html` - Basic integration tests
+
 
 #### Running Tests
 ```bash
@@ -339,9 +332,6 @@ npm test
 
 # Run specific test file
 npx playwright test tests/playwright/logging.spec.js
-
-# Run specific HTML test file
-npx playwright test tests/test-logging-integration.html
 
 # Debug tests interactively
 npx playwright test --debug
@@ -359,16 +349,13 @@ infinite-crafter/
 │       └── branch-helper.js       # Branch management utility
 ├── tests/                         # Test files directory
 │   ├── playwright/                # Playwright automated tests
-│   │   └── logging.spec.js        # Logging system test suite
-│   ├── test-empty-logs.html       # HTML test files
-│   ├── test-final-verification.html
-│   ├── test-logging-integration.html
-│   ├── test-requirement-4-3.html
-│   ├── test-scrolling.html
-│   └── test-simple-integration.html
+│   │   ├── userscript.spec.js     # Core userscript functionality tests
+│   │   ├── logging.spec.js        # Logging system test suite
+│   │   └── integration.spec.js    # Integration tests
+│   └── run-tests.js               # Test runner script
 ├── infinite-craft-helper.user.js  # Main userscript file
 ├── playwright.config.js           # Playwright test configuration
-├── test-version.js                # Version management testing utility
+├── package.json                   # Project dependencies
 └── README.md                      # This file
 ```
 
@@ -632,8 +619,8 @@ const version = '1.1.0';
 - ✅ Edge (with Tampermonkey)
 
 **Testing Coverage:**
-- Automated testing across Chrome, Firefox, and Safari using Playwright
-- Cross-browser compatibility validation for all major features
+- Automated testing using Playwright on Chromium engine
+- Userscript compatibility validated across all major browsers with userscript managers
 - Continuous integration testing for reliability assurance
 
 ## Contributing
