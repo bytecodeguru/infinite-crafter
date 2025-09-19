@@ -73,7 +73,7 @@ test.describe('Logging System', () => {
     await expect(logSection).toBeVisible();
     
     const logHeader = await page.locator('.logs-section h4');
-    await expect(logHeader).toContainText('Console Logs');
+    await expect(logHeader).toContainText('Logs');
     
     const logContent = await page.locator('.logs-list');
     await expect(logContent).toBeVisible();
@@ -84,12 +84,11 @@ test.describe('Logging System', () => {
   });
 
   test('should log messages with different levels', async () => {
-    // Test logging different message types
+    // Test logging different message types using the Logger API
     await page.evaluate(() => {
       window.Logger.log('Test info message');
       window.Logger.warn('Test warning message');
       window.Logger.error('Test error message');
-      console.log('Test debug message'); // Console messages are captured
     });
 
     const logContent = await page.locator('.logs-list');
@@ -98,7 +97,6 @@ test.describe('Logging System', () => {
     expect(logText).toContain('Test info message');
     expect(logText).toContain('Test warning message');
     expect(logText).toContain('Test error message');
-    expect(logText).toContain('Test debug message');
   });
 
   test('should apply correct styling to different log levels', async () => {

@@ -13,7 +13,7 @@ A Tampermonkey userscript that adds a draggable control panel overlay to [neal.f
 - **Element Tracking**: Comprehensive monitoring of sidebar and play area elements
 - **Position & Bounds Calculation**: Precise element positioning for automation
 - **Advanced Logging System**: Built-in LogManager with log storage, rotation, and event system
-- **Console Log Display**: Real-time console log capture and display within the control panel
+- **Console Log Display**: Built-in log display system within the control panel
 - **Log Management**: Automatic log rotation, filtering by level, and memory management
 - **Interactive Log Controls**: Collapse/expand, copy to clipboard, and clear logs functionality
 - **Persistent Collapse State**: Logs section remembers its collapsed/expanded state across sessions
@@ -37,7 +37,7 @@ The control panel appears as a sleek overlay that you can drag around the screen
 │ GameInterface foundation loaded         │
 │ Check console for debug tools          │
 ├─────────────────────────────────────────┤
-│ Console Logs                    ▼ Copy Clear │
+│ Logs                            ▼ Copy Clear │
 ├─────────────────────────────────────────┤
 │ 14:32:15 ℹ️ GameInterface initialized   │
 │ 14:32:16 📝 Control panel ready         │
@@ -86,7 +86,7 @@ You need a userscript manager installed in your browser. We recommend:
 1. Navigate to [neal.fun/infinite-craft](https://neal.fun/infinite-craft/)
 2. The control panel will automatically appear in the top-left corner
 3. **Drag the panel**: Click and drag the header to move it around the screen
-4. **View Console Logs**: All console messages appear in the logs section with timestamps and color-coded levels
+4. **View Logs**: Log messages added through the Logger API appear in the logs section with timestamps and color-coded levels
 5. **Manage Logs**: Use the collapse/expand button (▼), copy logs to clipboard, or clear all logs
    - The logs section remembers your collapsed/expanded preference
    - When collapsed, an activity indicator shows "(X new)" for new log entries
@@ -95,7 +95,7 @@ You need a userscript manager installed in your browser. We recommend:
 
 ### Developer Console Commands
 
-Once the script loads, you can interact with the game interface and logging system through the console. The logging system automatically captures all console messages and displays them in the control panel, while also providing APIs for manual interaction:
+Once the script loads, you can interact with the game interface and logging system through the console. The logging system provides APIs for adding log entries that appear in the control panel:
 
 #### GameInterface API
 ```javascript
@@ -158,29 +158,20 @@ logManager.runLogManagerTests()
 // Tests log storage, rotation, events, and filtering with detailed output
 ```
 
-#### Logger API
+#### Logger API (Primary Logging Interface)
 ```javascript
-// Simple logging functions for userscript use
+// Simple logging functions for userscript use - these appear in the control panel
 Logger.log('Information message')     // Add info-level log entry
 Logger.warn('Warning message')        // Add warning-level log entry  
 Logger.error('Error message')         // Add error-level log entry
 
 // Logger is initialized during script startup and connected to LogManager
 // Available globally as window.Logger for console testing
+// All log entries added through Logger appear in the control panel logs section
 // Before initialization, calls are logged to console with "Not initialized yet" prefix
 ```
 
-#### LogCapture API
-```javascript
-// Access the console capture system (available as window.logCapture)
-logCapture.startCapturing()    // Begin intercepting console messages
-logCapture.stopCapturing()     // Stop intercepting console messages
-logCapture.isCapturing()       // Check if currently capturing
 
-// Run console capture tests
-logCapture.runCaptureTests()
-// Tests console interception, object logging, and circular reference handling
-```
 
 #### LogDisplay API
 ```javascript
@@ -215,10 +206,10 @@ The control panel includes a built-in console log viewer with the following feat
 - **Auto-scroll**: Automatically shows newest log entries with smooth scrolling behavior and optimized display height
 - **Log Count**: Shows number of logs when collapsed
 
-**Smart Console Capture:**
-- **Clean Initialization**: Console capture starts after setup is complete, preventing initialization logs from cluttering the display
-- **Selective Logging**: Only captures console messages after the logging system is fully initialized
-- **Original Console Preserved**: All original console functionality remains intact for debugging
+**Manual Logging System:**
+- **Direct Logging**: Use Logger.log(), Logger.warn(), Logger.error() to add entries to the log display
+- **Clean Interface**: No automatic console interception - logs are added explicitly through the Logger API
+- **Original Console Preserved**: All console functionality remains completely untouched
 
 **Log Format:**
 Each log entry displays:
@@ -320,7 +311,7 @@ npx playwright show-report
 **Current Test Status:**
 - **Playwright Tests**: Fully aligned with current implementation and ready for use
 - **HTML Tests**: Manual testing files for specific functionality
-- **Built-in Tests**: Comprehensive test suites built into LogManager, LogDisplay, and LogCapture classes
+- **Built-in Tests**: Comprehensive test suites built into LogManager and LogDisplay classes
 - **Manual Testing**: Primary testing method using browser console and live userscript
 
 
@@ -676,7 +667,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - **NEW**: HTML test reporting with screenshots and traces for debugging
 - **NEW**: Playwright logging system tests (`tests/playwright/logging.spec.js`) for automated validation
 - **NEW**: Complete console log display system integrated into control panel
-- **NEW**: Real-time console message capture with LogCapture class
+- **REMOVED**: LogCapture class - console interception functionality removed to simplify logging system
 - **NEW**: Interactive logs section with collapse/expand functionality
 - **NEW**: Copy logs to clipboard with formatted timestamps and levels
 - **NEW**: Clear logs functionality with immediate UI updates
@@ -686,8 +677,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - **NEW**: Persistent collapse state using localStorage to remember user preferences
 - **NEW**: Activity indicator showing "(X new)" when logs section is collapsed and new logs arrive
 - **NEW**: Enhanced state management with automatic activity tracking
-- **NEW**: Console interception system that preserves original console functionality
-- **NEW**: Recursive logging prevention for system stability using originalConsole methods
+- **SIMPLIFIED**: Removed console interception system - logging now uses direct Logger API calls only
 - **NEW**: Advanced LogManager class with comprehensive log storage and rotation
 - **NEW**: LogEntry data structure with timestamps, levels, and unique IDs
 - **NEW**: Event-driven logging system with subscribe/unsubscribe functionality
@@ -699,7 +689,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - **NEW**: Memory management with automatic cleanup and rotation
 - **NEW**: Logger API with simple log(), warn(), and error() functions for userscript logging
 - **NEW**: Proper Logger initialization pattern that connects to LogManager during script startup
-- **NEW**: Optimized initialization sequence - console capture starts after setup is complete to prevent capturing initialization logs
+- **SIMPLIFIED**: Streamlined initialization sequence without console capture complexity
 - **ENHANCED**: Enhanced version detection system that analyzes script source URL
 - **ENHANCED**: Automatic development mode detection for feature branch installations
 - **ENHANCED**: Smart version management with both version format and URL-based detection

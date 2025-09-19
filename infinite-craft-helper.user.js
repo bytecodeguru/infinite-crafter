@@ -50,7 +50,7 @@
             </div>
             <div class="logs-section">
                 <div class="logs-header">
-                    <h4>Console Logs</h4>
+                    <h4>Logs</h4>
                     <div class="logs-controls">
                         <button class="logs-toggle" title="Collapse/Expand logs">▼</button>
                         <button class="logs-copy" title="Copy logs to clipboard">Copy</button>
@@ -439,7 +439,7 @@
         let yOffset = 0;
 
         const header = panel.querySelector('.panel-header');
-        
+
         if (!header) {
             console.warn('[makeDraggable] Header not found, skipping drag setup');
             return;
@@ -601,75 +601,7 @@
             return stats;
         }
 
-        // Test methods for unit testing functionality
-        runLogManagerTests() {
-            console.log('[LogManager] === RUNNING LOG MANAGER TESTS ===');
-
-            try {
-                // Test 1: Basic log addition
-                console.log('Test 1: Basic log addition');
-                const initialCount = this.getLogCount();
-                this.addLog('info', 'Test log message');
-                const afterAddCount = this.getLogCount();
-                console.log('✓ Log added successfully:', afterAddCount === initialCount + 1);
-
-                // Test 2: Log rotation
-                console.log('Test 2: Log rotation');
-                const originalMaxLogs = this.maxLogs;
-                this.maxLogs = 3; // Temporarily set low limit for testing
-
-                this.addLog('info', 'Log 1');
-                this.addLog('warn', 'Log 2');
-                this.addLog('error', 'Log 3');
-                this.addLog('debug', 'Log 4'); // This should trigger rotation
-
-                const rotationTestCount = this.getLogCount();
-                console.log('✓ Log rotation working:', rotationTestCount === 3);
-
-                this.maxLogs = originalMaxLogs; // Restore original limit
-
-                // Test 3: Event system
-                console.log('Test 3: Event system');
-                let eventReceived = false;
-                const unsubscribe = this.subscribe((event, data) => {
-                    if (event === 'logAdded') {
-                        eventReceived = true;
-                    }
-                });
-
-                this.addLog('info', 'Event test log');
-                console.log('✓ Event system working:', eventReceived);
-                unsubscribe();
-
-                // Test 4: Log filtering
-                console.log('Test 4: Log filtering');
-                this.clearLogs();
-                this.addLog('error', 'Error message');
-                this.addLog('warn', 'Warning message');
-                this.addLog('error', 'Another error');
-
-                const errorLogs = this.getLogsByLevel('error');
-                const warnLogs = this.getLogsByLevel('warn');
-                console.log('✓ Log filtering working:', errorLogs.length === 2 && warnLogs.length === 1);
-
-                // Test 5: Log stats
-                console.log('Test 5: Log stats');
-                const stats = this.getLogStats();
-                console.log('✓ Log stats working:', stats.total === 3 && stats.byLevel.error === 2);
-
-                // Test 6: Clear logs
-                console.log('Test 6: Clear logs');
-                const clearedCount = this.clearLogs();
-                const finalCount = this.getLogCount();
-                console.log('✓ Clear logs working:', clearedCount === 3 && finalCount === 0);
-
-                console.log('[LogManager] ✅ ALL LOG MANAGER TESTS PASSED');
-                return true;
-            } catch (error) {
-                console.error('[LogManager] ❌ TEST FAILED:', error);
-                return false;
-            }
-        }
+        // Removed test methods - not needed in production
     }
 
     // LogDisplay class for rendering and managing the logs UI
@@ -677,14 +609,14 @@
         constructor(container, logManager) {
             this.container = container;
             this.logManager = logManager;
-            
+
             // Store original console for internal logging to prevent recursion
             this.originalConsole = {
                 log: console.log.bind(console),
                 error: console.error.bind(console),
                 warn: console.warn.bind(console)
             };
-            
+
             this.isCollapsed = this.loadCollapseState();
             this.logsList = null;
             this.logsContent = null;
@@ -803,7 +735,7 @@
                 this.toggleButton.classList.remove('collapsed');
                 this.toggleButton.title = 'Collapse logs';
                 this.newLogsSinceCollapse = 0; // Reset counter when expanding
-                
+
                 // Auto-scroll to newest when expanding
                 setTimeout(() => {
                     this.scrollToNewest();
@@ -897,12 +829,12 @@
             if (this.isCollapsed && logCount > 0) {
                 const header = this.container.querySelector('.logs-header h4');
                 if (header) {
-                    header.textContent = `Console Logs (${logCount})`;
+                    header.textContent = `Logs (${logCount})`;
                 }
             } else {
                 const header = this.container.querySelector('.logs-header h4');
                 if (header) {
-                    header.textContent = 'Console Logs';
+                    header.textContent = 'Logs';
                 }
             }
         }
@@ -1092,7 +1024,7 @@
             this.activityIndicator = document.createElement('span');
             this.activityIndicator.className = 'logs-activity-indicator';
             this.activityIndicator.style.display = 'none';
-            
+
             // Insert after the header title
             const header = this.container.querySelector('.logs-header h4');
             if (header) {
@@ -1111,493 +1043,19 @@
             }
         }
 
-        // Test log display functionality
-        runDisplayTests() {
-            console.log('[LogDisplay] === RUNNING LOG DISPLAY TESTS ===');
-
-            try {
-                // Test 1: Basic initialization
-                console.log('Test 1: Basic initialization');
-                const initSuccess = this.initialize();
-                console.log('✓ Initialization successful:', initSuccess);
-
-                // Test 2: Log entry creation
-                console.log('Test 2: Log entry creation');
-                const testLog = new LogEntry('info', 'Test display message');
-                const entryElement = this.createLogEntryElement(testLog);
-                console.log('✓ Log entry element created:', !!entryElement);
-
-                // Test 3: Display update
-                console.log('Test 3: Display update');
-                this.logManager.addLog('test', 'Display test message');
-                this.updateDisplay();
-                const hasEntries = this.logsList.children.length > 0;
-                console.log('✓ Display updated with entries:', hasEntries);
-
-                // Test 4: Collapse/expand
-                console.log('Test 4: Collapse/expand functionality');
-                const wasCollapsed = this.isCollapsed;
-                this.toggleCollapse();
-                const toggleWorked = this.isCollapsed !== wasCollapsed;
-                this.toggleCollapse(); // Reset
-                console.log('✓ Toggle functionality working:', toggleWorked);
-
-                // Test 5: Scrolling functionality
-                console.log('Test 5: Scrolling functionality');
-                // Add multiple logs to test scrolling
-                for (let i = 0; i < 10; i++) {
-                    this.logManager.addLog('info', `Scroll test message ${i + 1}`);
-                }
-                this.updateDisplay();
-                
-                const scrollInfo = this.getScrollInfo();
-                console.log('✓ Scroll info available:', !!scrollInfo);
-                
-                this.scrollToOldest();
-                setTimeout(() => {
-                    this.scrollToNewest();
-                    console.log('✓ Scrolling methods working');
-                }, 100);
-
-                console.log('[LogDisplay] ✅ ALL LOG DISPLAY TESTS PASSED');
-                return true;
-            } catch (error) {
-                console.error('[LogDisplay] ❌ DISPLAY TEST FAILED:', error);
-                return false;
-            }
-        }
+        // Removed test methods - not needed in production
     }
 
-    // LogCapture class for safely intercepting console methods
-    class LogCapture {
-        constructor(logManager) {
-            this.logManager = logManager;
-            this.originalConsole = {};
-            this.isCapturing = false;
-            this.capturedMethods = ['log', 'warn', 'error', 'info', 'debug'];
-
-            console.log('[LogCapture] Initialized');
-        }
-
-        startCapturing() {
-            if (this.isCapturing) {
-                this.originalConsole.log('[LogCapture] Already capturing, skipping start');
-                return;
-            }
-
-            try {
-                // Store original console methods
-                this.capturedMethods.forEach(method => {
-                    if (typeof console[method] === 'function') {
-                        this.originalConsole[method] = console[method].bind(console);
-                    }
-                });
-
-                // Override console methods
-                this.capturedMethods.forEach(method => {
-                    if (this.originalConsole[method]) {
-                        console[method] = (...args) => {
-                            try {
-                                // Call original console method first
-                                this.originalConsole[method](...args);
-
-                                // Capture for our log system (avoid recursive logging)
-                                this.captureLog(method, args);
-                            } catch (error) {
-                                // If our capture fails, ensure original console still works
-                                this.originalConsole[method](...args);
-                                this.originalConsole.error('[LogCapture] Error in console interception:', error);
-                            }
-                        };
-                    }
-                });
-
-                this.isCapturing = true;
-                this.originalConsole.log('[LogCapture] Started capturing console methods:', this.capturedMethods);
-            } catch (error) {
-                this.originalConsole.error('[LogCapture] Failed to start capturing:', error);
-                this.stopCapturing(); // Cleanup on failure
-            }
-        }
-
-        stopCapturing() {
-            if (!this.isCapturing) {
-                this.originalConsole.log('[LogCapture] Not currently capturing, skipping stop');
-                return;
-            }
-
-            try {
-                // Restore original console methods
-                this.capturedMethods.forEach(method => {
-                    if (this.originalConsole[method]) {
-                        console[method] = this.originalConsole[method];
-                    }
-                });
-
-                this.isCapturing = false;
-                this.originalConsole.log('[LogCapture] Stopped capturing console methods');
-            } catch (error) {
-                this.originalConsole.error('[LogCapture] Error stopping capture:', error);
-            }
-        }
-
-        captureLog(level, args) {
-            try {
-                // Skip capturing our own log messages to prevent infinite recursion
-                const message = this.formatLogMessage(args);
-                if (message.includes('[LogCapture]') || message.includes('[LogManager]') || message.includes('[LogDisplay]')) {
-                    return;
-                }
-
-                // Add to log manager
-                this.logManager.addLog(level, message, args);
-            } catch (error) {
-                // Use original console to report capture errors
-                if (this.originalConsole.error) {
-                    this.originalConsole.error('[LogCapture] Error capturing log:', error);
-                }
-            }
-        }
-
-        formatLogMessage(args) {
-            try {
-                return args.map(arg => {
-                    if (typeof arg === 'string') {
-                        return arg;
-                    } else if (typeof arg === 'object' && arg !== null) {
-                        // Handle objects, arrays, etc.
-                        try {
-                            return JSON.stringify(arg, null, 2);
-                        } catch (jsonError) {
-                            // Handle circular references or non-serializable objects
-                            return Object.prototype.toString.call(arg);
-                        }
-                    } else {
-                        return String(arg);
-                    }
-                }).join(' ');
-            } catch (error) {
-                return 'Error formatting log message';
-            }
-        }
-
-        // Test console interception functionality
-        runCaptureTests() {
-            console.log('[LogCapture] === RUNNING CONSOLE CAPTURE TESTS ===');
-
-            try {
-                // Test 1: Basic capture functionality
-                console.log('Test 1: Basic capture functionality');
-                const initialLogCount = this.logManager.getLogCount();
-
-                // Start capturing
-                this.startCapturing();
-
-                // Generate test logs
-                console.log('Test log message');
-                console.warn('Test warning message');
-                console.error('Test error message');
-
-                const afterCaptureCount = this.logManager.getLogCount();
-                const capturedLogs = afterCaptureCount - initialLogCount;
-                console.log('✓ Console capture working:', capturedLogs >= 3);
-
-                // Test 2: Object logging
-                console.log('Test 2: Object logging');
-                const testObj = { test: 'value', number: 42 };
-                console.log('Object test:', testObj);
-
-                const objTestCount = this.logManager.getLogCount();
-                console.log('✓ Object logging working:', objTestCount > afterCaptureCount);
-
-                // Test 3: Error handling with circular reference
-                console.log('Test 3: Circular reference handling');
-                const circularObj = { name: 'test' };
-                circularObj.self = circularObj;
-                console.log('Circular object:', circularObj);
-
-                const circularTestCount = this.logManager.getLogCount();
-                console.log('✓ Circular reference handling working:', circularTestCount > objTestCount);
-
-                // Test 4: Stop and restart
-                console.log('Test 4: Stop and restart capture');
-                this.stopCapturing();
-
-                const beforeStopCount = this.logManager.getLogCount();
-                console.log('This should not be captured');
-                const afterStopCount = this.logManager.getLogCount();
-
-                this.startCapturing();
-                console.log('This should be captured again');
-                const afterRestartCount = this.logManager.getLogCount();
-
-                console.log('✓ Stop/restart working:',
-                    afterStopCount === beforeStopCount &&
-                    afterRestartCount > afterStopCount);
-
-                console.log('[LogCapture] ✅ ALL CONSOLE CAPTURE TESTS PASSED');
-                return true;
-            } catch (error) {
-                console.error('[LogCapture] ❌ CAPTURE TEST FAILED:', error);
-                return false;
-            }
-        }
-    }
-
-    // GameInterface class for DOM interaction and game state detection
-    class GameInterface {
-        constructor() {
-            this.sidebarSelector = '.sidebar';
-            this.playAreaSelector = '.container';
-            this.elementSelector = '.item';
-            this.elementTextSelector = '.item-text';
-
-            // Store original console for internal logging to prevent recursion
-            this.originalConsole = {
-                log: console.log.bind(console),
-                error: console.error.bind(console),
-                warn: console.warn.bind(console)
-            };
-
-            this.originalConsole.log('[GameInterface] Initialized with selectors:', {
-                sidebar: this.sidebarSelector,
-                playArea: this.playAreaSelector,
-                element: this.elementSelector,
-                elementText: this.elementTextSelector
-            });
-        }
-
-        // Basic DOM query methods
-        getSidebar() {
-            const sidebar = document.querySelector(this.sidebarSelector);
-            this.originalConsole.log('[GameInterface] getSidebar():', sidebar ? 'Found' : 'Not found');
-            return sidebar;
-        }
-
-        getPlayArea() {
-            const playArea = document.querySelector(this.playAreaSelector);
-            this.originalConsole.log('[GameInterface] getPlayArea():', playArea ? 'Found' : 'Not found');
-            return playArea;
-        }
-
-        getAllElements() {
-            const elements = document.querySelectorAll(this.elementSelector);
-            this.originalConsole.log('[GameInterface] getAllElements(): Found', elements.length, 'elements');
-            return Array.from(elements);
-        }
-
-        // Element counting and availability detection functions
-        getAvailableElements() {
-            const sidebar = this.getSidebar();
-            if (!sidebar) {
-                this.originalConsole.log('[GameInterface] getAvailableElements(): No sidebar found');
-                return [];
-            }
-
-            const elements = sidebar.querySelectorAll(this.elementSelector);
-            const availableElements = Array.from(elements).map(element => {
-                const textElement = element.querySelector(this.elementTextSelector);
-                return {
-                    name: textElement ? textElement.textContent.trim() : 'Unknown',
-                    domElement: element,
-                    position: this.getElementBounds(element),
-                    isNew: element.classList.contains('new') || false
-                };
-            });
-
-            this.originalConsole.log('[GameInterface] getAvailableElements(): Found', availableElements.length, 'available elements');
-            return availableElements;
-        }
-
-        getPlayAreaElements() {
-            const playArea = this.getPlayArea();
-            if (!playArea) {
-                this.originalConsole.log('[GameInterface] getPlayAreaElements(): No play area found');
-                return [];
-            }
-
-            const elements = playArea.querySelectorAll(this.elementSelector);
-            const playAreaElements = Array.from(elements).map(element => {
-                const textElement = element.querySelector(this.elementTextSelector);
-                return {
-                    name: textElement ? textElement.textContent.trim() : 'Unknown',
-                    domElement: element,
-                    position: this.getElementBounds(element),
-                    isNew: element.classList.contains('new') || false
-                };
-            });
-
-            this.originalConsole.log('[GameInterface] getPlayAreaElements(): Found', playAreaElements.length, 'play area elements');
-            return playAreaElements;
-        }
-
-        getElementCount() {
-            const total = this.getAllElements().length;
-            const available = this.getAvailableElements().length;
-            const inPlayArea = this.getPlayAreaElements().length;
-
-            const counts = {
-                total,
-                available,
-                inPlayArea
-            };
-
-            this.originalConsole.log('[GameInterface] getElementCount():', counts);
-            return counts;
-        }
-
-        // Element detection and validation
-        findElementByName(name) {
-            const elements = this.getAllElements();
-            const found = elements.find(element => {
-                const textElement = element.querySelector(this.elementTextSelector);
-                return textElement && textElement.textContent.trim() === name;
-            });
-
-            this.originalConsole.log('[GameInterface] findElementByName("' + name + '"):', found ? 'Found' : 'Not found');
-            return found || null;
-        }
-
-        isElementDraggable(element) {
-            if (!element) {
-                this.originalConsole.log('[GameInterface] isElementDraggable(): Element is null');
-                return false;
-            }
-
-            // Check if element has draggable attribute or is in sidebar
-            const isDraggable = element.draggable !== false &&
-                !element.classList.contains('disabled') &&
-                element.offsetParent !== null; // Element is visible
-
-            this.originalConsole.log('[GameInterface] isElementDraggable():', isDraggable);
-            return isDraggable;
-        }
-
-        // Utility methods
-        getElementBounds(element) {
-            if (!element) {
-                this.originalConsole.log('[GameInterface] getElementBounds(): Element is null');
-                return null;
-            }
-
-            const bounds = element.getBoundingClientRect();
-            const result = {
-                x: bounds.left,
-                y: bounds.top,
-                width: bounds.width,
-                height: bounds.height,
-                centerX: bounds.left + bounds.width / 2,
-                centerY: bounds.top + bounds.height / 2
-            };
-
-            this.originalConsole.log('[GameInterface] getElementBounds():', result);
-            return result;
-        }
-
-        // Game state detection
-        isGameReady() {
-            const sidebar = this.getSidebar();
-            const playArea = this.getPlayArea();
-            const hasElements = this.getAvailableElements().length > 0;
-
-            const ready = !!(sidebar && playArea && hasElements);
-            this.originalConsole.log('[GameInterface] isGameReady():', ready, {
-                hasSidebar: !!sidebar,
-                hasPlayArea: !!playArea,
-                hasElements
-            });
-
-            return ready;
-        }
-
-        isLoading() {
-            // Check for common loading indicators
-            const loadingIndicators = [
-                '.loading',
-                '.spinner',
-                '[data-loading="true"]'
-            ];
-
-            const isLoading = loadingIndicators.some(selector =>
-                document.querySelector(selector) !== null
-            );
-
-            this.originalConsole.log('[GameInterface] isLoading():', isLoading);
-            return isLoading;
-        }
-
-        // Debug and verification methods
-        logGameState() {
-            this.originalConsole.log('[GameInterface] === GAME STATE DEBUG ===');
-            this.originalConsole.log('Game Ready:', this.isGameReady());
-            this.originalConsole.log('Loading:', this.isLoading());
-            this.originalConsole.log('Element Counts:', this.getElementCount());
-            this.originalConsole.log('Available Elements:', this.getAvailableElements().map(e => e.name));
-            this.originalConsole.log('Play Area Elements:', this.getPlayAreaElements().map(e => e.name));
-            this.originalConsole.log('[GameInterface] === END DEBUG ===');
-        }
-
-        // Test all basic functionality (disabled to prevent excessive logging)
-        runBasicTests() {
-            return true; // Disabled for now
-            this.originalConsole.log('[GameInterface] === RUNNING BASIC TESTS ===');
-
-            try {
-                // Test DOM queries
-                console.log('Test 1: DOM Queries');
-                const sidebar = this.getSidebar();
-                const playArea = this.getPlayArea();
-                console.log('✓ Sidebar found:', !!sidebar);
-                console.log('✓ Play area found:', !!playArea);
-
-                // Test element detection
-                console.log('Test 2: Element Detection');
-                const allElements = this.getAllElements();
-                const availableElements = this.getAvailableElements();
-                const playAreaElements = this.getPlayAreaElements();
-                console.log('✓ All elements:', allElements.length);
-                console.log('✓ Available elements:', availableElements.length);
-                console.log('✓ Play area elements:', playAreaElements.length);
-
-                // Test counting
-                console.log('Test 3: Element Counting');
-                const counts = this.getElementCount();
-                console.log('✓ Element counts:', counts);
-
-                // Test game state
-                console.log('Test 4: Game State');
-                console.log('✓ Game ready:', this.isGameReady());
-                console.log('✓ Game loading:', this.isLoading());
-
-                // Test element search (if elements exist)
-                if (availableElements.length > 0) {
-                    console.log('Test 5: Element Search');
-                    const firstElement = availableElements[0];
-                    const found = this.findElementByName(firstElement.name);
-                    console.log('✓ Element search for "' + firstElement.name + '":', !!found);
-                    console.log('✓ Element draggable check:', this.isElementDraggable(found));
-                }
-
-                console.log('[GameInterface] ✅ ALL BASIC TESTS COMPLETED');
-                return true;
-            } catch (error) {
-                console.error('[GameInterface] ❌ TEST FAILED:', error);
-                return false;
-            }
-        }
-    }
-
-    // Logger API - Simple logging functions for the userscript to call
-    // Will be initialized with LogManager instance in init()
+    // Logger API - initially empty until connected to LogManager
     let Logger = {
         log(message) {
             console.log('[Logger] Not initialized yet:', message);
         },
-        
+
         warn(message) {
             console.warn('[Logger] Not initialized yet:', message);
         },
-        
+
         error(message) {
             console.error('[Logger] Not initialized yet:', message);
         }
@@ -1612,11 +1070,11 @@
             log(message) {
                 logManager.addLog('info', message);
             },
-            
+
             warn(message) {
                 logManager.addLog('warn', message);
             },
-            
+
             error(message) {
                 logManager.addLog('error', message);
             }
@@ -1649,7 +1107,7 @@
 
         // Initialize logging system components
         console.log('[Init] Initializing logging system...');
-        
+
         // 1. Initialize LogManager
         console.log('[Init] Creating LogManager...');
         const logManager = new LogManager(100);
@@ -1662,14 +1120,14 @@
         console.log('[Init] Initializing LogDisplay...');
         let logDisplay = null;
         let displayInitialized = false;
-        
+
         try {
             logDisplay = new LogDisplay(panel, logManager);
             displayInitialized = logDisplay.initialize();
         } catch (error) {
             console.warn('[Init] LogDisplay initialization failed:', error.message);
         }
-        
+
         if (!displayInitialized) {
             console.warn('[Init] LogDisplay not available, but Logger API will still work');
         }
@@ -1678,12 +1136,11 @@
         window.logManager = logManager;
         window.logDisplay = logDisplay;
         window.Logger = Logger;
-        window.gameInterface = null; // Will be set later
 
         console.log('[Init] Logging system initialized successfully!');
         console.log('[Init] Components available globally: logManager, logDisplay, Logger');
 
-        // Test the Logger API integration (before console capture starts)
+        // Test the Logger API integration
         console.log('[Init] Testing Logger API integration...');
         Logger.log('Logger API test: info message - logging system is working!');
         Logger.warn('Logger API test: warning message - this should appear in the logs panel');
@@ -1696,25 +1153,6 @@
 
         console.log('Infinite Craft Helper v1.0.4-dev loaded successfully!');
 
-        // 4. Initialize LogCapture for console interception (after initial tests)
-        console.log('[Init] Initializing LogCapture...');
-        let logCapture = null;
-        
-        try {
-            logCapture = new LogCapture(logManager);
-            
-            // 5. Start console interception (now that setup is complete)
-            console.log('[Init] Starting console capture...');
-            console.log('[Init] Console capture will start after this message');
-            
-            logCapture.startCapturing();
-        } catch (error) {
-            console.warn('[Init] LogCapture initialization failed:', error.message);
-        }
-
-        // Add LogCapture to global scope
-        window.logCapture = logCapture;
-
         // Clear initialization logs to start with empty log history (Requirement 4.3)
         // This ensures the user starts with a clean slate while preserving initialization logging for development
         // Skip clearing in test environments (detect by checking for common test indicators)
@@ -1726,31 +1164,15 @@
             typeof window.playwright !== 'undefined' ||
             typeof window.__playwright !== 'undefined'
         );
-        
+
         if (!isTestEnvironment) {
             setTimeout(() => {
                 const clearedCount = logManager.clearLogs();
-                // Use original console to avoid capturing this cleanup message
-                if (logCapture && logCapture.originalConsole && logCapture.originalConsole.log) {
-                    logCapture.originalConsole.log(`[Init] Cleared ${clearedCount} initialization logs - starting with empty log history`);
-                }
+                console.log(`[Init] Cleared ${clearedCount} initialization logs - starting with empty log history`);
             }, 100);
         } else {
             console.log('[Init] Test environment detected, skipping log cleanup');
         }
-
-        // Wait a moment for the game to fully load, then initialize GameInterface
-        setTimeout(() => {
-            console.log('[Init] Initializing GameInterface...');
-            const gameInterface = new GameInterface();
-
-            // Make gameInterface available globally for debugging
-            window.gameInterface = gameInterface;
-            console.log('[Init] GameInterface available as window.gameInterface for debugging');
-            
-            // Log successful GameInterface initialization
-            Logger.log('GameInterface initialized and ready for use');
-        }, 2000);
     }
 
     // Start the script
