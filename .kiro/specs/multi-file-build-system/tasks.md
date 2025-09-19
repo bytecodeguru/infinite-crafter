@@ -16,25 +16,25 @@
   - 🚧 Add unit tests for module resolution logic (test file exists, needs completion)
   - _Requirements: 2.2, 2.5, 4.3_
 
-- [ ] 3. Create source file structure and split existing userscript
-  - Create src/ directory structure (core/, ui/, utils/, main.js)
-  - Extract userscript metadata into src/header.js template
-  - Split version management code into src/core/version.js
-  - Move LogManager and Logger API to src/core/logger.js
+- [x] 3. Create source file structure and split existing userscript
+  - ✅ Create src/ directory structure (core/, ui/, utils/, main.js)
+  - ✅ Extract userscript metadata into src/header.js template
+  - ✅ Split version management code into src/core/version.js
+  - ✅ Move LogManager and Logger API to src/core/logger.js
   - _Requirements: 1.1, 1.3, 5.1, 5.2_
 
-- [ ] 4. Split UI components into focused modules
-  - Extract control panel creation to src/ui/control-panel.js
-  - Move CSS styles injection to src/ui/styles.js
-  - Extract drag functionality to src/ui/draggable.js
-  - Ensure each UI module is under 250 lines and has single responsibility
+- [x] 4. Split UI components into focused modules
+  - ✅ Extract control panel creation to src/ui/control-panel.js
+  - ✅ Move CSS styles injection to src/ui/styles.js
+  - ✅ Extract drag functionality to src/ui/draggable.js
+  - ✅ Ensure each UI module is under 250 lines and has single responsibility
   - _Requirements: 1.1, 1.3, 5.2, 5.4_
 
-- [ ] 5. Create utility modules and main entry point
-  - Extract DOM utilities to src/utils/dom.js
-  - Create src/main.js as entry point with initialization logic
-  - Add ES6 import/export statements to all modules
-  - Verify all modules follow file size policy (under 250 lines)
+- [x] 5. Create utility modules and main entry point
+  - ⏭️ Extract DOM utilities to src/utils/dom.js (not needed - utilities integrated into existing modules)
+  - ✅ Create src/main.js as entry point with initialization logic
+  - ✅ Add ES6 import/export statements to all modules
+  - ✅ Verify all modules follow file size policy (under 250 lines)
   - _Requirements: 1.1, 1.3, 5.1, 5.3_
 
 - [ ] 6. Implement file concatenation and userscript generation
