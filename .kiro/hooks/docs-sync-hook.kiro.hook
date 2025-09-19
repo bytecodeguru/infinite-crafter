@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Listens to JavaScript source files and automatically updates documentation in README.md when changes are detected",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.js",
+      "*.user.js"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The JavaScript source files have been modified. Please review the changes and update the README.md file to reflect any new features, API changes, or usage instructions. Ensure the documentation stays current with the codebase."
+  }
+}

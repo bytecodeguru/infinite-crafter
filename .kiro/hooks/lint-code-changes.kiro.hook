@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Code Linting Monitor",
+  "description": "Monitors JavaScript files for changes and ensures all linting errors and warnings are resolved automatically",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.js",
+      "*.user.js"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A JavaScript file has been modified. Please analyze the code for any linting errors, warnings, or style issues. Check for: syntax errors, unused variables, missing semicolons, inconsistent indentation, code style violations, and any other linting concerns. If you find any issues, provide the corrected code that resolves all linting problems while maintaining the original functionality."
+  }
+}
