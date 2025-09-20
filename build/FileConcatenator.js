@@ -57,10 +57,10 @@ export class FileConcatenator {
     async generateUserscriptHeader(buildContext) {
         // Find and read header.js
         const headerPath = path.join(this.config.srcDir, 'header.js');
-        
+
         try {
             const headerContent = await fs.readFile(headerPath, 'utf8');
-            
+
             // Extract metadata object from header.js
             const metadataMatch = headerContent.match(/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\});/);
             if (!metadataMatch) {
@@ -76,7 +76,7 @@ export class FileConcatenator {
 
             // Generate userscript header format
             const headerLines = ['// ==UserScript=='];
-            
+
             // Add metadata fields
             for (const [key, value] of Object.entries(processedMetadata)) {
                 if (Array.isArray(value)) {
@@ -88,7 +88,7 @@ export class FileConcatenator {
                     headerLines.push(`// @${key.padEnd(12)} ${value}`);
                 }
             }
-            
+
             headerLines.push('// ==/UserScript==');
             headerLines.push('');
 
@@ -115,7 +115,7 @@ export class FileConcatenator {
 
         // Replace {{UPDATE_URL}} and {{DOWNLOAD_URL}}
         const baseUrl = this.config.branch.urlTemplate.replace('{{BRANCH}}', buildContext.branch);
-        
+
         if (processed.updateURL && processed.updateURL.includes('{{UPDATE_URL}}')) {
             processed.updateURL = processed.updateURL.replace('{{UPDATE_URL}}', baseUrl);
         } else if (processed.updateURL === '{{UPDATE_URL}}') {

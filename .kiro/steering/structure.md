@@ -55,3 +55,9 @@ infinite-crafter/
 - **Layer-based separation**: Separate UI, business logic, and utilities
 - **Dependency minimization**: Reduce cross-file dependencies where possible
 - **Clear interfaces**: Well-defined exports and imports between modules
+
+## Quality Gate Policy
+- **Linting Required**: Run the configured lint command and block commits when issues remain. Only the user may grant exceptions.
+- **Test Integrity**: Keep the test suite green before merging. Temporary red states are acceptable only when adding failing tests at the start of a TDD loop; resolve them before commit.
+- **Test Planning**: When capturing new tasks or specs, note the intended unit or integration tests so every requirement ships with regression coverage.
+- **Documentation Updates**: After closing a task, refresh relevant docs (README, steering, specs, tasks, design) and record any new follow-up steps.

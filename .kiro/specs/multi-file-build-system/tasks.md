@@ -81,21 +81,34 @@
   - ✅ Implement verbose logging option for debugging builds
   - _Requirements: 2.1, 4.1, 4.4_
 
-- [ ] 12. Write comprehensive tests for build system
+- [x] 12. Embed automated quality checks in build pipeline
+  - ✅ Add linting and test commands to the build workflow so failures block distribution artifacts
+  - ✅ Surface clear console output when quality gates fail and document override policy (user approval only)
+  - ✅ Extend build.config.js to make lint/test commands configurable
+  - ✅ Provide `npm run lint` script backed by custom lint runner
+  - _Requirements: Quality Gate Policy, 4.3_
+
+- [x] 12a. Evaluate adopting ESLint for expanded lint coverage
+  - ✅ Migrated lint command to ESLint flat config with project conventions
+  - ✅ Documented lint usage in README and AGENTS (plus fallback `npm run lint:format`)
+  - ✅ Added design notes covering ESLint strategy and future test fixtures
+  - _Follow-up from Task 12_
+
+- [ ] 13. Write comprehensive tests for build system
   - Create unit tests for BuildManager and ModuleResolver classes
   - Write integration tests for complete build process
   - Add fixture files for testing various module configurations
   - Test error scenarios (missing files, circular dependencies, syntax errors)
   - _Requirements: 2.4, 4.3_
 
-- [ ] 13. Validate generated userscript functionality
+- [ ] 14. Validate generated userscript functionality
   - Compare generated userscript behavior with original single file
   - Test all existing features work identically (control panel, dragging, logging)
   - Verify userscript metadata is correctly generated
   - Test installation and updates work with Tampermonkey
   - _Requirements: 2.4, 3.1, 3.2_
 
-- [ ] 14. Update development workflow and documentation
+- [ ] 15. Update development workflow and documentation
   - Update README.md with multi-file development instructions
   - Create migration guide for transitioning from single file
   - Update branch helper script to work with build system

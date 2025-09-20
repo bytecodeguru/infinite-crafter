@@ -5,7 +5,7 @@
 
 import { addControlMethods } from './log-display-controls.js';
 import { addUtilityMethods } from './log-display-utils.js';
-import { createElement, escapeHtml, safeQuerySelector } from '../utils/dom.js';
+import { createElement, escapeHtml } from '../utils/dom.js';
 
 /**
  * LogDisplay class for rendering and managing the logs UI

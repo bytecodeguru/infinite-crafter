@@ -11,7 +11,7 @@ test.describe('Logging System', () => {
 
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage();
-    
+
     // Create test environment
     const testHTML = `
       <!DOCTYPE html>
@@ -24,26 +24,26 @@ test.describe('Logging System', () => {
       </body>
       </html>
     `;
-    
+
     await page.setContent(testHTML);
-    
+
     // Inject the userscript
     const scriptCode = userscriptContent
       .replace(/^\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==\s*/, '');
-    
+
     await page.addScriptTag({ content: scriptCode });
     await page.waitForSelector('#infinite-craft-control-panel', { timeout: 5000 });
-    
+
     // Listen for all console messages
     page.on('console', msg => {
       console.log(`[${msg.type()}] ${msg.text()}`);
     });
-    
+
     // Listen for page errors
     page.on('pageerror', error => {
       console.log('Page error:', error.message);
     });
-    
+
     // Debug what's available on window
     const windowProps = await page.evaluate(() => {
       return {
@@ -56,28 +56,28 @@ test.describe('Logging System', () => {
       };
     });
     console.log('Window properties:', windowProps);
-    
+
     // Try to wait for Logger or skip if not available
     try {
       await page.waitForFunction(() => {
-        return typeof window.Logger !== 'undefined' && 
+        return typeof window.Logger !== 'undefined' &&
                typeof window.Logger.log === 'function';
       }, { timeout: 2000 });
-    } catch (e) {
-      console.log('Logger not available, tests may fail');
+    } catch (error) {
+      console.log('Logger not available, tests may fail:', error.message);
     }
   });
 
   test('should display log section in control panel', async () => {
     const logSection = await page.locator('.logs-section');
     await expect(logSection).toBeVisible();
-    
+
     const logHeader = await page.locator('.logs-section h4');
     await expect(logHeader).toContainText('Logs');
-    
+
     const logContent = await page.locator('.logs-list');
     await expect(logContent).toBeVisible();
-    
+
     const clearButton = await page.locator('.logs-clear');
     await expect(clearButton).toBeVisible();
     await expect(clearButton).toContainText('Clear');
@@ -93,7 +93,7 @@ test.describe('Logging System', () => {
 
     const logContent = await page.locator('.logs-list');
     const logText = await logContent.textContent();
-    
+
     expect(logText).toContain('Test info message');
     expect(logText).toContain('Test warning message');
     expect(logText).toContain('Test error message');
@@ -129,12 +129,12 @@ test.describe('Logging System', () => {
     });
 
     const logContent = await page.locator('.logs-list');
-    
+
     // Check if scrolled to bottom
     const isScrolledToBottom = await logContent.evaluate(el => {
       return Math.abs(el.scrollTop - (el.scrollHeight - el.clientHeight)) < 5;
     });
-    
+
     expect(isScrolledToBottom).toBe(true);
   });
 
@@ -180,7 +180,7 @@ test.describe('Logging System', () => {
     });
 
     const logContent = await page.locator('.logs-list');
-    
+
     // Manually scroll up
     await logContent.evaluate(el => {
       el.scrollTop = 0;
@@ -205,7 +205,7 @@ test.describe('Logging System', () => {
 
     const logContent = await page.locator('.logs-list');
     const logText = await logContent.textContent();
-    
+
     // Check timestamp format (HH:MM:SS)
     const timestampRegex = /\[\d{2}:\d{2}:\d{2}\]/;
     expect(logText).toMatch(timestampRegex);

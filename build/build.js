@@ -31,29 +31,29 @@ if (options.verbose) {
 // Main execution
 async function main() {
     const buildManager = new BuildManager(config);
-    
+
     try {
         if (options.clean) {
             await buildManager.clean();
             return;
         }
-        
+
         if (options.watch) {
             await buildManager.watch();
-            
+
             // Keep process alive for watch mode
             process.on('SIGINT', async () => {
                 console.log('\nShutting down watch mode...');
                 await buildManager.stopWatch();
                 process.exit(0);
             });
-            
+
             // Keep the process running
             await new Promise(() => {});
         } else {
             await buildManager.build();
         }
-        
+
     } catch (error) {
         console.error('Build process failed:', error.message);
         if (options.verbose) {

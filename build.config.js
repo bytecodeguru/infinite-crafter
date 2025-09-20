@@ -17,6 +17,20 @@ export default {
         ignored: ['node_modules/**', 'dist/**', '.git/**']
     },
 
+    // Quality gates
+    quality: {
+        lint: {
+            enabled: true,
+            command: 'npm run lint',
+            skipOnWatch: false
+        },
+        test: {
+            enabled: true,
+            command: 'npm test',
+            skipOnWatch: false
+        }
+    },
+
     // Branch and URL configuration
     branch: {
         auto: true,

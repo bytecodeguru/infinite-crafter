@@ -547,11 +547,11 @@
             }
 
             @keyframes pulse-activity {
-                0%, 100% { 
-                    opacity: 1; 
+                0%, 100% {
+                    opacity: 1;
                     transform: scale(1);
                 }
-                50% { 
+                50% {
                     opacity: 0.7;
                     transform: scale(0.98);
                 }
@@ -617,27 +617,27 @@
      */
     function createElement(tagName, options = {}) {
         const element = document.createElement(tagName);
-    
+
         if (options.className) {
             element.className = options.className;
         }
-    
+
         if (options.id) {
             element.id = options.id;
         }
-    
+
         if (options.innerHTML) {
             element.innerHTML = options.innerHTML;
         }
-    
+
         if (options.style) {
             Object.assign(element.style, options.style);
         }
-    
+
         if (options.dataset) {
             Object.assign(element.dataset, options.dataset);
         }
-    
+
         return element;
     }
 
@@ -660,14 +660,14 @@
      */
     function safeQuerySelector(container, selector) {
         try {
-            const containerElement = typeof container === 'string' 
-                ? document.querySelector(container) 
+            const containerElement = typeof container === 'string'
+                ? document.querySelector(container)
                 : container;
-            
+
             if (!containerElement) {
                 return null;
             }
-        
+
             return containerElement.querySelector(selector);
         } catch (error) {
             console.warn('[DOM] Query selector failed:', selector, error);
@@ -689,9 +689,9 @@
                 console.warn('[DOM] Invalid element or handler for event listener');
                 return null;
             }
-        
+
             element.addEventListener(event, handler, options);
-        
+
             // Return cleanup function
             return () => {
                 element.removeEventListener(event, handler, options);

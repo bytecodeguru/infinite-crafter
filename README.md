@@ -391,6 +391,7 @@ The project includes a comprehensive build system that transforms modular ES6 so
 - **Branch-Aware URLs**: Automatic URL generation based on Git branch
 - **Watch Mode**: Automatic rebuilds on file changes during development
 - **Build Validation**: Syntax checking and policy enforcement
+- **Quality Gates**: Automated lint and test execution before bundling
 - **Comprehensive Logging**: Configurable logging with timestamps and colors
 
 #### Implementation Status
@@ -407,18 +408,17 @@ The project includes a comprehensive build system that transforms modular ES6 so
 - **DOM Utilities**: Comprehensive DOM manipulation utilities with error handling and safety features
 - **Template System**: Userscript metadata template with variable replacement and branch-aware URLs
 - **Syntax Validation**: Generated userscript syntax checking and validation
+- **Quality Gates**: Automated linting (ESLint) and testing before bundling
 - **Error Handling**: Comprehensive error reporting and logging system
 - **Unit Testing**: ModuleResolver test suite with comprehensive coverage
+- **Linting**: ESLint flat-config enforcing project conventions and whitespace rules
 
 **🚧 In Development:**
-- Build process integration and npm scripts
 - File size policy enforcement and validation
-- Watch mode for automatic rebuilds
-- Integration testing for complete build pipeline
+- Watch mode enhancements with status reporting
+- Integration testing for the full build pipeline
 
 **📋 Planned Features:**
-- npm script integration
-- Build process integration tests
 - Documentation and migration guides
 
 #### Quick Start
@@ -436,11 +436,17 @@ npm run build:watch
 # Clean build artifacts
 npm run clean
 
+# Run lint checks (ESLint)
+npm run lint
+
+# Optional legacy whitespace check
+npm run lint:format
+
 # Run unit tests
 npm test
 ```
 
-**Current Status**: The build system core is complete with BuildManager, ModuleResolver, and FileConcatenator classes. The npm scripts are configured but the build.js entry point needs to be implemented to connect the CLI interface.
+**Current Status**: The build system core, CLI entry point, and quality gates are live. Builds run lint and test commands before bundling and emit branch-aware userscript artifacts.
 
 #### FileConcatenator Implementation
 

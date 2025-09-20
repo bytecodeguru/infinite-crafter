@@ -11,7 +11,7 @@ test.describe('Integration Tests', () => {
 
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage();
-    
+
     // Create a more realistic test environment that simulates neal.fun/infinite-craft
     const testHTML = `
       <!DOCTYPE html>
@@ -19,25 +19,25 @@ test.describe('Integration Tests', () => {
       <head>
         <title>Infinite Craft</title>
         <style>
-          body { 
-            margin: 0; 
-            padding: 0; 
+          body {
+            margin: 0;
+            padding: 0;
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
           }
-          .game-area { 
-            width: 100%; 
-            height: 100vh; 
+          .game-area {
+            width: 100%;
+            height: 100vh;
             position: relative;
           }
-          .element { 
-            display: inline-block; 
-            padding: 8px 16px; 
-            margin: 4px; 
-            background: white; 
-            border-radius: 20px; 
-            cursor: pointer; 
+          .element {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 4px;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
           }
         </style>
       </head>
@@ -51,19 +51,19 @@ test.describe('Integration Tests', () => {
       </body>
       </html>
     `;
-    
+
     await page.setContent(testHTML);
-    
+
     // Inject the userscript
     const scriptCode = userscriptContent
       .replace(/^\/\/ ==UserScript==[\s\S]*?\/\/ ==\/UserScript==\s*/, '');
-    
+
     await page.addScriptTag({ content: scriptCode });
     await page.waitForSelector('#infinite-craft-control-panel', { timeout: 5000 });
-    
+
     // Wait for Logger to be available
     await page.waitForFunction(() => {
-      return typeof window.Logger !== 'undefined' && 
+      return typeof window.Logger !== 'undefined' &&
              typeof window.Logger.log === 'function';
     }, { timeout: 5000 });
   });
@@ -72,10 +72,10 @@ test.describe('Integration Tests', () => {
     // Check that game elements are still visible and functional
     const gameArea = await page.locator('.game-area');
     await expect(gameArea).toBeVisible();
-    
+
     const elements = await page.locator('.element').all();
     expect(elements.length).toBe(4);
-    
+
     // Check that control panel doesn't block game elements
     const fireElement = await page.locator('.element').first();
     await expect(fireElement).toBeVisible();
@@ -85,17 +85,17 @@ test.describe('Integration Tests', () => {
   test('should initialize logging system automatically', async () => {
     // Check that the logging system is initialized
     const hasLogger = await page.evaluate(() => {
-      return typeof window.Logger !== 'undefined' && 
+      return typeof window.Logger !== 'undefined' &&
              typeof window.Logger.log === 'function';
     });
-    
+
     expect(hasLogger).toBe(true);
-    
+
     // Test that logging works
     await page.evaluate(() => {
       window.Logger.log('Integration test message');
     });
-    
+
     const logContent = await page.locator('.logs-list');
     const logText = await logContent.textContent();
     expect(logText).toContain('Integration test message');
@@ -104,16 +104,15 @@ test.describe('Integration Tests', () => {
   test('should handle window resize gracefully', async () => {
     // Get initial panel position
     const panel = page.locator('#infinite-craft-control-panel');
-    const initialBox = await panel.boundingBox();
-    
+
     // Resize window
     await page.setViewportSize({ width: 800, height: 600 });
     await page.waitForTimeout(100);
-    
+
     // Check panel is still visible and positioned correctly
     await expect(panel).toBeVisible();
     const newBox = await panel.boundingBox();
-    
+
     // Panel should still be within viewport
     expect(newBox.x).toBeGreaterThanOrEqual(0);
     expect(newBox.y).toBeGreaterThanOrEqual(0);
@@ -130,16 +129,16 @@ test.describe('Integration Tests', () => {
       newElement.textContent = 'Steam';
       gameArea.appendChild(newElement);
     });
-    
+
     // Control panel should still work
     const panel = page.locator('#infinite-craft-control-panel');
     await expect(panel).toBeVisible();
-    
+
     // Logging should still work
     await page.evaluate(() => {
       window.Logger.log('After DOM change');
     });
-    
+
     const logContent = await page.locator('.logs-list');
     const logText = await logContent.textContent();
     expect(logText).toContain('After DOM change');
@@ -152,14 +151,14 @@ test.describe('Integration Tests', () => {
         window.Logger.log(`Rapid message ${i}`);
       }
     });
-    
+
     // Wait for logs to be processed
     await page.waitForTimeout(200);
-    
+
     // Check that messages are logged (may not be exactly 50 due to log rotation)
     const logEntries = await page.locator('.logs-list .log-entry').all();
     expect(logEntries.length).toBeGreaterThan(0);
-    
+
     // Check that the log container (.logs-content) is scrollable
     const logsContent = await page.locator('.logs-content');
     const isScrollable = await logsContent.evaluate(el => {
@@ -170,35 +169,35 @@ test.describe('Integration Tests', () => {
 
   test('should preserve panel state across interactions', async () => {
     const panel = page.locator('#infinite-craft-control-panel');
-    
+
     // Get initial position
     const initialBox = await panel.boundingBox();
-    
+
     // Move panel by dragging the header
     const header = page.locator('#infinite-craft-control-panel .panel-header');
     await header.hover();
     await page.mouse.down();
     await page.mouse.move(initialBox.x + 100, initialBox.y + 100);
     await page.mouse.up();
-    
+
     // Wait for drag to complete
     await page.waitForTimeout(100);
-    
+
     // Add some logs
     await page.evaluate(() => {
       window.Logger.log('State test message 1');
       window.Logger.warn('State test message 2');
     });
-    
+
     // Interact with page elements
     await page.locator('.element').first().click();
-    
+
     // Panel should have moved from its initial position
     const finalBox = await panel.boundingBox();
     const movedX = Math.abs(finalBox.x - initialBox.x) > 50;
     const movedY = Math.abs(finalBox.y - initialBox.y) > 50;
     expect(movedX || movedY).toBe(true);
-    
+
     // Logs should still be there
     const logContent = await page.locator('.logs-list');
     const logText = await logContent.textContent();

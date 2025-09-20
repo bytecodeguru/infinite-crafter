@@ -42,6 +42,19 @@ graph TD
     K --> F
 ```
 
+### Quality Gate Execution
+
+Before resolving modules, the build manager now executes configured quality checks. These commands are defined in `build.config.js` and typically include linting (`npm run lint`) and unit tests (`npm test`). Each command streams output directly to the console and fails the build on non-zero exit codes. Quality checks can be configured to skip during watch mode when necessary.
+
+### Linting Strategy (ESLint Adoption Plan)
+
+- **Tooling**: Add `eslint`, `@eslint/js`, and `globals` as dev dependencies with an `eslint.config.js` flat configuration. Extend the recommended ruleset and layer in project conventions (4-space indent, single quotes, semi-colons, no tabs, no trailing whitespace).
+- **Environment Targets**: Enable both `browser` and `node` environments; add `globals` for userscript/Tampermonkey objects and Playwright test globals.
+- **Ignore Patterns**: Exclude `dist/`, `node_modules/`, `.kiro/`, generated reports, and the compiled userscript. Keep `src/`, `build/`, `tests/`, `scripts/` within scope.
+- **Custom Rules**: Mirror existing formatting checks (`no-trailing-spaces`, `no-tabs`) and add sustainable defaults (`eqeqeq`, `no-unused-vars` with allow patterns for underscores).
+- **Quality Gate Integration**: Update `build.config.js` quality commands to run `npm run lint`, which now delegates to ESLint; keep the legacy whitespace script exposed via `npm run lint:format` for quick checks.
+- **Follow-up Tests**: Add lint-focused fixtures or sample files in tests to ensure lint command fails on expected violations, aligning with the new Quality Gate Policy.
+
 ## Components and Interfaces
 
 ### Build System Core

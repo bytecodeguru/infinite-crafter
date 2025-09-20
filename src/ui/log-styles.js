@@ -267,11 +267,11 @@ export function getLogStyles() {
         }
 
         @keyframes pulse-activity {
-            0%, 100% { 
-                opacity: 1; 
+            0%, 100% {
+                opacity: 1;
                 transform: scale(1);
             }
-            50% { 
+            50% {
                 opacity: 0.7;
                 transform: scale(0.98);
             }
