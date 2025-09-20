@@ -239,6 +239,7 @@ Build errors now include a `stage` identifier (for example `module-resolution`, 
 - **Syntax Validation**: Ensure generated userscript is valid JavaScript
 - **Functionality Tests**: Compare behavior of built userscript vs original
 - **Metadata Tests**: Validate userscript header format and content
+- **Automated Playwright suites** confirm control panel rendering, logging, and DOM interactions match expectations.
 
 ### Development Workflow Tests
 - **Branch Integration**: Test branch-specific URL generation
