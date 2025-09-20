@@ -3,6 +3,7 @@ import path from 'path';
 import { execSync, spawn } from 'child_process';
 import { ModuleResolver } from './ModuleResolver.js';
 import { FileConcatenator } from './FileConcatenator.js';
+import { BuildError, toBuildError } from './errors.js';
 
 /**
  * BuildManager orchestrates the entire build process for the userscript
@@ -77,8 +78,9 @@ export class BuildManager {
 
         } catch (error) {
             const buildTime = Date.now() - this.buildStartTime;
-            this.log('error', `Build failed after ${buildTime}ms:`, error.message);
-            throw error;
+            const buildError = toBuildError(error, error.message, { stage: error.stage || 'build' });
+            this.log('error', `Build failed after ${buildTime}ms: ${this.describeError(buildError)}`);
+            throw buildError;
         } finally {
             this.isBuilding = false;
         }
@@ -207,12 +209,16 @@ export class BuildManager {
             }
 
             if (!settings.command) {
-                throw new Error(`Quality check "${name}" is enabled but has no command configured`);
+                throw new BuildError(`Quality check "${name}" is enabled but has no command configured`, { stage: `quality:${name}` });
             }
 
             this.log('info', `Running ${name} check...`);
-            await this.executeQualityCommand(settings.command, name, settings.cwd);
-            this.log('info', `${name} check passed`);
+            try {
+                await this.executeQualityCommand(settings.command, name, settings.cwd);
+                this.log('info', `${name} check passed`);
+            } catch (error) {
+                throw toBuildError(error, error.message, { stage: `quality:${name}` });
+            }
         }
     }
 
@@ -234,12 +240,12 @@ export class BuildManager {
                 if (code === 0) {
                     resolve(true);
                 } else {
-                    reject(new Error(`Quality check "${label}" failed with exit code ${code}`));
+                    reject(new BuildError(`Quality check "${label}" failed with exit code ${code}`,{ stage: `quality:${label}` }));
                 }
             });
 
             child.on('error', (error) => {
-                reject(new Error(`Failed to run quality check "${label}": ${error.message}`));
+                reject(new BuildError(`Failed to run quality check "${label}": ${error.message}`,{ stage: `quality:${label}`, cause: error }));
             });
         });
     }
@@ -287,13 +293,13 @@ export class BuildManager {
         try {
             const srcStats = await fs.stat(this.config.srcDir);
             if (!srcStats.isDirectory()) {
-                throw new Error(`Source path is not a directory: ${this.config.srcDir}`);
+                throw new BuildError(`Source path is not a directory: ${this.config.srcDir}`, { stage: 'build', file: this.config.srcDir });
             }
         } catch (error) {
             if (error.code === 'ENOENT') {
-                throw new Error(`Source directory does not exist: ${this.config.srcDir}`);
+                throw new BuildError(`Source directory does not exist: ${this.config.srcDir}`, { stage: 'build', file: this.config.srcDir });
             }
-            throw error;
+            throw toBuildError(error, error.message, { stage: 'build', file: this.config.srcDir });
         }
     }
 
@@ -314,6 +320,22 @@ export class BuildManager {
     /**
      * Logging utility with configurable levels and formatting
      */
+    describeError(error) {
+        if (!(error instanceof BuildError)) {
+            return error.message;
+        }
+        const parts = [];
+        if (error.stage) {
+            parts.push(`[${error.stage}]`);
+        }
+        parts.push(error.message);
+        if (error.file) {
+            const location = error.line ? `${error.file}:${error.line}${error.column ? `:${error.column}` : ''}` : error.file;
+            parts.push(`(@ ${location})`);
+        }
+        return parts.join(' ');
+    }
+
     log(level, message, ...args) {
         const levels = { debug: 0, info: 1, warn: 2, error: 3 };
         const configLevel = levels[this.config.logging.level] || 1;

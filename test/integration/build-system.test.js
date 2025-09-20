@@ -5,6 +5,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { BuildManager } from '../../build/BuildManager.js';
+import { BuildError } from '../../build/errors.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -105,6 +106,36 @@ test('BuildManager.build produces bundled userscript from fixture', async (t) =>
     assert.match(output, /formatMessage\('panel ready'\)/, 'fixture code should be concatenated');
 });
 
+
+
+test('BuildManager.build surfaces syntax errors with context', async (t) => {
+    const env = await createBuildEnvironment();
+    t.after(env.cleanup);
+
+    const brokenMain = path.join(env.srcDir, 'main.js');
+    await fs.appendFile(brokenMain, '\nfunction broken(');
+
+    const config = {
+        ...env.baseConfig,
+        quality: {
+            lint: {
+                enabled: true,
+                command: `node "${env.successScript}"`,
+                skipOnWatch: false
+            }
+        }
+    };
+
+    const manager = new BuildManager(config);
+
+    await assert.rejects(() => manager.build(), (error) => {
+        assert(error instanceof BuildError);
+        assert.strictEqual(error.stage, 'syntax-validation');
+        return /syntax errors/.test(error.message);
+    });
+});
+
+
 test('BuildManager.build fails when quality gate command fails', async (t) => {
     const env = await createBuildEnvironment();
     t.after(env.cleanup);
@@ -122,7 +153,11 @@ test('BuildManager.build fails when quality gate command fails', async (t) => {
 
     const manager = new BuildManager(config);
 
-    await assert.rejects(() => manager.build(), /Quality check "lint" failed/);
+    await assert.rejects(() => manager.build(), (error) => {
+        assert(error instanceof BuildError);
+        assert.strictEqual(error.stage, 'quality:lint');
+        return /failed with exit code/.test(error.message);
+    });
 
     const outputPath = path.join(config.outputDir, config.outputFile);
     const exists = await fs.access(outputPath).then(() => true).catch(() => false);
@@ -140,5 +175,9 @@ test('BuildManager.build throws when source directory is missing', async (t) => 
 
     const manager = new BuildManager(config);
 
-    await assert.rejects(() => manager.build(), /Source directory does not exist/);
+    await assert.rejects(() => manager.build(), (error) => {
+        assert(error instanceof BuildError);
+        assert.strictEqual(error.stage, 'build');
+        return /Source directory does not exist/.test(error.message);
+    });
 });

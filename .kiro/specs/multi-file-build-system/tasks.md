@@ -67,11 +67,11 @@
   - Add clear console output showing build status and timing
   - _Requirements: 4.1, 4.2, 4.4_
 
-- [ ] 10. Add comprehensive error handling
-  - Implement BuildError class with file location information
-  - Add syntax validation for generated userscript
-  - Create import/export validation to catch missing dependencies
-  - Add error reporting with clear file and line information
+- [x] 10. Add comprehensive error handling
+  - ✅ Introduced BuildError class carrying stage/file context and wrapped BuildManager logging
+  - ✅ Promoted syntax validation and output writing to raise BuildError with stage metadata
+  - ✅ Hardened ModuleResolver import/export checks with contextual failures
+  - ✅ Added quality gate wrapping so lint/test failures surface actionable diagnostics
   - _Requirements: 4.3, 2.4_
 
 - [ ] 11. Create build scripts and npm integration

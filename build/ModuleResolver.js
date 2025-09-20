@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { BuildError } from './errors.js';
 
 /**
  * ModuleResolver handles ES6 import/export parsing and dependency resolution
@@ -69,7 +70,7 @@ export class ModuleResolver {
         return uniqueOrder.map(modulePath => {
             const module = this.modules.get(modulePath);
             if (!module) {
-                throw new Error(`Module not found in resolution: ${modulePath}`);
+                throw new BuildError(`Module not found in resolution: ${modulePath}`, { stage: 'module-resolution', file: modulePath });
             }
             return module;
         });
@@ -128,7 +129,7 @@ export class ModuleResolver {
             this.log('debug', `Module ${relativePath}: ${module.imports.length} imports, ${module.exports.length} exports`);
 
         } catch (error) {
-            throw new Error(`Failed to parse module ${filePath}: ${error.message}`);
+            throw new BuildError(`Failed to parse module ${filePath}: ${error.message}`, { stage: 'module-resolution', file: filePath, cause: error });
         }
     }
 
@@ -284,7 +285,7 @@ export class ModuleResolver {
                 await fs.access(resolvedPath);
                 return resolvedPath;
             } catch {
-                throw new Error(`Cannot resolve import "${importPath}" from ${currentFilePath}`);
+                throw new BuildError(`Cannot resolve import "${importPath}" from ${currentFilePath}` , { stage: 'module-resolution', file: currentFilePath });
             }
         }
 
@@ -300,7 +301,7 @@ export class ModuleResolver {
                 await fs.access(resolvedPath);
                 return resolvedPath;
             } catch {
-                throw new Error(`Cannot resolve absolute import "${importPath}" from ${currentFilePath}`);
+                throw new BuildError(`Cannot resolve absolute import "${importPath}" from ${currentFilePath}` , { stage: 'module-resolution', file: currentFilePath });
             }
         }
 
@@ -336,7 +337,7 @@ export class ModuleResolver {
                 });
 
                 if (!targetPath) {
-                    throw new Error(`Import "${importDef.source}" in ${module.relativePath} cannot be resolved`);
+                    throw new BuildError(`Import "${importDef.source}" in ${module.relativePath} cannot be resolved`, { stage: 'module-resolution', file: module.path });
                 }
 
                 const targetModule = this.modules.get(targetPath);
@@ -346,13 +347,13 @@ export class ModuleResolver {
                     for (const specifier of importDef.specifiers) {
                         const exportExists = targetModule.exports.some(exp => exp.name === specifier);
                         if (!exportExists) {
-                            throw new Error(`Import "${specifier}" from "${importDef.source}" in ${module.relativePath} does not exist in target module`);
+                            throw new BuildError(`Import "${specifier}" from "${importDef.source}" in ${module.relativePath} does not exist in target module`, { stage: 'module-resolution', file: module.path });
                         }
                     }
                 } else if (importDef.type === 'default') {
                     const hasDefault = targetModule.exports.some(exp => exp.isDefault);
                     if (!hasDefault) {
-                        throw new Error(`Default import from "${importDef.source}" in ${module.relativePath} but target module has no default export`);
+                        throw new BuildError(`Default import from "${importDef.source}" in ${module.relativePath} but target module has no default export`, { stage: 'module-resolution', file: module.path });
                     }
                 }
             }
@@ -387,7 +388,7 @@ export class ModuleResolver {
             if (!visited.has(modulePath)) {
                 const cycle = this.detectCycleFromNode(modulePath, visited, recursionStack, []);
                 if (cycle.length > 0) {
-                    throw new Error(`Circular dependency detected: ${cycle.join(' -> ')}`);
+                    throw new BuildError(`Circular dependency detected: ${cycle.join(' -> ')}`, { stage: 'module-resolution' });
                 }
             }
         }

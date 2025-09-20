@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { BuildError } from './errors.js';
 
 /**
  * FileConcatenator handles the concatenation of ES6 modules into a single userscript
@@ -64,7 +65,7 @@ export class FileConcatenator {
             // Extract metadata object from header.js
             const metadataMatch = headerContent.match(/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\});/);
             if (!metadataMatch) {
-                throw new Error('Could not find metadata export in header.js');
+                throw new BuildError('Could not find metadata export in header.js', { stage: 'concatenation', file: headerPath });
             }
 
             // Parse metadata (simple eval for now - could be improved with proper parsing)
@@ -95,7 +96,10 @@ export class FileConcatenator {
             return headerLines.join('\n');
 
         } catch (error) {
-            throw new Error(`Failed to generate userscript header: ${error.message}`);
+            if (error instanceof BuildError) {
+                throw error;
+            }
+            throw new BuildError(`Failed to generate userscript header: ${error.message}`, { stage: 'concatenation', file: headerPath, cause: error });
         }
     }
 
@@ -111,6 +115,10 @@ export class FileConcatenator {
         // Replace {{VERSION}}
         if (processed.version && processed.version.includes('{{VERSION}}')) {
             processed.version = processed.version.replace('{{VERSION}}', buildContext.version);
+        }
+
+        if (!this.config.branch || !this.config.branch.urlTemplate) {
+            throw new BuildError('Branch URL template is not configured in build.config.js', { stage: 'concatenation' });
         }
 
         // Replace {{UPDATE_URL}} and {{DOWNLOAD_URL}}
@@ -186,7 +194,7 @@ export class FileConcatenator {
             await fs.writeFile(outputPath, content, 'utf8');
             return true;
         } catch (error) {
-            throw new Error(`Failed to write output file: ${error.message}`);
+            throw new BuildError(`Failed to write output file: ${error.message}`, { stage: 'output', file: outputPath, cause: error });
         }
     }
 
@@ -201,7 +209,7 @@ export class FileConcatenator {
             new Function(content);
             return true;
         } catch (error) {
-            throw new Error(`Generated userscript has syntax errors: ${error.message}`);
+            throw new BuildError(`Generated userscript has syntax errors: ${error.message}`, { stage: 'syntax-validation', cause: error });
         }
     }
 }

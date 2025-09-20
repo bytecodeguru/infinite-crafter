@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { BuildManager } from '../../build/BuildManager.js';
+import { BuildError } from '../../build/errors.js';
 
 class TestBuildManager extends BuildManager {
     constructor(config) {
@@ -110,6 +111,10 @@ test('runQualityChecks surfaces command failures', async (t) => {
     };
 
     const manager = new TestBuildManager(config);
-    await assert.rejects(() => manager.runQualityChecks(), /Simulated failure/);
+    await assert.rejects(() => manager.runQualityChecks(), (error) => {
+        assert(error instanceof BuildError);
+        assert.strictEqual(error.stage, 'quality:lint');
+        return /Simulated failure/.test(error.message);
+    });
     assert.strictEqual(manager.executedCommands.length, 1);
 });

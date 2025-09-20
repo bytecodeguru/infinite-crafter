@@ -198,16 +198,28 @@ interface ImportDefinition {
 - Validate userscript metadata format
 
 ### Error Reporting
-```javascript
+````javascript
 class BuildError extends Error {
-    constructor(message, file, line, column) {
+    constructor(message, { file = null, line = null, column = null, stage = null, cause = null } = {}) {
         super(message);
         this.file = file;
         this.line = line;
         this.column = column;
+        this.stage = stage;
+        if (cause) {
+            this.cause = cause;
+        }
+    }
+
+    toLogString() {
+        const stagePart = this.stage ? `[${this.stage}] ` : '';
+        const location = this.file ? ` (@ ${this.file}${this.line ? `:${this.line}${this.column ? `:${this.column}` : ''}` : ''})` : '';
+        return `${stagePart}${this.message}${location}`;
     }
 }
 ```
+
+Build errors now include a `stage` identifier (for example `module-resolution`, `quality:lint`, or `syntax-validation`) along with file and line metadata when available. This ensures failures point directly to the offending module or quality gate.
 
 ## Testing Strategy
 

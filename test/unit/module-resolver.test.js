@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'fs/promises';
 import path from 'path';
 import { ModuleResolver } from '../../build/ModuleResolver.js';
+import { BuildError } from '../../build/errors.js';
 
 describe('ModuleResolver', () => {
     const testDir = path.resolve('test/fixtures/modules');
@@ -173,7 +174,11 @@ export function b() { return a(); }
 
             await assert.rejects(
                 async () => await resolver.resolveModules(),
-                /Circular dependency detected/
+                (error) => {
+                    assert(error instanceof BuildError);
+                    assert.strictEqual(error.stage, 'module-resolution');
+                    return /Circular dependency detected/.test(error.message);
+                }
             );
 
         } finally {
@@ -200,7 +205,11 @@ export function existingFunction() {}
 
             await assert.rejects(
                 async () => await resolver.resolveModules(),
-                /does not exist in target module/
+                (error) => {
+                    assert(error instanceof BuildError);
+                    assert.strictEqual(error.stage, 'module-resolution');
+                    return /does not exist in target module/.test(error.message);
+                }
             );
 
         } finally {
