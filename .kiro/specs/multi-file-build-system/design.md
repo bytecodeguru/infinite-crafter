@@ -57,6 +57,13 @@ Before resolving modules, the build manager now executes configured quality chec
 
 ## Components and Interfaces
 
+### Command Line Interface
+- `node build/build.js` defaults to a single build; `watch` and `clean` subcommands mirror npm scripts.
+- `--config` allows loading an alternate build configuration file.
+- `--skip-quality` temporarily disables lint/test gates (for local debugging only).
+- `--verbose`/`--quiet` control the logging level; `--help` prints usage.
+- All CLI options feed through the BuildManager so quality gates and logging remain consistent.
+
 ### Build System Core
 
 **BuildManager Class**

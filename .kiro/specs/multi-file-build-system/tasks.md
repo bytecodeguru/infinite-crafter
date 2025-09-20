@@ -74,9 +74,9 @@
   - ✅ Added quality gate wrapping so lint/test failures surface actionable diagnostics
   - _Requirements: 4.3, 2.4_
 
-- [ ] 11. Create build scripts and npm integration
+- [x] 11. Create build scripts and npm integration
   - ✅ Add npm scripts for build, watch, and clean operations
-  - 🚧 Create build.js executable script with command-line options (needs implementation)
+  - ✅ Implement build.js CLI with commands, config overrides, and quality toggles
   - ✅ Add clean functionality to remove generated files
   - ✅ Implement verbose logging option for debugging builds
   - _Requirements: 2.1, 4.1, 4.4_

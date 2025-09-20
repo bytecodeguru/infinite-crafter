@@ -390,6 +390,7 @@ The project includes a comprehensive build system that transforms modular ES6 so
 - **File Size Policy**: Enforced limits (300 lines per file, 50 lines per function)
 - **Branch-Aware URLs**: Automatic URL generation based on Git branch
 - **Watch Mode**: Automatic rebuilds on file changes during development
+- **CLI Commands**: Single build, watch, and clean commands with config overrides
 - **Build Validation**: Syntax checking and policy enforcement
 - **Quality Gates**: Automated lint and test execution before bundling
 - **Comprehensive Logging**: Configurable logging with timestamps and colors
@@ -409,7 +410,7 @@ The project includes a comprehensive build system that transforms modular ES6 so
 - **Template System**: Userscript metadata template with variable replacement and branch-aware URLs
 - **Syntax Validation**: Generated userscript syntax checking and validation
 - **Quality Gates**: Automated linting (ESLint) and testing before bundling
-- **Error Handling**: Comprehensive error reporting and logging system
+- **Error Handling**: Comprehensive error reporting, BuildError staging, and logging system
 - **Unit Testing**: ModuleResolver test suite with comprehensive coverage
 - **Linting**: ESLint flat-config enforcing project conventions and whitespace rules
 
@@ -430,11 +431,13 @@ npm install
 # Build the userscript from source files
 npm run build
 
-# Start watch mode for development (when implemented)
+# Start watch mode for development
 npm run build:watch
+# (or node build/build.js watch --verbose)
 
 # Clean build artifacts
 npm run clean
+# (or node build/build.js clean)
 
 # Run lint checks (ESLint)
 npm run lint
