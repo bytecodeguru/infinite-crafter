@@ -1,11 +1,11 @@
 import { test, describe } from 'node:test';
-import assert from 'node:assert';
+import assert from 'node:assert/strict';
 import fs from 'fs/promises';
 import path from 'path';
 import { ModuleResolver } from '../../build/ModuleResolver.js';
 
 describe('ModuleResolver', () => {
-    const testDir = './test/fixtures/modules';
+    const testDir = path.resolve('test/fixtures/modules');
 
     // Setup test fixtures
     async function setupTestFixtures() {
@@ -70,7 +70,7 @@ export default Component;
     });
 
     test('should parse imports correctly', async () => {
-        const resolver = new ModuleResolver('./src');
+        const resolver = new ModuleResolver('test/fixtures/modules');
 
         const content = `
 import { named1, named2 } from './module1.js';
@@ -79,7 +79,7 @@ import * as namespace from './module3.js';
 import './side-effect.js';
         `;
 
-        const imports = resolver.parseImports(content, '/test/file.js');
+        const imports = resolver.parseImports(content);
 
         assert.strictEqual(imports.length, 4);
 
@@ -105,7 +105,7 @@ import './side-effect.js';
     });
 
     test('should parse exports correctly', async () => {
-        const resolver = new ModuleResolver('./src');
+        const resolver = new ModuleResolver('test/fixtures/modules');
 
         const content = `
 export function namedFunction() {}

@@ -113,7 +113,7 @@ export class ModuleResolver {
                 path: filePath,
                 relativePath: relativePath,
                 content: content,
-                imports: this.parseImports(content, filePath),
+                imports: this.parseImports(content),
                 exports: this.parseExports(content),
                 dependencies: []
             };

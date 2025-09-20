@@ -94,11 +94,11 @@
   - ✅ Added design notes covering ESLint strategy and future test fixtures
   - _Follow-up from Task 12_
 
-- [ ] 13. Write comprehensive tests for build system
-  - Create unit tests for BuildManager and ModuleResolver classes
-  - Write integration tests for complete build process
-  - Add fixture files for testing various module configurations
-  - Test error scenarios (missing files, circular dependencies, syntax errors)
+- [x] 13. Write comprehensive tests for build system
+  - ✅ Added unit tests for BuildManager quality gates and ModuleResolver parsing/validation
+  - ✅ Added integration tests that build from fixtures and assert output/errors
+  - ✅ Introduced reusable fixtures under `test/fixtures/build/basic` for pipeline coverage
+  - ✅ Covered error scenarios (quality gate failure, missing source, missing exports, circular imports)
   - _Requirements: 2.4, 4.3_
 
 - [ ] 14. Validate generated userscript functionality

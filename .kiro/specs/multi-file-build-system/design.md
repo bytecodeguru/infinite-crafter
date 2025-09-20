@@ -213,8 +213,8 @@ class BuildError extends Error {
 
 ### Build System Tests
 - **Unit Tests**: Test individual build components (ModuleResolver, BuildManager)
-- **Integration Tests**: Test complete build process with sample source files
-- **File System Tests**: Test file watching and incremental builds
+- **Integration Tests**: Exercise the end-to-end build using fixture source trees
+- **File System Tests**: (Planned) Test file watching and incremental builds
 
 ### Output Validation
 - **Syntax Validation**: Ensure generated userscript is valid JavaScript
@@ -223,23 +223,20 @@ class BuildError extends Error {
 
 ### Development Workflow Tests
 - **Branch Integration**: Test branch-specific URL generation
-- **Watch Mode**: Test file change detection and rebuild triggers
+- **Watch Mode**: (Planned) Test file change detection and rebuild triggers
 - **Error Scenarios**: Test handling of various error conditions
 
 ### Test Structure
 ```
 test/
-├── unit/
-│   ├── build-manager.test.js
-│   ├── module-resolver.test.js
-│   └── config.test.js
-├── integration/
-│   ├── build-process.test.js
-│   └── watch-mode.test.js
 ├── fixtures/
-│   └── sample-src/
-└── output/
-    └── generated-tests/
+│   └── build/
+│       └── basic/            # Shared fixture for build/integration tests
+├── integration/
+│   └── build-system.test.js  # End-to-end pipeline assertions
+└── unit/
+    ├── build-manager.test.js # Quality gate behaviour
+    └── module-resolver.test.js # Parsing, ordering, validation
 ```
 
 ## File Size and Focus Policy
