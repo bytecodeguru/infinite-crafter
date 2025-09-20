@@ -144,8 +144,8 @@ gameInterface.runBasicTests()
 logManager.addLog('info', 'Custom log message')
 logManager.addLog('error', 'Something went wrong', [additionalData])
 
-// Get current logs
-logManager.getLogs()           // Returns array of all log entries
+// Get current logs (returns LogEntry objects)
+logManager.getLogs()           // Returns array of all LogEntry instances
 logManager.getLogCount()       // Returns total number of logs
 logManager.getLogsByLevel('error')  // Filter logs by level
 
@@ -157,12 +157,19 @@ logManager.getLogStats()       // Get statistics by log level
 const unsubscribe = logManager.subscribe((event, data) => {
     if (event === 'logAdded') {
         console.log('New log added:', data.toString());
+        console.log('Log ID:', data.id);
+        console.log('Timestamp:', data.timestamp);
     }
 });
 
-// Run comprehensive logging tests
-logManager.runLogManagerTests()
-// Tests log storage, rotation, events, and filtering with detailed output
+// LogEntry structure - each log is a LogEntry instance with:
+// - id: Unique identifier (timestamp + random)
+// - timestamp: Date object when log was created
+// - level: Log level ('info', 'warn', 'error', etc.)
+// - message: The log message string
+// - args: Additional arguments passed to the log
+// - source: Source identifier (defaults to 'userscript')
+// - toString(): Formatted string representation
 ```
 
 #### Logger API (Primary Logging Interface)
@@ -176,6 +183,31 @@ Logger.error('Error message')         // Add error-level log entry
 // Available globally as window.Logger for console testing
 // All log entries added through Logger appear in the control panel logs section
 // Before initialization, calls are logged to console with "Not initialized yet" prefix
+```
+
+#### LogEntry Class
+```javascript
+// LogEntry represents individual log entries with rich metadata
+import { LogEntry } from '../core/log-entry.js';
+
+// Create a log entry (usually done automatically by LogManager)
+const entry = new LogEntry('info', 'My message', ['additional', 'data']);
+
+// LogEntry properties:
+entry.id          // Unique identifier (timestamp + random string)
+entry.timestamp   // Date object when log was created
+entry.level       // Log level string ('info', 'warn', 'error', etc.)
+entry.message     // The log message string
+entry.args        // Array of additional arguments
+entry.source      // Source identifier (defaults to 'userscript')
+
+// LogEntry methods:
+entry.toString()  // Returns formatted string: "[HH:MM:SS] LEVEL: message"
+entry.generateId() // Generates unique ID (called automatically)
+
+// Example usage in custom logging:
+const customEntry = new LogEntry('debug', 'Custom debug info', [{ data: 'value' }]);
+logManager.logs.unshift(customEntry); // Add directly to log manager
 ```
 
 
@@ -219,10 +251,14 @@ The control panel includes a built-in console log viewer with the following feat
 - **Original Console Preserved**: All console functionality remains completely untouched
 
 **Log Format:**
-Each log entry displays:
-- **Timestamp**: Precise time when the log was created (HH:MM:SS format)
-- **Level Icon**: Visual indicator for the log level
+Each log entry is a LogEntry instance that displays:
+- **Unique ID**: Auto-generated identifier for tracking individual logs
+- **Timestamp**: Precise Date object when the log was created (displayed as HH:MM:SS format)
+- **Level**: Log level string ('info', 'warn', 'error', etc.)
+- **Level Icon**: Visual indicator for the log level in the UI
 - **Message**: The actual log content with proper formatting
+- **Args**: Additional data passed with the log entry
+- **Source**: Identifier for the log source (defaults to 'userscript')
 
 **DOM Structure:**
 The logging system creates the following DOM structure for developers:
@@ -363,31 +399,49 @@ src/
 ├── header.js                 # ✅ Userscript metadata and configuration template
 ├── core/
 │   ├── version.js           # ✅ Version management utilities
-│   └── logger.js            # ✅ LogManager, LogDisplay, and Logger API
+│   ├── log-entry.js         # ✅ LogEntry data structure for log entries
+│   └── log-manager.js       # ✅ LogManager and Logger API
 ├── ui/
 │   ├── control-panel.js     # ✅ Main control panel creation
 │   ├── styles.js            # ✅ CSS styles injection
-│   └── draggable.js         # ✅ Drag functionality
+│   ├── draggable.js         # ✅ Drag functionality
+│   ├── log-display-core.js  # ✅ LogDisplay core functionality
+│   ├── log-display-controls.js # ✅ Log display controls and interactions
+│   ├── log-display-utils.js # ✅ Log display utilities
+│   ├── log-styles.js        # ✅ Log-specific CSS styling
+│   └── panel-styles.js      # ✅ Panel-specific CSS styling
 └── main.js                  # ✅ Entry point and initialization
 ```
 
 **Current Implementation:**
 - **header.js**: Template-based userscript metadata with `{{VERSION}}`, `{{UPDATE_URL}}`, and `{{DOWNLOAD_URL}}` placeholders
 - **core/version.js**: Version parsing and display formatting with development/production detection
-- **core/logger.js**: Complete logging system with LogManager, LogDisplay, and Logger API
+- **core/log-entry.js**: LogEntry data structure with unique IDs, timestamps, and metadata
+- **core/log-manager.js**: LogManager class with event system and Logger API factory
 - **ui/control-panel.js**: Panel creation with version display and logs section integration
-- **ui/styles.js**: Comprehensive CSS styling for panel, logs, and responsive design
+- **ui/styles.js**: CSS injection system combining panel and log styles
 - **ui/draggable.js**: Drag functionality with proper event handling and positioning
+- **ui/log-display-core.js**: Core log display functionality and DOM management
+- **ui/log-display-controls.js**: Interactive controls for log management
+- **ui/log-display-utils.js**: Utility functions for log formatting and display
+- **ui/log-styles.js**: Comprehensive CSS styling for log display components
+- **ui/panel-styles.js**: CSS styling for the main control panel
 - **main.js**: Complete initialization sequence with logging system integration
 
 **File Size Compliance:**
 All source files follow the 250-line policy with focused single responsibilities:
 - header.js: 21 lines (metadata template)
 - core/version.js: 18 lines (version utilities)
-- core/logger.js: 247 lines (comprehensive logging system)
+- core/log-entry.js: 27 lines (log entry data structure)
+- core/log-manager.js: ~120 lines (log management and API)
 - ui/control-panel.js: 58 lines (panel creation)
-- ui/styles.js: 247 lines (complete styling system)
+- ui/styles.js: ~15 lines (CSS injection system)
 - ui/draggable.js: 67 lines (drag functionality)
+- ui/log-display-core.js: ~200 lines (log display functionality)
+- ui/log-display-controls.js: ~150 lines (interactive controls)
+- ui/log-display-utils.js: ~100 lines (display utilities)
+- ui/log-styles.js: ~200 lines (log-specific styling)
+- ui/panel-styles.js: ~150 lines (panel styling)
 - main.js: 95 lines (initialization logic)
 
 #### Build Process
@@ -759,7 +813,7 @@ The source code has been successfully split into focused, maintainable modules:
 #### Core Architecture
 - **Metadata Template**: `src/header.js` provides userscript header with build-time variable replacement
 - **Version Management**: `src/core/version.js` handles version parsing and development/production detection
-- **Logging System**: `src/core/logger.js` provides complete LogManager, LogDisplay, and Logger API
+- **Logging System**: `src/core/log-manager.js` and `src/core/log-entry.js` provide complete logging infrastructure with LogManager, LogEntry data structure, and Logger API
 - **Initialization**: `src/main.js` orchestrates component initialization and global API setup
 
 #### UI Components
@@ -819,7 +873,7 @@ To add new features using the modular structure:
    - `src/utils/` - Utility functions and helpers (when needed)
 
 2. **Follow established patterns**:
-   - Import from existing modules: `import { Logger } from '../core/logger.js'`
+   - Import from existing modules: `import { createLogger } from '../core/log-manager.js'`
    - Export functions and classes: `export function createMyFeature() { ... }`
    - Follow file size policy: Maximum 250 lines per file
    - Single responsibility per module
@@ -827,7 +881,7 @@ To add new features using the modular structure:
 3. **Example new feature**:
    ```javascript
    // src/ui/my-feature.js
-   import { Logger } from '../core/logger.js';
+   import { createLogger } from '../core/log-manager.js';
    
    export function createMyFeature() {
        Logger.log('Creating my feature...');

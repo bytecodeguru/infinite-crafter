@@ -6,7 +6,8 @@
 import { addStyles } from './ui/styles.js';
 import { createControlPanel } from './ui/control-panel.js';
 import { makeDraggable } from './ui/draggable.js';
-import { LogManager, LogDisplay, createLogger } from './core/logger.js';
+import { LogManager, createLogger } from './core/log-manager.js';
+import { LogDisplay } from './ui/log-display-core.js';
 
 /**
  * Initialize the script
