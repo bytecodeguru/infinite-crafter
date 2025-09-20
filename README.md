@@ -210,6 +210,96 @@ const customEntry = new LogEntry('debug', 'Custom debug info', [{ data: 'value' 
 logManager.logs.unshift(customEntry); // Add directly to log manager
 ```
 
+#### DOM Utilities API
+The `src/utils/dom.js` module provides comprehensive DOM manipulation utilities with error handling and safety features:
+
+```javascript
+import { 
+    onDOMReady, 
+    addStyleSheet, 
+    appendToBody, 
+    createElement, 
+    escapeHtml,
+    safeQuerySelector,
+    addEventListenerSafe,
+    createTempTextarea,
+    removeElement
+} from '../utils/dom.js';
+
+// DOM Ready handling
+onDOMReady(() => {
+    console.log('DOM is ready for manipulation');
+});
+
+// Style injection with automatic head append
+const styleElement = addStyleSheet(`
+    .my-class { color: red; }
+    .another-class { background: blue; }
+`);
+
+// Safe body append with availability check
+const success = appendToBody(myElement);
+if (!success) {
+    console.warn('Body not available yet');
+}
+
+// Advanced element creation with options
+const element = createElement('div', {
+    className: 'my-panel',
+    id: 'unique-panel',
+    innerHTML: '<h1>Title</h1>',
+    style: { 
+        position: 'fixed',
+        top: '10px',
+        left: '10px'
+    },
+    dataset: {
+        panelType: 'control',
+        version: '1.0'
+    }
+});
+
+// XSS-safe HTML escaping
+const safeContent = escapeHtml(userInput);
+element.innerHTML = `<p>${safeContent}</p>`;
+
+// Safe query selector with error handling
+const foundElement = safeQuerySelector('#container', '.target-class');
+if (foundElement) {
+    // Element found safely
+}
+
+// Event listener with cleanup function
+const cleanup = addEventListenerSafe(button, 'click', (event) => {
+    console.log('Button clicked safely');
+}, { once: true });
+
+// Later: cleanup()  // Removes the event listener
+
+// Clipboard operations with temporary elements
+const textarea = createTempTextarea('Text to copy');
+document.body.appendChild(textarea);
+textarea.select();
+document.execCommand('copy');
+removeElement(textarea);
+
+// Safe element removal
+const removed = removeElement(elementToRemove);
+if (removed) {
+    console.log('Element removed successfully');
+}
+```
+
+**DOM Utilities Features:**
+- **Error Handling**: All functions include comprehensive error handling with console warnings
+- **Safety Checks**: Validates elements and parameters before operations
+- **Cleanup Functions**: Event listeners return cleanup functions for proper memory management
+- **XSS Protection**: HTML escaping prevents injection attacks
+- **Fallback Support**: Graceful degradation when DOM features aren't available
+- **Consistent API**: Uniform return values and error handling across all utilities
+- **Performance Optimized**: Minimal overhead with efficient DOM operations
+- **Modern Clipboard API**: Prefers `navigator.clipboard.writeText()` with `document.execCommand()` fallback for older browsers
+
 
 
 #### LogDisplay API
@@ -310,8 +400,10 @@ The project includes a comprehensive build system that transforms modular ES6 so
 - **Module Resolution**: ModuleResolver class with full ES6 import/export parsing
 - **Dependency Management**: Dependency graph creation and circular dependency detection
 - **Source File Structure**: Complete modular architecture with focused components
-- **Core Modules**: Version management, logging system, and utilities
-- **UI Components**: Control panel, styles, and drag functionality
+- **Core Modules**: Version management, logging system, and DOM utilities
+- **UI Components**: Control panel, styles, drag functionality, and comprehensive log display system
+- **Logging System**: Complete LogManager, LogEntry, and LogDisplay implementation with event system
+- **DOM Utilities**: Comprehensive DOM manipulation utilities with error handling and safety features
 - **Template System**: Userscript metadata template with variable replacement
 - **Error Handling**: Comprehensive error reporting and logging system
 - **Unit Testing**: ModuleResolver test suite with comprehensive coverage
@@ -410,6 +502,8 @@ src/
 │   ├── log-display-utils.js # ✅ Log display utilities
 │   ├── log-styles.js        # ✅ Log-specific CSS styling
 │   └── panel-styles.js      # ✅ Panel-specific CSS styling
+├── utils/
+│   └── dom.js               # ✅ DOM utilities and helper functions
 └── main.js                  # ✅ Entry point and initialization
 ```
 
@@ -426,6 +520,7 @@ src/
 - **ui/log-display-utils.js**: Utility functions for log formatting and display
 - **ui/log-styles.js**: Comprehensive CSS styling for log display components
 - **ui/panel-styles.js**: CSS styling for the main control panel
+- **utils/dom.js**: Comprehensive DOM utilities including element creation, event handling, and safety wrappers
 - **main.js**: Complete initialization sequence with logging system integration
 
 **File Size Compliance:**
@@ -442,6 +537,7 @@ All source files follow the 250-line policy with focused single responsibilities
 - ui/log-display-utils.js: ~100 lines (display utilities)
 - ui/log-styles.js: ~200 lines (log-specific styling)
 - ui/panel-styles.js: ~150 lines (panel styling)
+- utils/dom.js: 174 lines (DOM utilities and helpers)
 - main.js: 95 lines (initialization logic)
 
 #### Build Process
@@ -633,11 +729,19 @@ infinite-crafter/
 │   ├── header.js                     # ✅ Userscript metadata template
 │   ├── core/                         # ✅ Core functionality modules
 │   │   ├── version.js                # ✅ Version management utilities
-│   │   └── logger.js                 # ✅ Complete logging system
+│   │   ├── log-entry.js              # ✅ LogEntry data structure
+│   │   └── log-manager.js            # ✅ Complete logging system
 │   ├── ui/                           # ✅ User interface components
 │   │   ├── control-panel.js          # ✅ Main panel creation
 │   │   ├── styles.js                 # ✅ CSS styling system
-│   │   └── draggable.js              # ✅ Drag functionality
+│   │   ├── draggable.js              # ✅ Drag functionality
+│   │   ├── log-display-core.js       # ✅ Log display functionality
+│   │   ├── log-display-controls.js   # ✅ Log display controls
+│   │   ├── log-display-utils.js      # ✅ Log display utilities
+│   │   ├── log-styles.js             # ✅ Log-specific CSS styling
+│   │   └── panel-styles.js           # ✅ Panel-specific CSS styling
+│   ├── utils/                        # ✅ Utility modules
+│   │   └── dom.js                    # ✅ DOM utilities and helpers
 │   └── main.js                       # ✅ Application entry point
 ├── test/                             # ✅ Testing infrastructure
 │   ├── unit/

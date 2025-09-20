@@ -4,6 +4,7 @@
  */
 
 import { getVersionInfo } from '../core/version.js';
+import { createElement } from '../utils/dom.js';
 
 /**
  * Create the overlay control panel
@@ -11,14 +12,12 @@ import { getVersionInfo } from '../core/version.js';
  */
 export function createControlPanel() {
     const versionInfo = getVersionInfo();
-    const panel = document.createElement('div');
-    panel.id = 'infinite-craft-control-panel';
 
     const versionDisplay = versionInfo.tag
         ? `<span class="version ${versionInfo.isDev ? 'dev-version' : ''}">${versionInfo.displayVersion} <span class="dev-tag">${versionInfo.tag}</span></span>`
         : `<span class="version">${versionInfo.displayVersion}</span>`;
 
-    panel.innerHTML = `
+    const panelHTML = `
         <div class="panel-header">
             <h3>Infinite Craft Helper</h3>
             ${versionDisplay}
@@ -44,21 +43,24 @@ export function createControlPanel() {
         </div>
     `;
 
-    // Style the panel
-    panel.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 250px;
-        background: rgba(30, 30, 30, 0.95);
-        border: 2px solid #4a90e2;
-        border-radius: 8px;
-        color: white;
-        font-family: Arial, sans-serif;
-        z-index: 10000;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(10px);
-    `;
+    const panel = createElement('div', {
+        id: 'infinite-craft-control-panel',
+        innerHTML: panelHTML,
+        style: {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            width: '250px',
+            background: 'rgba(30, 30, 30, 0.95)',
+            border: '2px solid #4a90e2',
+            borderRadius: '8px',
+            color: 'white',
+            fontFamily: 'Arial, sans-serif',
+            zIndex: '10000',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(10px)'
+        }
+    });
 
     return panel;
 }

@@ -8,16 +8,12 @@ import { createControlPanel } from './ui/control-panel.js';
 import { makeDraggable } from './ui/draggable.js';
 import { LogManager, createLogger } from './core/log-manager.js';
 import { LogDisplay } from './ui/log-display-core.js';
+import { onDOMReady, appendToBody } from './utils/dom.js';
 
 /**
  * Initialize the script
  */
 function init() {
-    // Wait for the page to load
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-        return;
-    }
 
     console.log('[Init] Starting Infinite Craft Helper initialization...');
 
@@ -26,11 +22,7 @@ function init() {
 
     // Create and add the control panel
     const panel = createControlPanel();
-    if (document.body) {
-        document.body.appendChild(panel);
-    } else {
-        console.warn('[Init] document.body not available, panel not added to DOM');
-    }
+    appendToBody(panel);
 
     // Make it draggable
     makeDraggable(panel);
@@ -105,5 +97,5 @@ function init() {
     }
 }
 
-// Start the script
-init();
+// Start the script when DOM is ready
+onDOMReady(init);

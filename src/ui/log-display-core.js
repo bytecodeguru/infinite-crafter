@@ -5,6 +5,7 @@
 
 import { addControlMethods } from './log-display-controls.js';
 import { addUtilityMethods } from './log-display-utils.js';
+import { createElement, escapeHtml, safeQuerySelector } from '../utils/dom.js';
 
 /**
  * LogDisplay class for rendering and managing the logs UI
@@ -126,9 +127,10 @@ export class LogDisplay {
     }
 
     createLogEntryElement(logEntry) {
-        const entry = document.createElement('div');
-        entry.className = `log-entry ${logEntry.level}`;
-        entry.dataset.logId = logEntry.id;
+        const entry = createElement('div', {
+            className: `log-entry ${logEntry.level}`,
+            dataset: { logId: logEntry.id }
+        });
 
         const timestamp = logEntry.timestamp.toLocaleTimeString('en-US', {
             hour12: false,
@@ -142,7 +144,7 @@ export class LogDisplay {
         entry.innerHTML = `
             <span class="log-timestamp">[${timestamp}]</span>
             <span class="log-level">${icon}</span>
-            <span class="log-message">${this.escapeHtml(logEntry.message)}</span>
+            <span class="log-message">${escapeHtml(logEntry.message)}</span>
         `;
 
         return entry;
@@ -157,9 +159,10 @@ export class LogDisplay {
         if (logs.length === 0) {
             // Show empty message only on initial load, not after clearing
             if (!this.hasBeenCleared) {
-                const emptyDiv = document.createElement('div');
-                emptyDiv.className = 'logs-empty';
-                emptyDiv.textContent = 'No logs yet...';
+                const emptyDiv = createElement('div', {
+                    className: 'logs-empty',
+                    innerHTML: 'No logs yet...'
+                });
                 this.logsList.appendChild(emptyDiv);
             }
         } else {
@@ -199,11 +202,7 @@ export class LogDisplay {
         }
     }
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+    // Note: escapeHtml is now imported from utils/dom.js
 
     // Collapse state persistence methods
     loadCollapseState() {
@@ -244,9 +243,10 @@ export class LogDisplay {
 
     // Activity indicator methods
     createActivityIndicator() {
-        this.activityIndicator = document.createElement('span');
-        this.activityIndicator.className = 'logs-activity-indicator';
-        this.activityIndicator.style.display = 'none';
+        this.activityIndicator = createElement('span', {
+            className: 'logs-activity-indicator',
+            style: { display: 'none' }
+        });
 
         // Insert after the header title
         const header = this.container.querySelector('.logs-header h4');

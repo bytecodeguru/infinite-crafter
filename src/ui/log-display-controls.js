@@ -3,6 +3,8 @@
  * Handles button events, clipboard operations, and user interactions
  */
 
+import { createTempTextarea, appendToBody, removeElement } from '../utils/dom.js';
+
 /**
  * Add control methods to LogDisplay prototype
  * @param {LogDisplay} LogDisplay - The LogDisplay class
@@ -84,15 +86,12 @@ export function addControlMethods(LogDisplay) {
     LogDisplay.prototype.fallbackCopyToClipboard = function(text) {
         try {
             // Create temporary textarea
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
+            const textarea = createTempTextarea(text);
+            appendToBody(textarea);
 
             textarea.select();
             const success = document.execCommand('copy');
-            document.body.removeChild(textarea);
+            removeElement(textarea);
 
             this.showCopyFeedback(success);
         } catch (error) {
