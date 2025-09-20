@@ -53,11 +53,11 @@
   - ✅ Test URL generation for both main and feature branches
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 8. Implement file size validation and policy enforcement
-  - Add file size checking during build process
-  - Implement function line count validation
-  - Create warning system for files exceeding size limits
-  - Add build-time reporting of file sizes and policy violations
+- [x] 8. Implement file size validation and policy enforcement
+  - ✅ Added build-time size policy with file/function checks and configurable thresholds
+  - ✅ Emitted warnings for recommended limits and optional strict errors via `build.enforcePolicy`
+  - ✅ Logged context (stage, file, line) using BuildError when strict mode is enabled
+  - ✅ Added fixtures and tests covering oversized files/functions
   - _Requirements: 5.5, 4.3_
 
 - [ ] 9. Create watch mode for development

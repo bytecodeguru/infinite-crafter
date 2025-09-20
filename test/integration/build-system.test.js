@@ -136,6 +136,45 @@ test('BuildManager.build surfaces syntax errors with context', async (t) => {
 });
 
 
+
+test('Size policy rejects oversized modules', async (t) => {
+    const env = await createBuildEnvironment();
+    t.after(env.cleanup);
+
+    const config = {
+        srcDir: 'test/fixtures/size-check/src',
+        outputDir: 'test/fixtures/size-check/dist',
+        outputFile: 'fixture.user.js',
+        quality: null,
+        branch: {
+            auto: false,
+            urlTemplate: 'https://example.com/{{BRANCH}}/fixture.user.js'
+        },
+        build: {
+            minify: false,
+            sourceMaps: false,
+            validateSyntax: true,
+            enforcePolicy: true
+        },
+        logging: {
+            level: 'error',
+            timestamps: false,
+            colors: false
+        },
+        maxFileLines: 300,
+        maxFunctionLines: 50,
+        recommendedFileLines: 200,
+        recommendedFunctionLines: 30
+    };
+
+    const manager = new BuildManager(config);
+
+    await assert.rejects(() => manager.build(), (error) => {
+        assert(error instanceof BuildError);
+        assert.strictEqual(error.stage, 'size-policy');
+        return /exceeds/.test(error.message);
+    });
+});
 test('BuildManager.build fails when quality gate command fails', async (t) => {
     const env = await createBuildEnvironment();
     t.after(env.cleanup);

@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { BuildError } from './errors.js';
+import { SizePolicy } from './size-policy.js';
 
 /**
  * FileConcatenator handles the concatenation of ES6 modules into a single userscript
@@ -19,6 +20,7 @@ export class FileConcatenator {
      */
     async concatenateModules(modules, buildContext) {
         const parts = [];
+        const policy = new SizePolicy(this.config);
 
         // 1. Generate userscript header
         const header = await this.generateUserscriptHeader(buildContext);
@@ -35,6 +37,8 @@ export class FileConcatenator {
             if (module.relativePath === 'header.js') {
                 continue;
             }
+
+            policy.validateModule(module);
 
             const processedContent = await this.processModuleContent(module);
             if (processedContent.trim()) {

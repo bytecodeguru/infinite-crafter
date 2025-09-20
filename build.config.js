@@ -42,7 +42,7 @@ export default {
         minify: false,
         sourceMaps: false,
         validateSyntax: true,
-        enforcePolicy: true
+        enforcePolicy: 'warn'
     },
 
     // Logging configuration
