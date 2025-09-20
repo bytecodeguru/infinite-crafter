@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';
 import { ModuleResolver } from './ModuleResolver.js';
+import { FileConcatenator } from './FileConcatenator.js';
 
 /**
  * BuildManager orchestrates the entire build process for the userscript
@@ -51,8 +52,22 @@ export class BuildManager {
             this.log('info', `Resolved ${modules.length} modules in dependency order`);
             this.log('debug', 'Module order:', modules.map(m => m.relativePath));
             
+            // Concatenate modules into userscript
+            this.log('info', 'Concatenating modules...');
+            const concatenator = new FileConcatenator(this.config);
+            const userscriptContent = await concatenator.concatenateModules(modules, buildContext);
+            
+            // Validate syntax
+            this.log('info', 'Validating generated userscript...');
+            concatenator.validateSyntax(userscriptContent);
+            
+            // Write output file
+            this.log('info', `Writing userscript to ${buildContext.outputPath}...`);
+            await concatenator.writeOutput(userscriptContent, buildContext.outputPath);
+            
             const buildTime = Date.now() - this.buildStartTime;
             this.log('info', `Build completed successfully in ${buildTime}ms`);
+            this.log('info', `Output: ${buildContext.outputPath} (${Math.round(userscriptContent.length / 1024)}KB)`);
             
             return true;
             
