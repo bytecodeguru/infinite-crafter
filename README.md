@@ -387,7 +387,7 @@ The project includes a comprehensive build system that transforms modular ES6 so
 - **Dependency Management**: Automatic dependency graph creation and topological sorting
 - **Circular Dependency Detection**: Prevents build issues with clear error reporting
 - **Import/Export Validation**: Ensures all imports resolve to existing exports
-- **File Size Policy**: Enforced limits (250 lines per file, 50 lines per function)
+- **File Size Policy**: Enforced limits (300 lines per file, 50 lines per function)
 - **Branch-Aware URLs**: Automatic URL generation based on Git branch
 - **Watch Mode**: Automatic rebuilds on file changes during development
 - **Build Validation**: Syntax checking and policy enforcement
@@ -396,30 +396,32 @@ The project includes a comprehensive build system that transforms modular ES6 so
 #### Implementation Status
 
 **✅ Completed Components:**
-- **Build System Foundation**: BuildManager class with build orchestration framework
-- **Module Resolution**: ModuleResolver class with full ES6 import/export parsing
-- **Dependency Management**: Dependency graph creation and circular dependency detection
+- **Build System Foundation**: BuildManager class with complete build orchestration
+- **Module Resolution**: ModuleResolver class with full ES6 import/export parsing and dependency resolution
+- **File Concatenation**: FileConcatenator class with ES6 module transformation and userscript generation
+- **Dependency Management**: Dependency graph creation, circular dependency detection, and topological sorting
 - **Source File Structure**: Complete modular architecture with focused components
 - **Core Modules**: Version management, logging system, and DOM utilities
 - **UI Components**: Control panel, styles, drag functionality, and comprehensive log display system
 - **Logging System**: Complete LogManager, LogEntry, and LogDisplay implementation with event system
 - **DOM Utilities**: Comprehensive DOM manipulation utilities with error handling and safety features
-- **Template System**: Userscript metadata template with variable replacement
+- **Template System**: Userscript metadata template with variable replacement and branch-aware URLs
+- **Syntax Validation**: Generated userscript syntax checking and validation
 - **Error Handling**: Comprehensive error reporting and logging system
 - **Unit Testing**: ModuleResolver test suite with comprehensive coverage
 
 **🚧 In Development:**
-- File concatenation and userscript generation
-- Branch-aware URL template system
-- File size policy enforcement
+- Build process integration and npm scripts
+- File size policy enforcement and validation
 - Watch mode for automatic rebuilds
+- Integration testing for complete build pipeline
 
 **📋 Planned Features:**
 - npm script integration
 - Build process integration tests
 - Documentation and migration guides
 
-#### Quick Start (When Complete)
+#### Quick Start
 
 ```bash
 # Install build dependencies
@@ -428,12 +430,51 @@ npm install
 # Build the userscript from source files
 npm run build
 
-# Start watch mode for development
+# Start watch mode for development (when implemented)
 npm run build:watch
 
 # Clean build artifacts
 npm run clean
+
+# Run unit tests
+npm test
 ```
+
+**Current Status**: The build system core is complete with BuildManager, ModuleResolver, and FileConcatenator classes. The npm scripts are configured but the build.js entry point needs to be implemented to connect the CLI interface.
+
+#### FileConcatenator Implementation
+
+The FileConcatenator class handles the complex task of transforming ES6 modules into a single userscript:
+
+**Key Features:**
+- **ES6 Module Processing**: Removes import/export statements while preserving code functionality
+- **Userscript Header Generation**: Processes template metadata with variable replacement
+- **IIFE Wrapper**: Encapsulates all code in a self-executing function for proper scope isolation
+- **Template Variables**: Supports `{{VERSION}}`, `{{UPDATE_URL}}`, and `{{DOWNLOAD_URL}}` placeholders
+- **Branch-Aware URLs**: Automatically generates correct GitHub URLs based on current Git branch
+- **Code Organization**: Maintains readable structure with module comments and proper indentation
+- **Syntax Validation**: Validates generated JavaScript syntax before output
+
+**Processing Pipeline:**
+1. **Header Generation**: Reads `src/header.js` and processes metadata template
+2. **Module Processing**: Strips ES6 syntax from each module while preserving functionality
+3. **Code Concatenation**: Combines modules in dependency order with proper formatting
+4. **IIFE Wrapping**: Encapsulates everything in `(function() { 'use strict'; ... })()`
+5. **Output Generation**: Creates complete userscript ready for Tampermonkey installation
+
+**Template System:**
+The `src/header.js` file contains userscript metadata as an exported object:
+```javascript
+export const metadata = {
+    name: 'Infinite Craft Helper',
+    version: '{{VERSION}}',
+    updateURL: '{{UPDATE_URL}}',
+    downloadURL: '{{DOWNLOAD_URL}}',
+    match: ['https://neal.fun/infinite-craft/*']
+};
+```
+
+During build, these placeholders are replaced with actual values based on the current branch and version.
 
 #### Build Configuration
 
@@ -447,7 +488,7 @@ export default {
     outputFile: 'infinite-craft-helper.user.js',
     
     // File size policy enforcement
-    maxFileLines: 250,
+    maxFileLines: 300,
     maxFunctionLines: 50,
     recommendedFileLines: 200,
     recommendedFunctionLines: 30,
@@ -524,7 +565,7 @@ src/
 - **main.js**: Complete initialization sequence with logging system integration
 
 **File Size Compliance:**
-All source files follow the 250-line policy with focused single responsibilities:
+All source files follow the 300-line policy with focused single responsibilities:
 - header.js: 21 lines (metadata template)
 - core/version.js: 18 lines (version utilities)
 - core/log-entry.js: 27 lines (log entry data structure)
@@ -542,17 +583,27 @@ All source files follow the 250-line policy with focused single responsibilities
 
 #### Build Process
 
-The build system:
+The build system performs a complete transformation from modular ES6 source files to a single userscript:
+
 1. **Scans source directory** recursively for all JavaScript files
 2. **Parses ES6 modules** using regex patterns for import/export statements
 3. **Resolves dependencies** by matching import paths to actual files
 4. **Validates imports** ensuring all imported names exist in target modules
 5. **Detects circular dependencies** using depth-first search algorithm
 6. **Calculates execution order** via topological sort of dependency graph
-7. **Validates file sizes** against policy limits (warns if exceeded)
-8. **Concatenates files** while preserving JavaScript scope
-9. **Injects metadata** with branch-specific URLs and versions
-10. **Generates userscript** that matches original functionality
+7. **Generates userscript header** from template with variable replacement
+8. **Processes module content** by removing import/export statements
+9. **Concatenates modules** in dependency order within IIFE wrapper
+10. **Validates syntax** of generated userscript
+11. **Writes output file** with branch-specific URLs and version information
+
+**FileConcatenator Features:**
+- **Import/Export Removal**: Strips ES6 module syntax while preserving functionality
+- **IIFE Wrapping**: Encapsulates code in self-executing function for scope isolation
+- **Template Processing**: Replaces `{{VERSION}}`, `{{UPDATE_URL}}`, and `{{DOWNLOAD_URL}}` placeholders
+- **Branch-Aware URLs**: Automatically generates correct GitHub raw URLs based on current branch
+- **Code Indentation**: Maintains readable code structure in generated output
+- **Syntax Validation**: Ensures generated userscript is valid JavaScript
 
 #### Development Workflow
 
@@ -579,7 +630,7 @@ git commit -m "Complete my-feature implementation"
 
 The build system enforces code organization best practices:
 
-- **Maximum file size**: 250 lines per source file
+- **Maximum file size**: 300 lines per source file
 - **Recommended size**: 150-200 lines per file  
 - **Function limits**: Maximum 50 lines per function, 30 lines recommended
 - **Single responsibility**: Each file should have one clear purpose
@@ -722,9 +773,10 @@ infinite-crafter/
 │   └── scripts/
 │       └── branch-helper.js          # Branch management utility
 ├── build/                            # ✅ Build system implementation
-│   ├── BuildManager.js               # Core build orchestration
-│   ├── ModuleResolver.js             # ES6 module parsing and dependency resolution
-│   └── build.js                      # Build script entry point (planned)
+│   ├── BuildManager.js               # ✅ Core build orchestration with watch mode
+│   ├── ModuleResolver.js             # ✅ ES6 module parsing and dependency resolution
+│   ├── FileConcatenator.js           # ✅ Module concatenation and userscript generation
+│   └── build.js                      # 🚧 Build script entry point (planned)
 ├── src/                              # ✅ Modular source files (complete)
 │   ├── header.js                     # ✅ Userscript metadata template
 │   ├── core/                         # ✅ Core functionality modules
@@ -926,7 +978,7 @@ The source code has been successfully split into focused, maintainable modules:
 - **Drag Functionality**: `src/ui/draggable.js` implements smooth drag behavior with proper event handling
 
 #### Module Benefits
-- **File Size Compliance**: All modules under 250 lines (largest: 247 lines)
+- **File Size Compliance**: All modules under 300 lines (largest: 247 lines)
 - **Single Responsibility**: Each module has a focused, well-defined purpose
 - **Clean Dependencies**: Clear import/export relationships between components
 - **Maintainability**: Easy to locate, modify, and test individual features
@@ -979,7 +1031,7 @@ To add new features using the modular structure:
 2. **Follow established patterns**:
    - Import from existing modules: `import { createLogger } from '../core/log-manager.js'`
    - Export functions and classes: `export function createMyFeature() { ... }`
-   - Follow file size policy: Maximum 250 lines per file
+   - Follow file size policy: Maximum 300 lines per file
    - Single responsibility per module
 
 3. **Example new feature**:
@@ -1221,7 +1273,7 @@ This project is open source and available under the [MIT License](LICENSE).
 - **NEW**: Comprehensive build configuration system (`build.config.js`) with file size policy enforcement
 - **NEW**: Branch-aware URL generation that automatically updates userscript metadata based on Git branch
 - **NEW**: Watch mode for automatic rebuilds during development (`npm run build:watch`)
-- **NEW**: File size validation with configurable limits (250 lines per file, 50 lines per function)
+- **NEW**: File size validation with configurable limits (300 lines per file, 50 lines per function)
 - **NEW**: Build system logging with configurable levels, timestamps, and colors
 - **NEW**: Clean build artifacts functionality (`npm run clean`)
 - **NEW**: Source file organization structure (src/core/, src/ui/, src/utils/)

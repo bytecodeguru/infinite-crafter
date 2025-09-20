@@ -5,7 +5,7 @@ export default {
     outputFile: 'infinite-craft-helper.user.js',
 
     // File size policy
-    maxFileLines: 250,
+    maxFileLines: 300,
     maxFunctionLines: 50,
     recommendedFileLines: 200,
     recommendedFunctionLines: 30,

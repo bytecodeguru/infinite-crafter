@@ -27,28 +27,30 @@
   - ✅ Extract control panel creation to src/ui/control-panel.js
   - ✅ Move CSS styles injection to src/ui/styles.js
   - ✅ Extract drag functionality to src/ui/draggable.js
-  - ✅ Ensure each UI module is under 250 lines and has single responsibility
+  - ✅ Ensure each UI module is under 300 lines and has single responsibility
   - _Requirements: 1.1, 1.3, 5.2, 5.4_
 
 - [x] 5. Create utility modules and main entry point
   - ⏭️ Extract DOM utilities to src/utils/dom.js (not needed - utilities integrated into existing modules)
   - ✅ Create src/main.js as entry point with initialization logic
   - ✅ Add ES6 import/export statements to all modules
-  - ✅ Verify all modules follow file size policy (under 250 lines)
+  - ✅ Verify all modules follow file size policy (under 300 lines)
   - _Requirements: 1.1, 1.3, 5.1, 5.3_
 
-- [ ] 6. Implement file concatenation and userscript generation
-  - Write function to resolve module dependencies and determine build order
-  - Implement file concatenation logic that preserves JavaScript scope
-  - Create userscript header injection with template variable replacement
-  - Generate complete userscript file that matches original functionality
+- [x] 6. Implement file concatenation and userscript generation
+  - ✅ Write function to resolve module dependencies and determine build order
+  - ✅ Implement file concatenation logic that preserves JavaScript scope
+  - ✅ Create userscript header injection with template variable replacement
+  - ✅ Generate complete userscript file that matches original functionality
+  - ✅ Add syntax validation for generated userscript
+  - ✅ Implement IIFE wrapper for proper scope isolation
   - _Requirements: 2.1, 2.2, 2.4_
 
-- [ ] 7. Add branch-aware URL generation
-  - Implement Git branch detection in build system
-  - Create URL template system for updateURL and downloadURL
-  - Add version string modification for feature branches (add branch identifier)
-  - Test URL generation for both main and feature branches
+- [x] 7. Add branch-aware URL generation
+  - ✅ Implement Git branch detection in build system
+  - ✅ Create URL template system for updateURL and downloadURL
+  - ✅ Add version string modification for feature branches (add branch identifier)
+  - ✅ Test URL generation for both main and feature branches
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
 - [ ] 8. Implement file size validation and policy enforcement
@@ -73,10 +75,10 @@
   - _Requirements: 4.3, 2.4_
 
 - [ ] 11. Create build scripts and npm integration
-  - Add npm scripts for build, watch, and clean operations
-  - Create build.js executable script with command-line options
-  - Add clean functionality to remove generated files
-  - Implement verbose logging option for debugging builds
+  - ✅ Add npm scripts for build, watch, and clean operations
+  - 🚧 Create build.js executable script with command-line options (needs implementation)
+  - ✅ Add clean functionality to remove generated files
+  - ✅ Implement verbose logging option for debugging builds
   - _Requirements: 2.1, 4.1, 4.4_
 
 - [ ] 12. Write comprehensive tests for build system

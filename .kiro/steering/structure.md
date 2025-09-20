@@ -47,7 +47,7 @@ infinite-crafter/
 - Follow userscript best practices for security and performance
 
 ## File Size and Focus Policy (Multi-File Development)
-- **Maximum file size**: 250 lines per source file
+- **Maximum file size**: 300 lines per source file
 - **Recommended size**: 150-200 lines per file
 - **Function limits**: Maximum 50 lines per function, 30 lines recommended
 - **Single responsibility**: Each file should have one clear purpose

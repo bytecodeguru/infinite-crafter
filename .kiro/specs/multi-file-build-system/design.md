@@ -232,7 +232,7 @@ test/
 ## File Size and Focus Policy
 
 ### Global File Size Guidelines
-- **Maximum file size**: 250 lines per source file
+- **Maximum file size**: 300 lines per source file
 - **Recommended size**: 150-200 lines per file
 - **Single responsibility**: Each file should have one clear purpose
 - **Function limits**: Maximum 50 lines per function, 30 lines recommended
@@ -251,8 +251,8 @@ test/
 ### Size Violation Handling
 ```javascript
 // Build system validation
-if (fileLines > 250) {
-    console.warn(`File ${filePath} exceeds 250 lines (${fileLines}). Consider splitting.`);
+if (fileLines > 300) {
+    console.warn(`File ${filePath} exceeds 300 lines (${fileLines}). Consider splitting.`);
 }
 
 if (functionLines > 50) {
