@@ -108,9 +108,8 @@
   - ✅ Documented Tampermonkey install/branch URLs in README/AGENTS for manual validation
   - _Requirements: 2.4, 3.1, 3.2_
 
-- [ ] 15. Update development workflow and documentation
-  - Update README.md with multi-file development instructions
-  - Create migration guide for transitioning from single file
-  - Update branch helper script to work with build system
-  - Document file organization best practices and size policy
+- [x] 15. Update development workflow and documentation
+  - ✅ README points to concise usage, development, and migration guides
+  - ✅ Added docs/DEVELOPMENT.md, docs/USAGE.md, and docs/MIGRATION.md for contributors
+  - ✅ Documented review cycle and size policies in steering/agent docs
   - _Requirements: 5.1, 5.4, 5.5_
