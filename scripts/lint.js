@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
 const includeDirs = ['build', 'src', 'test', 'tests', 'scripts'];
-const includeFiles = ['build.config.js', 'playwright.config.js', 'infinite-craft-helper.user.js'];
+const includeFiles = ['build.config.js', 'playwright.config.js', 'dist/infinite-craft-helper.user.js'];
 const ignoreDirs = new Set(['node_modules', 'dist', '.git', '.kiro', 'playwright-report', 'test-results']);
 const allowedExtensions = new Set(['.js', '.mjs', '.cjs']);
 

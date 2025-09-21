@@ -12,8 +12,8 @@ Infinite Craft Helper is a Tampermonkey userscript that adds a draggable control
 ## Installation
 
 1. Install a userscript manager such as [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
-2. **Production build:** [Install from main](https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js)
-3. **Latest features:** [Install from feature branch](https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/game-interface-foundation/infinite-craft-helper.user.js)
+2. **Production build:** [Install from main](https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/dist/infinite-craft-helper.user.js)
+3. **Latest features:** [Install from feature branch](https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/game-interface-foundation/dist/infinite-craft-helper.user.js)
 4. Visit [neal.fun/infinite-craft](https://neal.fun/infinite-craft/) and the control panel will appear automatically.
 
 If you prefer to build locally:

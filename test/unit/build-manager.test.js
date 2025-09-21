@@ -24,6 +24,28 @@ class TestBuildManager extends BuildManager {
     }
 }
 
+class StubWatchBuildManager extends BuildManager {
+    constructor(config) {
+        super(config);
+        this.buildCount = 0;
+    }
+
+    async build() {
+        if (this.isBuilding) {
+            this.log('warn', 'Build already in progress, skipping...');
+            return false;
+        }
+
+        this.isBuilding = true;
+        this.buildCount += 1;
+        try {
+            return true;
+        } finally {
+            this.isBuilding = false;
+        }
+    }
+}
+
 async function createConfig() {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'build-manager-unit-'));
     const srcDir = path.join(tempDir, 'src');
@@ -117,4 +139,102 @@ test('runQualityChecks surfaces command failures', async (t) => {
         return /Simulated failure/.test(error.message);
     });
     assert.strictEqual(manager.executedCommands.length, 1);
+});
+
+test('watch() respects configuration toggle', async (t) => {
+    const { config, tempDir } = await createConfig();
+    t.after(async () => {
+        await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    config.watch.enabled = false;
+
+    const manager = new BuildManager(config);
+
+    await assert.rejects(() => manager.watch(), (error) => {
+        assert(error instanceof BuildError);
+        assert.strictEqual(error.stage, 'watch');
+        return /disabled/.test(error.message);
+    });
+});
+
+test('watch() triggers rebuilds through configured watcher factory', async (t) => {
+    const { config, tempDir } = await createConfig();
+    t.after(async () => {
+        await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    await fs.writeFile(path.join(config.srcDir, 'placeholder.js'), 'export const noop = () => {};\n');
+
+    config.watch.enabled = true;
+    config.watch.debounce = 10;
+    config.watch.paths = [config.srcDir];
+
+    let fakeWatcher;
+
+    class FakeWatcher {
+        constructor() {
+            this.handlers = new Map();
+            this.closed = false;
+        }
+
+        on(event, handler) {
+            this.handlers.set(event, handler);
+            return this;
+        }
+
+        async close() {
+            this.closed = true;
+        }
+
+        emit(event, payload) {
+            const handler = this.handlers.get(event);
+            if (handler) {
+                handler(payload);
+            }
+        }
+    }
+
+    config.watch.createWatcher = async () => {
+        fakeWatcher = new FakeWatcher();
+        return fakeWatcher;
+    };
+
+    const manager = new StubWatchBuildManager(config);
+
+    await manager.watch();
+    assert.strictEqual(manager.buildCount, 1, 'initial build should run once');
+
+    fakeWatcher.emit('change', path.join(config.srcDir, 'placeholder.js'));
+    await new Promise((resolve) => setTimeout(resolve, config.watch.debounce + 10));
+
+    assert.strictEqual(manager.buildCount, 2, 'change event should trigger rebuild');
+
+    await manager.stopWatch();
+    assert(fakeWatcher.closed, 'watcher should be closed when stopping watch mode');
+});
+
+test('describeQualityStatus outlines skip behaviour in watch mode', async (t) => {
+    const { config, tempDir } = await createConfig();
+    t.after(async () => {
+        await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    config.quality = {
+        lint: {
+            enabled: true,
+            skipOnWatch: true,
+            command: 'noop'
+        },
+        test: {
+            enabled: false,
+            command: 'noop'
+        }
+    };
+
+    const manager = new BuildManager(config);
+
+    const status = manager.describeQualityStatus(true);
+    assert.match(status, /lint: skip/);
+    assert.match(status, /test: disabled/);
 });

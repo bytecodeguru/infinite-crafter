@@ -6,8 +6,7 @@ const ignores = [
     'node_modules/**',
     '.kiro/**',
     'playwright-report/**',
-    'test-results/**',
-    'CHANGELOG_README_UPDATE.md'
+    'test-results/**'
 ];
 
 export default [
@@ -57,17 +56,6 @@ export default [
         languageOptions: {
             globals: {
                 ...globals.node
-            }
-        }
-    },
-    {
-        files: ['infinite-craft-helper.user.js'],
-        languageOptions: {
-            sourceType: 'script',
-            globals: {
-                ...globals.browser,
-                window: 'readonly',
-                document: 'readonly'
             }
         }
     }

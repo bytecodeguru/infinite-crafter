@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Read the userscript content
-const userscriptPath = path.join(__dirname, '../../infinite-craft-helper.user.js');
+const userscriptPath = path.join(__dirname, '../../dist/infinite-craft-helper.user.js');
 const userscriptContent = fs.readFileSync(userscriptPath, 'utf8');
 
 test.describe('Integration Tests', () => {

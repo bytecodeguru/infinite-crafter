@@ -277,17 +277,12 @@
         `;
     }
 
-    // === ui/log-styles.js ===
+    // === ui/log-styles/section.js ===
     /**
-     * Log styles
-     * CSS styles for the logs section, entries, and controls
+     * Core layout styles for the logs section container, header, controls, and scroll area.
+     * @returns {string} CSS rules covering structural layout.
      */
-
-    /**
-     * Get log CSS styles
-     * @returns {string} CSS styles for the logs section
-     */
-    function getLogStyles() {
+    function buildLogSectionStyles() {
         return `
             /* Logs Section Styles */
             #infinite-craft-control-panel .logs-section {
@@ -427,7 +422,16 @@
                 border-radius: 4px;
                 margin: 4px;
             }
+        `;
+    }
 
+    // === ui/log-styles/entries.js ===
+    /**
+     * Styles that shape the visual presentation for log entries and message content.
+     * @returns {string} CSS rules for individual log rows.
+     */
+    function buildLogEntryStyles() {
+        return `
             #infinite-craft-control-panel .log-entry {
                 display: flex;
                 align-items: flex-start;
@@ -533,7 +537,16 @@
             #infinite-craft-control-panel .log-entry.log .log-message {
                 color: #e0e0e0;
             }
+        `;
+    }
 
+    // === ui/log-styles/activity.js ===
+    /**
+     * Activity indicator styling and animation for log updates.
+     * @returns {string} CSS covering indicator state.
+     */
+    function buildLogActivityStyles() {
+        return `
             /* Activity indicator styles - consistent with panel theme */
             #infinite-craft-control-panel .logs-activity-indicator {
                 color: #ffa726;
@@ -557,6 +570,19 @@
                 }
             }
         `;
+    }
+
+    // === ui/log-styles/index.js ===
+    /**
+     * Get aggregated log CSS styles for the control panel.
+     * @returns {string} Complete CSS payload for log UI components.
+     */
+    function getLogStyles() {
+        return [
+            buildLogSectionStyles(),
+            buildLogEntryStyles(),
+            buildLogActivityStyles()
+        ].join('\n');
     }
 
     // === utils/dom.js ===
@@ -1080,6 +1106,142 @@
         };
     }
 
+    // === ui/log-display-render.js ===
+    /**
+     * Augment LogDisplay with rendering and activity-handling behaviours.
+     * @param {typeof import('./log-display-core.js').LogDisplay} LogDisplay
+     */
+    function addRenderMethods(LogDisplay) {
+        LogDisplay.prototype.handleLogEvent = function handleLogEvent(event, data) {
+            switch (event) {
+                case 'logAdded':
+                    this.addLogEntry(data);
+                    this.updateButtonStates();
+                    if (this.isCollapsed) {
+                        this.newLogsSinceCollapse += 1;
+                        this.updateActivityIndicator();
+                    }
+                    break;
+                case 'logsCleared':
+                    this.originalConsole.log(`[LogDisplay] Logs cleared: ${data.clearedCount} entries`);
+                    this.hasBeenCleared = true;
+                    this.newLogsSinceCollapse = 0;
+                    this.updateDisplay();
+                    this.updateButtonStates();
+                    this.updateActivityIndicator();
+                    break;
+                default:
+                    break;
+            }
+        };
+
+        LogDisplay.prototype.addLogEntry = function addLogEntry(logEntry) {
+            const emptyMessage = this.logsList.querySelector('.logs-empty');
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            const entryElement = this.createLogEntryElement(logEntry);
+            this.logsList.insertBefore(entryElement, this.logsList.firstChild);
+
+            if (!this.isCollapsed) {
+                this.scrollToNewest();
+            }
+        };
+
+        LogDisplay.prototype.createLogEntryElement = function createLogEntryElement(logEntry) {
+            const entry = createElement('div', {
+                className: `log-entry ${logEntry.level}`,
+                dataset: { logId: logEntry.id }
+            });
+
+            const timestamp = logEntry.timestamp.toLocaleTimeString('en-US', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const icon = this.logIcons[logEntry.level] || '📝';
+
+            entry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="log-level">${icon}</span>
+                <span class="log-message">${escapeHtml(logEntry.message)}</span>
+            `;
+
+            return entry;
+        };
+
+        LogDisplay.prototype.updateDisplay = function updateDisplay() {
+            const logs = this.logManager.getLogs();
+            this.logsList.innerHTML = '';
+
+            if (logs.length === 0) {
+                if (!this.hasBeenCleared) {
+                    const emptyDiv = createElement('div', {
+                        className: 'logs-empty',
+                        innerHTML: 'No logs yet...'
+                    });
+                    this.logsList.appendChild(emptyDiv);
+                }
+            } else {
+                logs.forEach(log => {
+                    const entryElement = this.createLogEntryElement(log);
+                    this.logsList.appendChild(entryElement);
+                });
+
+                if (!this.isCollapsed) {
+                    this.scrollToNewest();
+                }
+            }
+
+            this.updateButtonStates();
+        };
+
+        LogDisplay.prototype.updateButtonStates = function updateButtonStates() {
+            const logCount = this.logManager.getLogCount();
+            this.copyButton.disabled = logCount === 0;
+            this.clearButton.disabled = logCount === 0;
+
+            const header = this.container.querySelector('.logs-header h4');
+            if (!header) {
+                return;
+            }
+
+            if (this.isCollapsed && logCount > 0) {
+                header.textContent = `Logs (${logCount})`;
+            } else {
+                header.textContent = 'Logs';
+            }
+        };
+
+        LogDisplay.prototype.createActivityIndicator = function createActivityIndicator() {
+            this.activityIndicator = createElement('span', {
+                className: 'logs-activity-indicator',
+                style: { display: 'none' }
+            });
+
+            const header = this.container.querySelector('.logs-header h4');
+            if (header) {
+                header.appendChild(this.activityIndicator);
+            }
+        };
+
+        LogDisplay.prototype.updateActivityIndicator = function updateActivityIndicator() {
+            if (!this.activityIndicator) {
+                return;
+            }
+
+            if (this.isCollapsed && this.newLogsSinceCollapse > 0) {
+                this.activityIndicator.textContent = ` (${this.newLogsSinceCollapse} new)`;
+                this.activityIndicator.style.display = 'inline';
+            } else {
+                this.activityIndicator.style.display = 'none';
+            }
+        };
+    }
+
     // === ui/log-display-core.js ===
     /**
      * Core log display functionality
@@ -1164,125 +1326,6 @@
             }
         }
 
-        handleLogEvent(event, data) {
-            switch (event) {
-                case 'logAdded':
-                    this.addLogEntry(data);
-                    this.updateButtonStates();
-                    // Track new logs when collapsed for activity indicator
-                    if (this.isCollapsed) {
-                        this.newLogsSinceCollapse++;
-                        this.updateActivityIndicator();
-                    }
-                    break;
-                case 'logsCleared':
-                    this.originalConsole.log(`[LogDisplay] Logs cleared: ${data.clearedCount} entries`);
-                    this.hasBeenCleared = true;
-                    this.newLogsSinceCollapse = 0;
-                    this.updateDisplay();
-                    this.updateButtonStates();
-                    this.updateActivityIndicator();
-                    break;
-            }
-        }
-
-        addLogEntry(logEntry) {
-            // Remove empty message if it exists
-            const emptyMessage = this.logsList.querySelector('.logs-empty');
-            if (emptyMessage) {
-                emptyMessage.remove();
-            }
-
-            // Create log entry element
-            const entryElement = this.createLogEntryElement(logEntry);
-
-            // Add to top of list (newest first)
-            this.logsList.insertBefore(entryElement, this.logsList.firstChild);
-
-            // Auto-scroll to show newest entry if not collapsed
-            if (!this.isCollapsed) {
-                this.scrollToNewest();
-            }
-        }
-
-        createLogEntryElement(logEntry) {
-            const entry = createElement('div', {
-                className: `log-entry ${logEntry.level}`,
-                dataset: { logId: logEntry.id }
-            });
-
-            const timestamp = logEntry.timestamp.toLocaleTimeString('en-US', {
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-
-            const icon = this.logIcons[logEntry.level] || '📝';
-
-            entry.innerHTML = `
-                <span class="log-timestamp">[${timestamp}]</span>
-                <span class="log-level">${icon}</span>
-                <span class="log-message">${escapeHtml(logEntry.message)}</span>
-            `;
-
-            return entry;
-        }
-
-        updateDisplay() {
-            const logs = this.logManager.getLogs();
-
-            // Clear current display
-            this.logsList.innerHTML = '';
-
-            if (logs.length === 0) {
-                // Show empty message only on initial load, not after clearing
-                if (!this.hasBeenCleared) {
-                    const emptyDiv = createElement('div', {
-                        className: 'logs-empty',
-                        innerHTML: 'No logs yet...'
-                    });
-                    this.logsList.appendChild(emptyDiv);
-                }
-            } else {
-                // Add all log entries
-                logs.forEach(log => {
-                    const entryElement = this.createLogEntryElement(log);
-                    this.logsList.appendChild(entryElement);
-                });
-
-                // Auto-scroll to newest entry if not collapsed
-                if (!this.isCollapsed) {
-                    this.scrollToNewest();
-                }
-            }
-
-            this.updateButtonStates();
-        }
-
-        updateButtonStates() {
-            const logCount = this.logManager.getLogCount();
-
-            // Disable copy and clear buttons if no logs
-            this.copyButton.disabled = logCount === 0;
-            this.clearButton.disabled = logCount === 0;
-
-            // Update header to show log count when collapsed
-            if (this.isCollapsed && logCount > 0) {
-                const header = this.container.querySelector('.logs-header h4');
-                if (header) {
-                    header.textContent = `Logs (${logCount})`;
-                }
-            } else {
-                const header = this.container.querySelector('.logs-header h4');
-                if (header) {
-                    header.textContent = 'Logs';
-                }
-            }
-        }
-
-        // Note: escapeHtml is now imported from utils/dom.js
-
         // Collapse state persistence methods
         loadCollapseState() {
             try {
@@ -1320,35 +1363,12 @@
             this.updateActivityIndicator();
         }
 
-        // Activity indicator methods
-        createActivityIndicator() {
-            this.activityIndicator = createElement('span', {
-                className: 'logs-activity-indicator',
-                style: { display: 'none' }
-            });
-
-            // Insert after the header title
-            const header = this.container.querySelector('.logs-header h4');
-            if (header) {
-                header.appendChild(this.activityIndicator);
-            }
-        }
-
-        updateActivityIndicator() {
-            if (!this.activityIndicator) return;
-
-            if (this.isCollapsed && this.newLogsSinceCollapse > 0) {
-                this.activityIndicator.textContent = ` (${this.newLogsSinceCollapse} new)`;
-                this.activityIndicator.style.display = 'inline';
-            } else {
-                this.activityIndicator.style.display = 'none';
-            }
-        }
     }
 
     // Add control and utility methods to the LogDisplay class
     addControlMethods(LogDisplay);
     addUtilityMethods(LogDisplay);
+    addRenderMethods(LogDisplay);
 
     // === main.js ===
     /**
@@ -1360,87 +1380,108 @@
      * Initialize the script
      */
     function init() {
-
         console.log('[Init] Starting Infinite Craft Helper initialization...');
 
-        // Add styles
+        const panel = setupControlPanel();
+        const { logManager, Logger } = initializeLogging(panel);
+
+        runInitializationSmokeTests(Logger);
+        console.log('Infinite Craft Helper loaded successfully!');
+
+        scheduleLogCleanup(logManager);
+    }
+
+    function setupControlPanel() {
         addStyles();
 
-        // Create and add the control panel
         const panel = createControlPanel();
         appendToBody(panel);
-
-        // Make it draggable
         makeDraggable(panel);
 
-        // Initialize logging system components
+        return panel;
+    }
+
+    function initializeLogging(panel) {
         console.log('[Init] Initializing logging system...');
 
-        // 1. Initialize LogManager
         console.log('[Init] Creating LogManager...');
         const logManager = new LogManager(100);
 
-        // 2. Connect Logger API to LogManager
         console.log('[Init] Connecting Logger API to LogManager...');
-        let Logger = createLogger(logManager);
+        const Logger = createLogger(logManager);
 
-        // 3. Initialize LogDisplay with the control panel and LogManager
-        console.log('[Init] Initializing LogDisplay...');
-        let logDisplay = null;
-        let displayInitialized = false;
-
-        try {
-            logDisplay = new LogDisplay(panel, logManager);
-            displayInitialized = logDisplay.initialize();
-        } catch (error) {
-            console.warn('[Init] LogDisplay initialization failed:', error.message);
-        }
-
-        if (!displayInitialized) {
-            console.warn('[Init] LogDisplay not available, but Logger API will still work');
-        }
-
-        // Make components available globally for debugging
-        window.logManager = logManager;
-        window.logDisplay = logDisplay;
-        window.Logger = Logger;
+        const { logDisplay } = configureLogDisplay(panel, logManager);
+        exposeLoggingGlobals(logManager, logDisplay, Logger);
 
         console.log('[Init] Logging system initialized successfully!');
         console.log('[Init] Components available globally: logManager, logDisplay, Logger');
 
-        // Test the Logger API integration
+        return { logManager, Logger, logDisplay };
+    }
+
+    function configureLogDisplay(panel, logManager) {
+        console.log('[Init] Initializing LogDisplay...');
+
+        let logDisplay = null;
+        let initialized = false;
+
+        try {
+            logDisplay = new LogDisplay(panel, logManager);
+            initialized = logDisplay.initialize();
+        } catch (error) {
+            console.warn('[Init] LogDisplay initialization failed:', error.message);
+        }
+
+        if (!initialized) {
+            console.warn('[Init] LogDisplay not available, but Logger API will still work');
+        }
+
+        return { logDisplay, initialized };
+    }
+
+    function exposeLoggingGlobals(logManager, logDisplay, Logger) {
+        window.logManager = logManager;
+        window.logDisplay = logDisplay;
+        window.Logger = Logger;
+    }
+
+    function runInitializationSmokeTests(Logger) {
         console.log('[Init] Testing Logger API integration...');
         Logger.log('Logger API test: info message - logging system is working!');
         Logger.warn('Logger API test: warning message - this should appear in the logs panel');
         Logger.error('Logger API test: error message - with proper styling');
 
-        // Test integration with existing control panel functionality
         console.log('[Init] Testing control panel integration...');
         Logger.log('Control panel is draggable and logs section should be visible');
         Logger.log('Collapse/expand, copy, and clear buttons should be functional');
+    }
 
-        console.log('Infinite Craft Helper loaded successfully!');
-
-        // Clear initialization logs to start with empty log history
-        // This ensures the user starts with a clean slate while preserving initialization logging for development
-        // Skip clearing in test environments (detect by checking for common test indicators)
-        const isTestEnvironment = typeof window !== 'undefined' && (
-            window.location.href.includes('test') ||
-            window.location.href.includes('localhost') ||
-            window.location.href.includes('127.0.0.1') ||
-            window.location.href === 'about:blank' ||
-            typeof window.playwright !== 'undefined' ||
-            typeof window.__playwright !== 'undefined'
-        );
-
-        if (!isTestEnvironment) {
+    function scheduleLogCleanup(logManager) {
+        if (!isTestEnvironment()) {
             setTimeout(() => {
                 const clearedCount = logManager.clearLogs();
                 console.log(`[Init] Cleared ${clearedCount} initialization logs - starting with empty log history`);
             }, 100);
-        } else {
-            console.log('[Init] Test environment detected, skipping log cleanup');
+            return;
         }
+
+        console.log('[Init] Test environment detected, skipping log cleanup');
+    }
+
+    function isTestEnvironment() {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        const locationHref = window.location?.href || '';
+        return (
+            locationHref.includes('test') ||
+            locationHref.includes('localhost') ||
+            locationHref.includes('127.0.0.1') ||
+            locationHref === 'about:blank' ||
+            typeof window.playwright !== 'undefined' ||
+            typeof window.__playwright !== 'undefined'
+        );
     }
 
     // Start the script when DOM is ready

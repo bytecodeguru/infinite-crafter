@@ -4,7 +4,7 @@
  */
 
 import { getPanelStyles } from './panel-styles.js';
-import { getLogStyles } from './log-styles.js';
+import { getLogStyles } from './log-styles/index.js';
 import { addStyleSheet } from '../utils/dom.js';
 
 /**

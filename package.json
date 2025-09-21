@@ -2,7 +2,7 @@
   "name": "infinite-craft-helper",
   "version": "1.0.4",
   "description": "Control panel overlay for Infinite Craft with GameInterface foundation",
-  "main": "infinite-craft-helper.user.js",
+  "main": "dist/infinite-craft-helper.user.js",
   "type": "module",
   "scripts": {
     "build": "node build/build.js",

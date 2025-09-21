@@ -60,12 +60,21 @@
   - ✅ Added fixtures and tests covering oversized files/functions
   - _Requirements: 5.5, 4.3_
 
-- [ ] 9. Create watch mode for development
-  - Implement file system watching using Node.js fs.watch or chokidar
-  - Add debounced rebuild functionality on file changes
-  - Create development server mode with automatic rebuild
-  - Add clear console output showing build status and timing
+- [x] 9. Create watch mode for development
+  - ✅ Wire up the CLI watch command with chokidar-based file watching and debounced rebuilds
+  - ✅ Honor `config.watch.enabled` (and fail fast with guidance when disabled) while letting configs declare additional watch paths beyond `src/`
+  - ✅ Enrich watch-mode logging with explicit start/stop prompts, build duration summaries, and quality-gate skip indicators so developers see status at a glance
+  - ✅ Update `build.config.js`, npm scripts, and docs to expose the new watch toggles/paths and document recommended quality-gate defaults for watch sessions
+  - ✅ Add automated coverage (unit/integration) that simulates file changes and asserts watch mode rebuilds while respecting `skipOnWatch`
   - _Requirements: 4.1, 4.2, 4.4_
+
+- [x] 9a. Split oversized UI modules to satisfy size policy
+  - ✅ Break `src/ui/log-styles.js` into focused style modules and aggregate via `getLogStyles()`
+  - ✅ Extract view-model helpers from `src/ui/log-display-core.js` to keep each file under 200 lines
+  - ✅ Refactor `init` orchestration in `src/main.js` into smaller functions within size limits
+  - ✅ Update imports/exports plus any tests impacted by the new module layout
+  - ✅ Verify lint, tests, and build produce zero size-policy violations
+  - _Requirements: Size Policy_
 
 - [x] 10. Add comprehensive error handling
   - ✅ Introduced BuildError class carrying stage/file context and wrapped BuildManager logging

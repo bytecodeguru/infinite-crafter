@@ -12,7 +12,8 @@ export default {
 
     // Watch mode configuration
     watch: {
-        enabled: false,
+        enabled: true,
+        paths: ['./src'],
         debounce: 300,
         ignored: ['node_modules/**', 'dist/**', '.git/**']
     },

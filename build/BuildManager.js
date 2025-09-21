@@ -16,6 +16,7 @@ export class BuildManager {
         this.isBuilding = false;
         this.buildStartTime = null;
         this.isWatchMode = false;
+        this.rebuildTimer = null;
 
         // Ensure output directory exists
         this.ensureOutputDir();
@@ -95,51 +96,17 @@ export class BuildManager {
             return;
         }
 
-        this.log('info', 'Starting watch mode...');
+        const watchConfig = this.getWatchConfig();
+        const watchPaths = this.resolveWatchPaths(watchConfig);
+
+        this.log('info', 'Starting watch mode (press Ctrl+C to exit)...');
+        this.log('info', `Quality gates in watch: ${this.describeQualityStatus(true)}`);
+        this.log('info', `Watching: ${watchPaths.join(', ')}`);
+
         this.isWatchMode = true;
+        this.watcher = await this.createWatcher(watchPaths, watchConfig);
+        this.setupWatcherListeners(this.watcher, watchConfig);
 
-        // Dynamic import chokidar for watch functionality
-        const { default: chokidar } = await import('chokidar');
-
-        this.watcher = chokidar.watch(this.config.srcDir, {
-            ignored: this.config.watch.ignored,
-            persistent: true,
-            ignoreInitial: true
-        });
-
-        // Debounced rebuild function
-        let rebuildTimeout;
-        const debouncedRebuild = () => {
-            clearTimeout(rebuildTimeout);
-            rebuildTimeout = setTimeout(async () => {
-                try {
-                    await this.build();
-                } catch (error) {
-                    this.log('error', 'Watch rebuild failed:', error.message);
-                }
-            }, this.config.watch.debounce);
-        };
-
-        this.watcher
-            .on('change', (filePath) => {
-                this.log('info', `File changed: ${filePath}`);
-                debouncedRebuild();
-            })
-            .on('add', (filePath) => {
-                this.log('info', `File added: ${filePath}`);
-                debouncedRebuild();
-            })
-            .on('unlink', (filePath) => {
-                this.log('info', `File removed: ${filePath}`);
-                debouncedRebuild();
-            })
-            .on('error', (error) => {
-                this.log('error', 'Watch error:', error);
-            });
-
-        this.log('info', `Watching ${this.config.srcDir} for changes...`);
-
-        // Initial build
         await this.build();
     }
 
@@ -151,6 +118,10 @@ export class BuildManager {
             await this.watcher.close();
             this.watcher = null;
             this.log('info', 'Watch mode stopped');
+        }
+        if (this.rebuildTimer) {
+            clearTimeout(this.rebuildTimer);
+            this.rebuildTimer = null;
         }
         this.isWatchMode = false;
     }
@@ -363,5 +334,104 @@ export class BuildManager {
             `${color}${timestamp}[${level.toUpperCase()}]${reset} ${message}`,
             ...args
         );
+    }
+
+    getWatchConfig() {
+        const baseConfig = this.config.watch || {};
+        if (baseConfig.enabled === false) {
+            throw new BuildError('Watch mode is disabled in build.config.js (set watch.enabled = true to use "watch").', { stage: 'watch' });
+        }
+        return {
+            debounce: baseConfig.debounce ?? 300,
+            ignored: baseConfig.ignored ?? ['node_modules/**', 'dist/**', '.git/**'],
+            paths: baseConfig.paths,
+            createWatcher: baseConfig.createWatcher
+        };
+    }
+
+    resolveWatchPaths(watchConfig) {
+        const configuredPaths = Array.isArray(watchConfig.paths) && watchConfig.paths.length > 0
+            ? watchConfig.paths
+            : [this.config.srcDir];
+
+        const resolved = configuredPaths
+            .map((entry) => path.resolve(process.cwd(), entry))
+            .filter((value, index, array) => array.indexOf(value) === index);
+
+        if (resolved.length === 0) {
+            throw new BuildError('No watch paths configured. Provide watch.paths or ensure srcDir is valid.', { stage: 'watch' });
+        }
+
+        return resolved;
+    }
+
+    async createWatcher(paths, watchConfig) {
+        const factory = watchConfig.createWatcher ?? (async (targets, options) => {
+            const { default: chokidar } = await import('chokidar');
+            return chokidar.watch(targets, options);
+        });
+
+        const watcher = await factory(paths, {
+            ignored: watchConfig.ignored,
+            persistent: true,
+            ignoreInitial: true
+        });
+
+        if (!watcher || typeof watcher.on !== 'function' || typeof watcher.close !== 'function') {
+            throw new BuildError('Watch factory must return an object implementing on() and close().', { stage: 'watch' });
+        }
+
+        return watcher;
+    }
+
+    setupWatcherListeners(watcher, watchConfig) {
+        const debouncedRebuild = () => {
+            if (this.rebuildTimer) {
+                clearTimeout(this.rebuildTimer);
+            }
+            this.rebuildTimer = setTimeout(async () => {
+                try {
+                    await this.build();
+                } catch (error) {
+                    this.log('error', `Watch rebuild failed: ${error.message}`);
+                }
+            }, watchConfig.debounce);
+        };
+
+        watcher
+            .on('change', (filePath) => {
+                this.log('info', `File changed: ${filePath}`);
+                debouncedRebuild();
+            })
+            .on('add', (filePath) => {
+                this.log('info', `File added: ${filePath}`);
+                debouncedRebuild();
+            })
+            .on('unlink', (filePath) => {
+                this.log('info', `File removed: ${filePath}`);
+                debouncedRebuild();
+            })
+            .on('error', (error) => {
+                this.log('error', `Watch error: ${error}`);
+            });
+    }
+
+    describeQualityStatus(isWatch) {
+        const quality = this.config.quality;
+        if (!quality || Object.keys(quality).length === 0) {
+            return 'none configured';
+        }
+
+        const statuses = Object.entries(quality).map(([name, settings]) => {
+            if (!settings || settings.enabled === false) {
+                return `${name}: disabled`;
+            }
+            if (isWatch && settings.skipOnWatch) {
+                return `${name}: skip`;
+            }
+            return `${name}: run`;
+        });
+
+        return statuses.join(', ');
     }
 }
