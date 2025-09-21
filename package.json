@@ -10,7 +10,8 @@
     "clean": "node build/build.js --clean",
     "lint": "eslint . --max-warnings=0",
     "test": "node --test test/**/*.test.js",
-    "lint:format": "node scripts/lint.js"
+    "lint:format": "node scripts/lint.js",
+    "dev": "node scripts/dev-server.js"
   },
   "keywords": [
     "userscript",
