@@ -254,6 +254,10 @@ export class BuildManager {
             ? `${packageJson.version}-${context.branch}`
             : packageJson.version;
 
+        if (process.env.USERSCRIPT_DEV_URL) {
+            context.devUrl = process.env.USERSCRIPT_DEV_URL;
+        }
+
         return context;
     }
 

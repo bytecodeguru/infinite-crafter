@@ -15,11 +15,23 @@ const distFilePath = path.join(projectRoot, distRelativePath);
 const port = Number(process.env.PORT || 3000);
 const skipQuality = process.argv.includes('--skip-quality');
 
-async function runCommand(command, args) {
+function computeDevUrls(customPort) {
+    const base = `http://localhost:${customPort}/dist/infinite-craft-helper.user.js`;
+    return {
+        updateURL: base,
+        downloadURL: base
+    };
+}
+
+async function runCommand(command, args, envOverrides = {}) {
     return new Promise((resolve, reject) => {
         const child = spawn(command, args, {
             cwd: projectRoot,
-            stdio: 'inherit'
+            stdio: 'inherit',
+            env: {
+                ...process.env,
+                ...envOverrides
+            }
         });
 
         child.on('exit', (code) => {
@@ -34,7 +46,7 @@ async function runCommand(command, args) {
     });
 }
 
-function startBuildWatch() {
+function startBuildWatch(envOverrides) {
     const watchArgs = ['build/build.js', 'watch'];
     if (skipQuality) {
         watchArgs.push('--skip-quality');
@@ -42,7 +54,11 @@ function startBuildWatch() {
 
     const child = spawn('node', watchArgs, {
         cwd: projectRoot,
-        stdio: 'inherit'
+        stdio: 'inherit',
+        env: {
+            ...process.env,
+            ...envOverrides
+        }
     });
 
     child.on('exit', (code) => {
@@ -58,7 +74,7 @@ function startBuildWatch() {
     return child;
 }
 
-function startServer() {
+function startServer(devUrls) {
     const server = http.createServer(async (req, res) => {
         const { url, method } = req;
 
@@ -101,7 +117,8 @@ function startServer() {
     });
 
     server.listen(port, () => {
-        console.log(`[dev-server] Serving ${distRelativePath} on http://localhost:${port}/dist/infinite-craft-helper.user.js`);
+        console.log(`[dev-server] Serving ${distRelativePath} on ${devUrls.updateURL}`);
+        console.log(`[dev-server] Userscript metadata update/download URLs overridden to ${devUrls.updateURL}`);
         if (skipQuality) {
             console.log('[dev-server] Quality gates skipped in watch mode (build uses --skip-quality).');
         }
@@ -111,11 +128,16 @@ function startServer() {
 }
 
 async function main() {
-    console.log('[dev-server] Running initial build...');
-    await runCommand('node', ['build/build.js']);
+    const devUrls = computeDevUrls(port);
+    const envOverrides = {
+        USERSCRIPT_DEV_URL: devUrls.updateURL
+    };
 
-    const watchProcess = startBuildWatch();
-    const server = startServer();
+    console.log('[dev-server] Running initial build (dev URLs injected into metadata)...');
+    await runCommand('node', ['build/build.js'], envOverrides);
+
+    const watchProcess = startBuildWatch(envOverrides);
+    const server = startServer(devUrls);
 
     const shutdown = () => {
         console.log('\n[dev-server] Shutting down...');

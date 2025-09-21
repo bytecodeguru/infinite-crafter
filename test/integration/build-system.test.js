@@ -106,6 +106,30 @@ test('BuildManager.build produces bundled userscript from fixture', async (t) =>
     assert.match(output, /formatMessage\('panel ready'\)/, 'fixture code should be concatenated');
 });
 
+test('BuildManager.build honours USERSCRIPT_DEV_URL overrides', async (t) => {
+    const env = await createBuildEnvironment();
+    t.after(env.cleanup);
+    t.after(() => {
+        delete process.env.USERSCRIPT_DEV_URL;
+    });
+
+    process.env.USERSCRIPT_DEV_URL = 'http://localhost:4242/dev.user.js';
+
+    const config = {
+        ...env.baseConfig,
+        quality: null
+    };
+
+    const manager = new BuildManager(config);
+    await manager.build();
+
+    const outputPath = path.join(config.outputDir, config.outputFile);
+    const output = await fs.readFile(outputPath, 'utf8');
+
+    assert.match(output, /@updateURL\s+http:\/\/localhost:4242\/dev\.user\.js/);
+    assert.match(output, /@downloadURL\s+http:\/\/localhost:4242\/dev\.user\.js/);
+});
+
 
 
 test('BuildManager.build surfaces syntax errors with context', async (t) => {

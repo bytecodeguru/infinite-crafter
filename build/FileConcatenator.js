@@ -121,12 +121,16 @@ export class FileConcatenator {
             processed.version = processed.version.replace('{{VERSION}}', buildContext.version);
         }
 
-        if (!this.config.branch || !this.config.branch.urlTemplate) {
-            throw new BuildError('Branch URL template is not configured in build.config.js', { stage: 'concatenation' });
-        }
+        let baseUrl = null;
 
-        // Replace {{UPDATE_URL}} and {{DOWNLOAD_URL}}
-        const baseUrl = this.config.branch.urlTemplate.replace('{{BRANCH}}', buildContext.branch);
+        if (buildContext.devUrl) {
+            baseUrl = buildContext.devUrl;
+        } else {
+            if (!this.config.branch || !this.config.branch.urlTemplate) {
+                throw new BuildError('Branch URL template is not configured in build.config.js', { stage: 'concatenation' });
+            }
+            baseUrl = this.config.branch.urlTemplate.replace('{{BRANCH}}', buildContext.branch);
+        }
 
         if (processed.updateURL && processed.updateURL.includes('{{UPDATE_URL}}')) {
             processed.updateURL = processed.updateURL.replace('{{UPDATE_URL}}', baseUrl);
