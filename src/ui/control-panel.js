@@ -58,7 +58,9 @@ export function createControlPanel() {
             fontFamily: 'Arial, sans-serif',
             zIndex: '10000',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            transform: 'scale(1.5)',
+            transformOrigin: 'bottom right'
         }
     });
 

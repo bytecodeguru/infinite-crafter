@@ -188,11 +188,23 @@
      * @returns {Object} Version information object
      */
     function getVersionInfo() {
-        const version = '{{VERSION}}';  // Will be replaced during build
-        const isDevVersion = version.includes('-') || version.includes('dev') || version.includes('test');
+        const gmInfo = typeof globalThis !== 'undefined' ? globalThis.GM_info : undefined;
+        const gmVersion = gmInfo && gmInfo.script && gmInfo.script.version ? gmInfo.script.version : null;
+
+        const injectedVersion = typeof window !== 'undefined' && window.__INFINITE_CRAFT_HELPER_VERSION__
+            ? window.__INFINITE_CRAFT_HELPER_VERSION__
+            : null;
+
+        let version = gmVersion || injectedVersion || '{{VERSION}}';
+
+        if (version === '{{VERSION}}') {
+            version = 'dev-local';
+        }
+
+        const isDevVersion = /dev|test|-/.test(version);
 
         return {
-            version: version,
+            version,
             isDev: isDevVersion,
             displayVersion: isDevVersion ? version : `v${version}`,
             tag: isDevVersion ? 'DEV' : null
@@ -833,7 +845,9 @@
                 fontFamily: 'Arial, sans-serif',
                 zIndex: '10000',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                backdropFilter: 'blur(10px)'
+                backdropFilter: 'blur(10px)',
+                transform: 'scale(1.5)',
+                transformOrigin: 'bottom right'
             }
         });
 
