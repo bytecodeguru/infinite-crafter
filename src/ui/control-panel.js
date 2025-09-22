@@ -51,6 +51,8 @@ export function createControlPanel() {
             top: '24px',
             left: '24px',
             width: '375px',
+            minWidth: '375px',
+            minHeight: '320px',
             background: 'rgba(30, 30, 30, 0.95)',
             border: '2px solid #4a90e2',
             borderRadius: '8px',
@@ -58,7 +60,9 @@ export function createControlPanel() {
             fontFamily: 'Arial, sans-serif',
             zIndex: '10000',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            resize: 'both',
+            overflow: 'auto'
         }
     });
 

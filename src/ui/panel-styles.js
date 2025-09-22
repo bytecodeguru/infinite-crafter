@@ -11,7 +11,7 @@ export function getPanelStyles() {
     return `
         #infinite-craft-control-panel .panel-header {
             background: linear-gradient(135deg, #4a90e2, #357abd);
-            padding: 20px 24px;
+            padding: 16px 20px;
             border-radius: 8px 8px 0 0;
             display: flex;
             justify-content: space-between;
@@ -21,15 +21,15 @@ export function getPanelStyles() {
 
         #infinite-craft-control-panel .panel-header h3 {
             margin: 0;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
         }
 
         #infinite-craft-control-panel .version {
             background: rgba(255, 255, 255, 0.2);
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 18px;
+            padding: 3px 10px;
+            border-radius: 14px;
+            font-size: 14px;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -37,18 +37,18 @@ export function getPanelStyles() {
         }
 
         #infinite-craft-control-panel .version.dev-version {
-            background: rgba(255, 165, 0, 0.3);
-            border: 2px solid rgba(255, 165, 0, 0.4);
+            background: rgba(255, 165, 0, 0.25);
+            border: 1px solid rgba(255, 165, 0, 0.4);
         }
 
         #infinite-craft-control-panel .dev-tag {
             background: #ff6b35;
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 14px;
+            padding: 1px 6px;
+            border-radius: 9px;
+            font-size: 12px;
             font-weight: bold;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             animation: pulse 2s infinite;
         }
 
@@ -58,7 +58,7 @@ export function getPanelStyles() {
         }
 
         #infinite-craft-control-panel .panel-content {
-            padding: 24px;
+            padding: 20px;
             border-radius: 0;
         }
 
@@ -68,8 +68,8 @@ export function getPanelStyles() {
         }
 
         #infinite-craft-control-panel .panel-content p {
-            margin: 0 0 16px 0;
-            font-size: 18px;
+            margin: 0 0 14px 0;
+            font-size: 15px;
             color: #e0e0e0;
         }
     `;
