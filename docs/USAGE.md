@@ -18,6 +18,9 @@ window.gameInterface.getElementCount();
 // Find an element
 window.gameInterface.findElementByName('Fire');
 
+// Run quick diagnostics
+window.gameInterface.runBasicTests();
+
 // Access the logging API
 window.Logger.log('Hello from the console');
 ```

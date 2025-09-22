@@ -116,4 +116,29 @@ test.describe('Infinite Craft Helper Userscript', () => {
     expect(parseInt(styles.zIndex)).toBeGreaterThan(1000);
     expect(styles.borderRadius).toBe('8px');
   });
+
+  test('should expose GameInterface helpers on window', async () => {
+    await page.waitForSelector('#infinite-craft-control-panel', { timeout: 5000 });
+
+    const result = await page.evaluate(() => {
+      const gameInterface = window.gameInterface;
+      if (!gameInterface) {
+        return { exists: false };
+      }
+
+      const requiredMethods = ['logGameState', 'getElementCount', 'runBasicTests'];
+      const hasMethods = requiredMethods.every(method => typeof gameInterface[method] === 'function');
+      const basicTests = gameInterface.runBasicTests();
+
+      return {
+        exists: true,
+        hasMethods,
+        basicTestsLength: Array.isArray(basicTests) ? basicTests.length : 0
+      };
+    });
+
+    expect(result.exists).toBe(true);
+    expect(result.hasMethods).toBe(true);
+    expect(result.basicTestsLength).toBeGreaterThan(0);
+  });
 });

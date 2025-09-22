@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Infinite Craft Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.4-feature/auto-play-game-interface
 // @description  Control panel overlay for Infinite Craft with GameInterface foundation
 // @author       You
 // @match        https://neal.fun/infinite-craft/*
 // @match        https://neal.fun/infinite-craft
-// @updateURL    https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js
-// @downloadURL  https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js
+// @updateURL    https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/auto-play-game-interface/infinite-craft-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/auto-play-game-interface/infinite-craft-helper.user.js
 // @supportURL   https://github.com/bytecodeguru/infinite-crafter/issues
 // @homepageURL  https://github.com/bytecodeguru/infinite-crafter
 // @grant        none
@@ -15,6 +15,232 @@
 
 (function () {
     'use strict';
+
+    // === auto-play/game-interface.js ===
+    /**
+     * GameInterface module
+     * Provides DOM access helpers for the Infinite Craft game UI.
+     */
+
+    const SELECTORS = {
+        sidebar: ['#sidebar', '.sidebar', '.sidebar-container', '.game-elements-sidebar', '[data-testid="sidebar"]'],
+        sidebarItems: ['.item', '.element', '.sidebar-item', '.inventory-item', '[data-element]'],
+        playArea: ['#board', '.board', '.play-area', '.game-board', '[data-testid="board"]'],
+        nameNodes: ['.label', '.name', '.element-name', '.title', '[data-element-name]']
+    };
+
+    const DEFAULT_LOGGER = {
+        log: (...args) => console.log('[GameInterface]', ...args),
+        warn: (...args) => console.warn('[GameInterface]', ...args),
+        error: (...args) => console.error('[GameInterface]', ...args)
+    };
+
+    function callLogger(logger, level, message, ...args) {
+        if (!logger || typeof logger[level] !== 'function') {
+            return;
+        }
+        logger[level](message, ...args);
+    }
+
+    function selectFirst(root, selectors) {
+        if (!root) {
+            return null;
+        }
+        for (const selector of selectors) {
+            const element = root.querySelector(selector);
+            if (element) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    function collectAll(root, selectors) {
+        if (!root) {
+            return [];
+        }
+        const elements = new Set();
+        selectors.forEach(selector => {
+            root.querySelectorAll(selector).forEach(element => elements.add(element));
+        });
+        return Array.from(elements);
+    }
+
+    function getElementName(element) {
+        if (!element) {
+            return '';
+        }
+        const datasetName = element.dataset?.element || element.dataset?.name;
+        if (datasetName) {
+            return datasetName.trim();
+        }
+        const attributeName = element.getAttribute?.('data-element-name');
+        if (attributeName) {
+            return attributeName.trim();
+        }
+        const nameNode = selectFirst(element, SELECTORS.nameNodes);
+        if (nameNode && nameNode.textContent) {
+            return nameNode.textContent.trim();
+        }
+        if (element.textContent) {
+            return element.textContent.trim();
+        }
+        return '';
+    }
+
+    function isElementVisible(element) {
+        if (!element || typeof element.getBoundingClientRect !== 'function') {
+            return false;
+        }
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+    }
+
+    function getElementBounds(element) {
+        if (!element || typeof element.getBoundingClientRect !== 'function') {
+            return null;
+        }
+        const rect = element.getBoundingClientRect();
+        return {
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height
+        };
+    }
+
+    function createElementInfo(element) {
+        return {
+            element,
+            name: getElementName(element),
+            bounds: getElementBounds(element)
+        };
+    }
+
+    function makeTestResult(name, passed, successDetails, failureDetails) {
+        return {
+            name,
+            passed,
+            details: passed ? successDetails : failureDetails
+        };
+    }
+
+    function defaultDocument() {
+        if (typeof window !== 'undefined' && window.document) {
+            return window.document;
+        }
+        return null;
+    }
+
+    class GameInterface {
+        constructor({ logger = DEFAULT_LOGGER, doc = defaultDocument() } = {}) {
+            this.logger = logger;
+            this.document = doc;
+        }
+    }
+
+    function getSidebarContainerMethod() {
+        if (!this.document) {
+            callLogger(this.logger, 'warn', 'Document not available, sidebar lookup skipped');
+            return null;
+        }
+        const container = selectFirst(this.document, SELECTORS.sidebar);
+        if (!container) {
+            callLogger(this.logger, 'warn', 'Sidebar container not found', { selectorsTried: SELECTORS.sidebar });
+        }
+        return container;
+    }
+
+    function getSidebarElementsMethod() {
+        const container = this.getSidebarContainer();
+        if (!container) {
+            return [];
+        }
+        const elements = collectAll(container, SELECTORS.sidebarItems).filter(isElementVisible);
+        if (!elements.length) {
+            callLogger(this.logger, 'warn', 'No sidebar elements detected', { selectorsTried: SELECTORS.sidebarItems });
+        }
+        return elements.map(createElementInfo);
+    }
+
+    function getPlayAreaContainerMethod() {
+        if (!this.document) {
+            callLogger(this.logger, 'warn', 'Document not available, play area lookup skipped');
+            return null;
+        }
+        const container = selectFirst(this.document, SELECTORS.playArea);
+        if (!container) {
+            callLogger(this.logger, 'warn', 'Play area container not found', { selectorsTried: SELECTORS.playArea });
+        }
+        return container;
+    }
+
+    function getElementCountMethod() {
+        return this.getSidebarElements().length;
+    }
+
+    function findElementByNameMethod(name) {
+        if (!name) {
+            return null;
+        }
+        const normalisedName = name.trim().toLowerCase();
+        return this.getSidebarElements().find(({ name: elementName }) => elementName.toLowerCase() === normalisedName) || null;
+    }
+
+    function getAvailableElementNamesMethod() {
+        return this.getSidebarElements().map(info => info.name).filter(Boolean);
+    }
+
+    function logGameStateMethod() {
+        const count = this.getElementCount();
+        const names = this.getAvailableElementNames();
+        callLogger(this.logger, 'log', `Detected ${count} available elements`);
+        if (names.length) {
+            callLogger(this.logger, 'log', 'Sample elements:', names.slice(0, 10));
+        }
+    }
+
+    function isGameReadyMethod() {
+        return Boolean(this.getSidebarContainer() && this.getPlayAreaContainer());
+    }
+
+    function runBasicTestsMethod() {
+        const sidebarContainer = this.getSidebarContainer();
+        const sidebarElements = this.getSidebarElements();
+        const playArea = this.getPlayAreaContainer();
+
+        const results = [
+            makeTestResult('sidebar-container', Boolean(sidebarContainer), 'Sidebar container detected', 'Sidebar container missing'),
+            makeTestResult('sidebar-elements', sidebarElements.length > 0, `Found ${sidebarElements.length} sidebar elements`, 'No sidebar elements detected'),
+            makeTestResult('play-area', Boolean(playArea), 'Play area container detected', 'Play area container missing')
+        ];
+
+        if (!results.every(result => result.passed)) {
+            callLogger(this.logger, 'warn', 'GameInterface basic tests reported issues', results);
+        } else {
+            callLogger(this.logger, 'log', 'GameInterface basic tests passed');
+        }
+
+        return results;
+    }
+
+    GameInterface.prototype.getSidebarContainer = getSidebarContainerMethod;
+    GameInterface.prototype.getSidebarElements = getSidebarElementsMethod;
+    GameInterface.prototype.getPlayAreaContainer = getPlayAreaContainerMethod;
+    GameInterface.prototype.getElementCount = getElementCountMethod;
+    GameInterface.prototype.findElementByName = findElementByNameMethod;
+    GameInterface.prototype.getAvailableElementNames = getAvailableElementNamesMethod;
+    GameInterface.prototype.logGameState = logGameStateMethod;
+    GameInterface.prototype.isGameReady = isGameReadyMethod;
+    GameInterface.prototype.runBasicTests = runBasicTestsMethod;
+
+    function createGameInterface(logger) {
+        return new GameInterface({ logger });
+    }
+
+    { GameInterface };
 
     // === core/log-entry.js ===
     /**
@@ -1394,8 +1620,9 @@
 
         const panel = setupControlPanel();
         const { logManager, Logger } = initializeLogging(panel);
+        const gameInterface = initializeGameInterface(Logger);
 
-        runInitializationSmokeTests(Logger);
+        runInitializationSmokeTests(Logger, gameInterface);
         console.log('Infinite Craft Helper loaded successfully!');
 
         scheduleLogCleanup(logManager);
@@ -1455,7 +1682,70 @@
         window.Logger = Logger;
     }
 
-    function runInitializationSmokeTests(Logger) {
+    function exposeGameInterfaceGlobal(gameInterface) {
+        window.gameInterface = gameInterface;
+    }
+
+    function initializeGameInterface(Logger) {
+        console.log('[Init] Initializing GameInterface...');
+
+        const loggerBridge = createGameInterfaceLogger(Logger);
+        const gameInterface = createGameInterface(loggerBridge);
+
+        exposeGameInterfaceGlobal(gameInterface);
+        console.log('[Init] GameInterface available via window.gameInterface');
+
+        if (gameInterface.isGameReady()) {
+            const results = gameInterface.runBasicTests();
+            console.log(`[Init] GameInterface readiness check: ${results.filter(result => result.passed).length}/${results.length} tests passed`);
+        } else {
+            console.log('[Init] GameInterface waiting for game elements – call window.gameInterface.runBasicTests() once the page finishes loading');
+        }
+
+        return gameInterface;
+    }
+
+    function createGameInterfaceLogger(Logger) {
+        if (!Logger) {
+            return null;
+        }
+        const send = level => (message, ...args) => {
+            const text = formatLoggerMessage(message);
+            try {
+                if (typeof Logger[level] === 'function') {
+                    Logger[level](text);
+                } else if (typeof Logger.log === 'function') {
+                    Logger.log(text);
+                }
+            } catch (error) {
+                console.warn('[Init] Logger bridge failed, falling back to console:', error);
+                const consoleLevel = console[level] ? level : 'log';
+                console[consoleLevel]('[GameInterface]', text);
+            }
+            if (args.length) {
+                const consoleLevel = console[level] ? level : 'log';
+                console[consoleLevel]('[GameInterface]', message, ...args);
+            }
+        };
+        return {
+            log: send('log'),
+            warn: send('warn'),
+            error: send('error')
+        };
+    }
+
+    function formatLoggerMessage(message) {
+        if (typeof message === 'string') {
+            return message;
+        }
+        try {
+            return JSON.stringify(message);
+        } catch {
+            return String(message);
+        }
+    }
+
+    function runInitializationSmokeTests(Logger, gameInterface) {
         console.log('[Init] Testing Logger API integration...');
         Logger.log('Logger API test: info message - logging system is working!');
         Logger.warn('Logger API test: warning message - this should appear in the logs panel');
@@ -1464,6 +1754,10 @@
         console.log('[Init] Testing control panel integration...');
         Logger.log('Control panel is draggable and logs section should be visible');
         Logger.log('Collapse/expand, copy, and clear buttons should be functional');
+
+        if (gameInterface) {
+            console.log('[Init] GameInterface smoke tests available via window.gameInterface.runBasicTests()');
+        }
     }
 
     function scheduleLogCleanup(logManager) {

@@ -8,6 +8,7 @@ import { createControlPanel } from './ui/control-panel.js';
 import { makeDraggable } from './ui/draggable.js';
 import { LogManager, createLogger } from './core/log-manager.js';
 import { LogDisplay } from './ui/log-display-core.js';
+import { createGameInterface } from './auto-play/game-interface.js';
 import { onDOMReady, appendToBody } from './utils/dom.js';
 
 /**
@@ -18,8 +19,9 @@ function init() {
 
     const panel = setupControlPanel();
     const { logManager, Logger } = initializeLogging(panel);
+    const gameInterface = initializeGameInterface(Logger);
 
-    runInitializationSmokeTests(Logger);
+    runInitializationSmokeTests(Logger, gameInterface);
     console.log('Infinite Craft Helper loaded successfully!');
 
     scheduleLogCleanup(logManager);
@@ -79,7 +81,70 @@ function exposeLoggingGlobals(logManager, logDisplay, Logger) {
     window.Logger = Logger;
 }
 
-function runInitializationSmokeTests(Logger) {
+function exposeGameInterfaceGlobal(gameInterface) {
+    window.gameInterface = gameInterface;
+}
+
+function initializeGameInterface(Logger) {
+    console.log('[Init] Initializing GameInterface...');
+
+    const loggerBridge = createGameInterfaceLogger(Logger);
+    const gameInterface = createGameInterface(loggerBridge);
+
+    exposeGameInterfaceGlobal(gameInterface);
+    console.log('[Init] GameInterface available via window.gameInterface');
+
+    if (gameInterface.isGameReady()) {
+        const results = gameInterface.runBasicTests();
+        console.log(`[Init] GameInterface readiness check: ${results.filter(result => result.passed).length}/${results.length} tests passed`);
+    } else {
+        console.log('[Init] GameInterface waiting for game elements – call window.gameInterface.runBasicTests() once the page finishes loading');
+    }
+
+    return gameInterface;
+}
+
+function createGameInterfaceLogger(Logger) {
+    if (!Logger) {
+        return null;
+    }
+    const send = level => (message, ...args) => {
+        const text = formatLoggerMessage(message);
+        try {
+            if (typeof Logger[level] === 'function') {
+                Logger[level](text);
+            } else if (typeof Logger.log === 'function') {
+                Logger.log(text);
+            }
+        } catch (error) {
+            console.warn('[Init] Logger bridge failed, falling back to console:', error);
+            const consoleLevel = console[level] ? level : 'log';
+            console[consoleLevel]('[GameInterface]', text);
+        }
+        if (args.length) {
+            const consoleLevel = console[level] ? level : 'log';
+            console[consoleLevel]('[GameInterface]', message, ...args);
+        }
+    };
+    return {
+        log: send('log'),
+        warn: send('warn'),
+        error: send('error')
+    };
+}
+
+function formatLoggerMessage(message) {
+    if (typeof message === 'string') {
+        return message;
+    }
+    try {
+        return JSON.stringify(message);
+    } catch {
+        return String(message);
+    }
+}
+
+function runInitializationSmokeTests(Logger, gameInterface) {
     console.log('[Init] Testing Logger API integration...');
     Logger.log('Logger API test: info message - logging system is working!');
     Logger.warn('Logger API test: warning message - this should appear in the logs panel');
@@ -88,6 +153,10 @@ function runInitializationSmokeTests(Logger) {
     console.log('[Init] Testing control panel integration...');
     Logger.log('Control panel is draggable and logs section should be visible');
     Logger.log('Collapse/expand, copy, and clear buttons should be functional');
+
+    if (gameInterface) {
+        console.log('[Init] GameInterface smoke tests available via window.gameInterface.runBasicTests()');
+    }
 }
 
 function scheduleLogCleanup(logManager) {

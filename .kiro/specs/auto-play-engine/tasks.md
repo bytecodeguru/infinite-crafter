@@ -1,18 +1,21 @@
 # Implementation Plan
 
-- [x] 1. Set up foundation and basic game interface detection ✅ COMPLETED
-  - ✅ Create GameInterface class with basic DOM query methods
-  - ✅ Implement element counting and availability detection functions
-  - ✅ Add console logging for debugging and verification
-  - ✅ Global window.gameInterface API for testing
-  - ✅ Comprehensive test suite with runBasicTests()
+- [x] 1. Restore foundation and basic game interface detection
+  - ✅ Recreated GameInterface module with sidebar/play-area detection helpers
+  - ✅ Exposed element counting and diagnostics via `window.gameInterface`
+  - ✅ Added `runBasicTests()` smoke checks plus Playwright coverage for the API surface
+  - ✅ Bridged logging so GameInterface warnings route through the in-panel Logger
   - _Requirements: 7.1, 7.2_
 
 - [ ] 2. Implement element selection and identification
-  - Add methods to find and select specific elements from the sidebar
-  - Create element validation functions to ensure elements are draggable
-  - Implement element bounds detection for positioning calculations
-  - Write test functions to verify element selection accuracy
+  - Audit and backfill the GameInterface foundation (module, globals, basic counters) because the current build only exposes logging; confirm Step 1 deliverables exist before layering selectors.
+  - Stand up `src/auto-play/game-interface.js` exporting the GameInterface class (or factory) and wire it through `src/main.js` so `window.gameInterface` is available in-page tests.
+  - Implement sidebar element retrieval helpers (`getSidebarElements`, `findElementByName`, predicate-based selectors) that return structured metadata for later automation stages.
+  - Create validation utilities (`isElementDraggable`, visibility checks, playable-state guards) to filter unusable nodes and surface warnings via Logger.
+  - Implement bounds helpers (`getElementBounds`, cached rect lookups) to support drag path calculations in Task 4.
+  - Provide diagnostic hooks (`logSidebarSummary`, `runSelectionDiagnostics`) so developers can confirm selectors via console.
+  - Add Playwright coverage that mounts a static Infinite Craft DOM fixture and asserts selector/validation behavior; expose in-browser smoke tests via `window.gameInterface.runSelectionTests()`.
+  - Update `docs/USAGE.md` once new helpers land so console documentation stays accurate.
   - _Requirements: 3.2, 7.1_
 
 - [ ] 3. Create basic mouse event simulation
