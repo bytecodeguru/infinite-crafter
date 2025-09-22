@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Infinite Craft Helper
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4-feature/game-interface-foundation
+// @version      1.0.4
 // @description  Control panel overlay for Infinite Craft with GameInterface foundation
 // @author       You
 // @match        https://neal.fun/infinite-craft/*
 // @match        https://neal.fun/infinite-craft
-// @updateURL    https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/game-interface-foundation/infinite-craft-helper.user.js
-// @downloadURL  https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/game-interface-foundation/infinite-craft-helper.user.js
+// @updateURL    https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/main/infinite-craft-helper.user.js
 // @supportURL   https://github.com/bytecodeguru/infinite-crafter/issues
 // @homepageURL  https://github.com/bytecodeguru/infinite-crafter
 // @grant        none
