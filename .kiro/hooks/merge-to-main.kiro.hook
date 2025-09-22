@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Merge Feature to Main",
+  "description": "Merges a completed feature branch to main and updates userscript URLs back to main branch for production release",
+  "version": "1",
+  "when": {
+    "type": "manual",
+    "buttonText": "Merge to Main"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Help the user merge their completed feature branch to main for production release. Follow these steps:\n\n1. Ensure all changes are committed and pushed to the feature branch\n2. Update the userscript URLs back to main branch\n3. Update the @version to a proper semantic version (remove feature branch suffix)\n4. Commit the production-ready changes to the feature branch\n5. Switch to main branch and pull latest changes\n6. Merge the feature branch into main\n7. Push main branch to origin\n8. Optionally delete the feature branch (ask user first)\n9. Inform user that the production version is now available\n\nExample workflow:\n- Update URLs to main branch and commit\n- git checkout main && git pull origin main\n- git merge feature/feature-name\n- git push origin main\n- Optionally clean up feature branch"
+  }
+}

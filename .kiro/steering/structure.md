@@ -41,7 +41,23 @@ infinite-crafter/
 - **Version updates**: Update header `@version` and display version
 
 ## Development Guidelines
-- Keep all code in single userscript file
+- Keep all code in single userscript file (legacy - transitioning to multi-file with build system)
 - Use vanilla JavaScript only (no external dependencies)
 - Maintain backward compatibility with older browsers
 - Follow userscript best practices for security and performance
+
+## File Size and Focus Policy (Multi-File Development)
+- **Maximum file size**: 300 lines per source file
+- **Recommended size**: 150-200 lines per file
+- **Function limits**: Maximum 50 lines per function, 30 lines recommended
+- **Single responsibility**: Each file should have one clear purpose
+- **Feature-based splitting**: Group related functionality together
+- **Layer-based separation**: Separate UI, business logic, and utilities
+- **Dependency minimization**: Reduce cross-file dependencies where possible
+- **Clear interfaces**: Well-defined exports and imports between modules
+
+## Quality Gate Policy
+- **Linting Required**: Run the configured lint command and block commits when issues remain. Only the user may grant exceptions.
+- **Test Integrity**: Keep the test suite green before merging. Temporary red states are acceptable only when adding failing tests at the start of a TDD loop; resolve them before commit.
+- **Test Planning**: When capturing new tasks or specs, note the intended unit or integration tests so every requirement ships with regression coverage.
+- **Documentation Updates**: After closing a task, refresh relevant docs (README, steering, specs, tasks, design) and record any new follow-up steps.

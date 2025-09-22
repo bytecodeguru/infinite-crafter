@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Version Increment Guard",
+  "description": "Monitors the userscript file for changes and ensures the @version field is incremented before code is pushed to main branch",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "infinite-craft-helper.user.js"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The userscript file has been modified. Before this can be pushed to main, verify that the @version field in the userscript header has been incremented from the previous version. Check the git history to see what the previous version was, and ensure the current @version is higher. If not incremented, remind the user to update the @version field so Tampermonkey will properly detect and install the update."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Create Feature Branch",
+  "description": "Creates a new feature branch with automatic version incrementing and updates the userscript URLs to point to the feature branch for testing",
+  "version": "1",
+  "when": {
+    "type": "manual",
+    "buttonText": "Create Feature Branch"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Help the user create a new feature branch for development. Follow these steps:\n\n1. Ask for the feature name (use kebab-case format)\n2. Use the branch helper to create the feature branch with proper versioning:\n   - Get the current main branch version\n   - Increment the minor version and reset dev to 0 (e.g., 1.0.0 -> 1.1.0)\n   - Create and checkout the feature branch\n   - Update URLs in the userscript to point to the feature branch\n   - Commit and push the changes\n3. Inform the user of the new version and installation URL\n\nVersion Policy:\n- New feature branches increment the minor version: 1.0.0 -> 1.1.0\n- Dev version starts at 0 for new branches\n- Each subsequent save will increment the dev number: 1.1.0 -> 1.1.1 -> 1.1.2\n\nUse command: node .kiro/scripts/branch-helper.js setup-feature [feature-name]"
+  }
+}
