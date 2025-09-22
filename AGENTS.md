@@ -8,6 +8,7 @@
 - For each piece of work capture or update the plan in the appropriate spec task; note expected tests and documentation touch points.
 - Propose new dependencies or tooling during the planning phase and secure explicit user approval before implementation.
 - Keep the design → plan → execute cycle: do not start coding without confirming scope and approach in the specs/tasks.
+- **No plan, no code:** Before editing any source file, confirm the change has already been designed, documented in the relevant spec/task (with planned tests/docs), and reviewed/acknowledged by the user. If that preparation is missing, pause and capture it first—no exceptions.
 
 ## 3. Implement
 - Work within the documented repository structure (`docs/DEVELOPMENT.md`) and respect size policies (300 lines per file, 50 per function) and quality gates (lint, tests, build).
