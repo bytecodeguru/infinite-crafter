@@ -225,8 +225,8 @@
         return `
             #infinite-craft-control-panel .panel-header {
                 background: linear-gradient(135deg, #4a90e2, #357abd);
-                padding: 12px 16px;
-                border-radius: 6px 6px 0 0;
+                padding: 20px 24px;
+                border-radius: 8px 8px 0 0;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -235,34 +235,34 @@
 
             #infinite-craft-control-panel .panel-header h3 {
                 margin: 0;
-                font-size: 16px;
+                font-size: 24px;
                 font-weight: bold;
             }
 
             #infinite-craft-control-panel .version {
                 background: rgba(255, 255, 255, 0.2);
-                padding: 2px 8px;
-                border-radius: 12px;
-                font-size: 12px;
+                padding: 4px 12px;
+                border-radius: 16px;
+                font-size: 18px;
                 font-weight: bold;
                 display: flex;
                 align-items: center;
-                gap: 4px;
+                gap: 6px;
             }
 
             #infinite-craft-control-panel .version.dev-version {
                 background: rgba(255, 165, 0, 0.3);
-                border: 1px solid rgba(255, 165, 0, 0.5);
+                border: 2px solid rgba(255, 165, 0, 0.4);
             }
 
             #infinite-craft-control-panel .dev-tag {
                 background: #ff6b35;
                 color: white;
-                padding: 1px 6px;
-                border-radius: 8px;
-                font-size: 10px;
+                padding: 2px 8px;
+                border-radius: 10px;
+                font-size: 14px;
                 font-weight: bold;
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
                 animation: pulse 2s infinite;
             }
 
@@ -272,7 +272,7 @@
             }
 
             #infinite-craft-control-panel .panel-content {
-                padding: 16px;
+                padding: 24px;
                 border-radius: 0;
             }
 
@@ -282,8 +282,8 @@
             }
 
             #infinite-craft-control-panel .panel-content p {
-                margin: 0 0 12px 0;
-                font-size: 14px;
+                margin: 0 0 16px 0;
+                font-size: 18px;
                 color: #e0e0e0;
             }
         `;
@@ -835,9 +835,9 @@
             innerHTML: panelHTML,
             style: {
                 position: 'fixed',
-                bottom: '20px',
-                right: '20px',
-                width: '250px',
+                top: '24px',
+                left: '24px',
+                width: '375px',
                 background: 'rgba(30, 30, 30, 0.95)',
                 border: '2px solid #4a90e2',
                 borderRadius: '8px',
@@ -845,9 +845,7 @@
                 fontFamily: 'Arial, sans-serif',
                 zIndex: '10000',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                backdropFilter: 'blur(10px)',
-                transform: 'scale(1.5)',
-                transformOrigin: 'bottom right'
+                backdropFilter: 'blur(10px)'
             }
         });
 
@@ -871,12 +869,10 @@
         }
 
         let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
+        let startX = 0;
+        let startY = 0;
+        let currentLeft = parseFloat(panel.style.left) || panel.getBoundingClientRect().left;
+        let currentTop = parseFloat(panel.style.top) || panel.getBoundingClientRect().top;
 
         const header = panel.querySelector('.panel-header');
 
@@ -890,10 +886,9 @@
         document.addEventListener('mouseup', dragEnd);
 
         function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-
             if (e.target === header || header.contains(e.target)) {
+                startX = e.clientX - currentLeft;
+                startY = e.clientY - currentTop;
                 isDragging = true;
             }
         }
@@ -901,19 +896,15 @@
         function drag(e) {
             if (isDragging) {
                 e.preventDefault();
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
+                currentLeft = e.clientX - startX;
+                currentTop = e.clientY - startY;
 
-                xOffset = currentX;
-                yOffset = currentY;
-
-                panel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+                panel.style.left = `${currentLeft}px`;
+                panel.style.top = `${currentTop}px`;
             }
         }
 
         function dragEnd() {
-            initialX = currentX;
-            initialY = currentY;
             isDragging = false;
         }
     }

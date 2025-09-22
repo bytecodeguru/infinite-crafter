@@ -14,12 +14,10 @@ export function makeDraggable(panel) {
     }
 
     let isDragging = false;
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
+    let startX = 0;
+    let startY = 0;
+    let currentLeft = parseFloat(panel.style.left) || panel.getBoundingClientRect().left;
+    let currentTop = parseFloat(panel.style.top) || panel.getBoundingClientRect().top;
 
     const header = panel.querySelector('.panel-header');
 
@@ -33,10 +31,9 @@ export function makeDraggable(panel) {
     document.addEventListener('mouseup', dragEnd);
 
     function dragStart(e) {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-
         if (e.target === header || header.contains(e.target)) {
+            startX = e.clientX - currentLeft;
+            startY = e.clientY - currentTop;
             isDragging = true;
         }
     }
@@ -44,19 +41,15 @@ export function makeDraggable(panel) {
     function drag(e) {
         if (isDragging) {
             e.preventDefault();
-            currentX = e.clientX - initialX;
-            currentY = e.clientY - initialY;
+            currentLeft = e.clientX - startX;
+            currentTop = e.clientY - startY;
 
-            xOffset = currentX;
-            yOffset = currentY;
-
-            panel.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+            panel.style.left = `${currentLeft}px`;
+            panel.style.top = `${currentTop}px`;
         }
     }
 
     function dragEnd() {
-        initialX = currentX;
-        initialY = currentY;
         isDragging = false;
     }
 }

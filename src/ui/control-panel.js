@@ -48,9 +48,9 @@ export function createControlPanel() {
         innerHTML: panelHTML,
         style: {
             position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            width: '250px',
+            top: '24px',
+            left: '24px',
+            width: '375px',
             background: 'rgba(30, 30, 30, 0.95)',
             border: '2px solid #4a90e2',
             borderRadius: '8px',
@@ -58,9 +58,7 @@ export function createControlPanel() {
             fontFamily: 'Arial, sans-serif',
             zIndex: '10000',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)',
-            transform: 'scale(1.5)',
-            transformOrigin: 'bottom right'
+            backdropFilter: 'blur(10px)'
         }
     });
 
