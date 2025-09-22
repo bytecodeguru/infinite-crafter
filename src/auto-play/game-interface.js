@@ -6,7 +6,19 @@
 const SELECTORS = {
     sidebar: ['#sidebar', '.sidebar', '.sidebar-container', '.game-elements-sidebar', '[data-testid="sidebar"]'],
     sidebarItems: ['.item', '.element', '.sidebar-item', '.inventory-item', '[data-element]'],
-    playArea: ['#board', '.board', '.play-area', '.game-board', '[data-testid="board"]'],
+    playArea: [
+        '#instances',
+        '#instances-top',
+        '#select-box',
+        '#particles',
+        '.container.infinite-craft',
+        '[data-container][class*="infinite-craft"]',
+        '#board',
+        '.board',
+        '.play-area',
+        '.game-board',
+        '[data-testid="board"]'
+    ],
     nameNodes: ['.label', '.name', '.element-name', '.title', '[data-element-name]']
 };
 
