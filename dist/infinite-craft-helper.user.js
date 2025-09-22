@@ -6,8 +6,8 @@
 // @author       You
 // @match        https://neal.fun/infinite-craft/*
 // @match        https://neal.fun/infinite-craft
-// @updateURL    http://localhost:3000/dist/infinite-craft-helper.user.js
-// @downloadURL  http://localhost:3000/dist/infinite-craft-helper.user.js
+// @updateURL    https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/game-interface-foundation/infinite-craft-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/bytecodeguru/infinite-crafter/feature/game-interface-foundation/infinite-craft-helper.user.js
 // @supportURL   https://github.com/bytecodeguru/infinite-crafter/issues
 // @homepageURL  https://github.com/bytecodeguru/infinite-crafter
 // @grant        none
