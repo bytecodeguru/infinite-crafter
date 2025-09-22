@@ -382,7 +382,7 @@
             }
 
             #infinite-craft-control-panel .logs-content {
-                max-height: 150px;
+                max-height: 220px;
                 overflow-y: auto;
                 overflow-x: hidden;
                 transition: max-height 0.3s ease, opacity 0.2s ease;
@@ -839,7 +839,8 @@
                 left: '24px',
                 width: '375px',
                 minWidth: '375px',
-                minHeight: '320px',
+                minHeight: '160px',
+                height: 'auto',
                 background: 'rgba(30, 30, 30, 0.95)',
                 border: '2px solid #4a90e2',
                 borderRadius: '8px',

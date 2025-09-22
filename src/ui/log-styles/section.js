@@ -90,7 +90,7 @@ export function buildLogSectionStyles() {
         }
 
         #infinite-craft-control-panel .logs-content {
-            max-height: 150px;
+            max-height: 220px;
             overflow-y: auto;
             overflow-x: hidden;
             transition: max-height 0.3s ease, opacity 0.2s ease;
