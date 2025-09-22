@@ -3,24 +3,7 @@
  * Provides DOM access helpers for the Infinite Craft game UI.
  */
 
-const SELECTORS = {
-    sidebar: ['#sidebar', '.sidebar', '.sidebar-container', '.game-elements-sidebar', '[data-testid="sidebar"]'],
-    sidebarItems: ['.item', '.element', '.sidebar-item', '.inventory-item', '[data-element]'],
-    playArea: [
-        '#instances',
-        '#instances-top',
-        '#select-box',
-        '#particles',
-        '.container.infinite-craft',
-        '[data-container][class*="infinite-craft"]',
-        '#board',
-        '.board',
-        '.play-area',
-        '.game-board',
-        '[data-testid="board"]'
-    ],
-    nameNodes: ['.label', '.name', '.element-name', '.title', '[data-element-name]']
-};
+import { SELECTORS, collectAll, createElementInfo, findDuplicatesByName, selectFirst, toElementInfo, validateSidebarElement } from './sidebar-helpers.js';
 
 const DEFAULT_LOGGER = {
     log: (...args) => console.log('[GameInterface]', ...args),
@@ -33,83 +16,6 @@ function callLogger(logger, level, message, ...args) {
         return;
     }
     logger[level](message, ...args);
-}
-
-function selectFirst(root, selectors) {
-    if (!root) {
-        return null;
-    }
-    for (const selector of selectors) {
-        const element = root.querySelector(selector);
-        if (element) {
-            return element;
-        }
-    }
-    return null;
-}
-
-function collectAll(root, selectors) {
-    if (!root) {
-        return [];
-    }
-    const elements = new Set();
-    selectors.forEach(selector => {
-        root.querySelectorAll(selector).forEach(element => elements.add(element));
-    });
-    return Array.from(elements);
-}
-
-function getElementName(element) {
-    if (!element) {
-        return '';
-    }
-    const datasetName = element.dataset?.element || element.dataset?.name;
-    if (datasetName) {
-        return datasetName.trim();
-    }
-    const attributeName = element.getAttribute?.('data-element-name');
-    if (attributeName) {
-        return attributeName.trim();
-    }
-    const nameNode = selectFirst(element, SELECTORS.nameNodes);
-    if (nameNode && nameNode.textContent) {
-        return nameNode.textContent.trim();
-    }
-    if (element.textContent) {
-        return element.textContent.trim();
-    }
-    return '';
-}
-
-function isElementVisible(element) {
-    if (!element || typeof element.getBoundingClientRect !== 'function') {
-        return false;
-    }
-    const rect = element.getBoundingClientRect();
-    return rect.width > 0 && rect.height > 0;
-}
-
-function getElementBounds(element) {
-    if (!element || typeof element.getBoundingClientRect !== 'function') {
-        return null;
-    }
-    const rect = element.getBoundingClientRect();
-    return {
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height
-    };
-}
-
-function createElementInfo(element) {
-    return {
-        element,
-        name: getElementName(element),
-        bounds: getElementBounds(element)
-    };
 }
 
 function makeTestResult(name, passed, successDetails, failureDetails) {
@@ -146,16 +52,112 @@ function getSidebarContainerMethod() {
     return container;
 }
 
-function getSidebarElementsMethod() {
+function getSidebarElementsMethod(options = {}) {
     const container = this.getSidebarContainer();
     if (!container) {
         return [];
     }
-    const elements = collectAll(container, SELECTORS.sidebarItems).filter(isElementVisible);
-    if (!elements.length) {
-        callLogger(this.logger, 'warn', 'No sidebar elements detected', { selectorsTried: SELECTORS.sidebarItems });
+
+    const { includeHidden = false, limit = null } = options;
+    const infos = collectAll(container, SELECTORS.sidebarItems)
+        .map((element, index) => createElementInfo(element, index))
+        .filter(info => includeHidden || info.isVisible);
+
+    if (!infos.length) {
+        callLogger(this.logger, 'warn', 'No sidebar elements detected', { selectorsTried: SELECTORS.sidebarItems, includeHidden });
     }
-    return elements.map(createElementInfo);
+
+    if (typeof limit === 'number' && limit > 0) {
+        return infos.slice(0, limit);
+    }
+
+    return infos;
+}
+
+function getDraggableElementsMethod(options = {}) {
+    return this.getSidebarElements(options).filter(info => info.isDraggable);
+}
+
+function getElementCountMethod(options = {}) {
+    return this.getSidebarElements(options).length;
+}
+
+function findElementByNameMethod(name, options = {}) {
+    if (!name) {
+        return null;
+    }
+    const normalisedName = name.trim().toLowerCase();
+    return this.getSidebarElements(options).find(({ name: elementName }) => elementName.toLowerCase() === normalisedName) || null;
+}
+
+function findElementsByPredicateMethod(predicate, options = {}) {
+    if (typeof predicate !== 'function') {
+        return [];
+    }
+    return this.getSidebarElements(options).filter(info => {
+        try {
+            return Boolean(predicate(info));
+        } catch (error) {
+            callLogger(this.logger, 'warn', 'Predicate threw while evaluating element', { error, info });
+            return false;
+        }
+    });
+}
+
+function findElementByPredicateMethod(predicate, options = {}) {
+    return this.findElementsByPredicate(predicate, options)[0] || null;
+}
+
+function getAvailableElementNamesMethod(options = {}) {
+    return this.getSidebarElements(options).map(info => info.name).filter(Boolean);
+}
+
+function isElementDraggableMethod(target) {
+    const info = toElementInfo(target);
+    if (!info) {
+        return false;
+    }
+    return validateSidebarElement(info).isValid;
+}
+
+function validateSidebarElementMethod(target) {
+    return validateSidebarElement(toElementInfo(target));
+}
+
+function getSidebarSnapshotMethod(options = {}) {
+    const includeHidden = options.includeHidden !== undefined ? options.includeHidden : true;
+    const elements = this.getSidebarElements({ ...options, includeHidden });
+    const validations = elements.map(info => validateSidebarElement(info));
+    const valid = validations.filter(result => result && result.isValid).map(result => result.info);
+    const invalid = validations.filter(result => result && !result.isValid);
+
+    return {
+        timestamp: Date.now(),
+        elements,
+        valid,
+        invalid,
+        total: elements.length,
+        validCount: valid.length,
+        invalidCount: invalid.length,
+        includeHidden
+    };
+}
+
+function logSidebarSummaryMethod(options = {}) {
+    const snapshot = this.getSidebarSnapshot(options);
+    const message = `Sidebar summary: ${snapshot.validCount}/${snapshot.total} draggable elements`;
+    callLogger(this.logger, 'log', message);
+
+    if (snapshot.invalidCount > 0) {
+        const sample = snapshot.invalid.slice(0, 5).map(result => result.info?.name || '(unknown)');
+        callLogger(this.logger, 'warn', 'Invalid sidebar elements detected', { count: snapshot.invalidCount, sample });
+    }
+
+    return snapshot;
+}
+
+function isGameReadyMethod() {
+    return Boolean(this.getSidebarContainer() && this.getPlayAreaContainer());
 }
 
 function getPlayAreaContainerMethod() {
@@ -170,33 +172,17 @@ function getPlayAreaContainerMethod() {
     return container;
 }
 
-function getElementCountMethod() {
-    return this.getSidebarElements().length;
+function getAvailableElementDataMethod(options = {}) {
+    return this.getSidebarElements(options).map(info => ({ id: info.id, name: info.name, emoji: info.emoji }));
 }
 
-function findElementByNameMethod(name) {
-    if (!name) {
-        return null;
-    }
-    const normalisedName = name.trim().toLowerCase();
-    return this.getSidebarElements().find(({ name: elementName }) => elementName.toLowerCase() === normalisedName) || null;
-}
-
-function getAvailableElementNamesMethod() {
-    return this.getSidebarElements().map(info => info.name).filter(Boolean);
-}
-
-function logGameStateMethod() {
-    const count = this.getElementCount();
-    const names = this.getAvailableElementNames();
+function logGameStateMethod(options = {}) {
+    const count = this.getElementCount(options);
+    const names = this.getAvailableElementNames(options);
     callLogger(this.logger, 'log', `Detected ${count} available elements`);
     if (names.length) {
         callLogger(this.logger, 'log', 'Sample elements:', names.slice(0, 10));
     }
-}
-
-function isGameReadyMethod() {
-    return Boolean(this.getSidebarContainer() && this.getPlayAreaContainer());
 }
 
 function runBasicTestsMethod() {
@@ -219,15 +205,56 @@ function runBasicTestsMethod() {
     return results;
 }
 
+function runSelectionDiagnosticsMethod(options = {}) {
+    const snapshot = this.getSidebarSnapshot({ includeHidden: true, ...options });
+    const issues = [];
+
+    if (snapshot.total === 0) {
+        issues.push('No sidebar elements detected');
+    }
+
+    const invisible = snapshot.elements.filter(info => !info.isVisible);
+    if (invisible.length) {
+        issues.push(`Found ${invisible.length} hidden sidebar elements`);
+    }
+
+    const undraggable = snapshot.elements.filter(info => !info.isDraggable);
+    if (undraggable.length) {
+        issues.push(`Found ${undraggable.length} non-draggable sidebar elements`);
+    }
+
+    const duplicates = findDuplicatesByName(snapshot.elements).slice(0, 5);
+    if (duplicates.length) {
+        issues.push(`Duplicate element names detected (${duplicates.join(', ')})`);
+    }
+
+    if (issues.length) {
+        callLogger(this.logger, 'warn', 'Sidebar selection diagnostics reported issues', { issues, snapshot });
+    } else {
+        callLogger(this.logger, 'log', 'Sidebar selection diagnostics passed');
+    }
+
+    return { snapshot, issues };
+}
+
 GameInterface.prototype.getSidebarContainer = getSidebarContainerMethod;
 GameInterface.prototype.getSidebarElements = getSidebarElementsMethod;
-GameInterface.prototype.getPlayAreaContainer = getPlayAreaContainerMethod;
+GameInterface.prototype.getDraggableElements = getDraggableElementsMethod;
 GameInterface.prototype.getElementCount = getElementCountMethod;
 GameInterface.prototype.findElementByName = findElementByNameMethod;
+GameInterface.prototype.findElementsByPredicate = findElementsByPredicateMethod;
+GameInterface.prototype.findElementByPredicate = findElementByPredicateMethod;
 GameInterface.prototype.getAvailableElementNames = getAvailableElementNamesMethod;
-GameInterface.prototype.logGameState = logGameStateMethod;
+GameInterface.prototype.isElementDraggable = isElementDraggableMethod;
+GameInterface.prototype.validateSidebarElement = validateSidebarElementMethod;
+GameInterface.prototype.getSidebarSnapshot = getSidebarSnapshotMethod;
+GameInterface.prototype.logSidebarSummary = logSidebarSummaryMethod;
 GameInterface.prototype.isGameReady = isGameReadyMethod;
+GameInterface.prototype.getPlayAreaContainer = getPlayAreaContainerMethod;
+GameInterface.prototype.getAvailableElementData = getAvailableElementDataMethod;
+GameInterface.prototype.logGameState = logGameStateMethod;
 GameInterface.prototype.runBasicTests = runBasicTestsMethod;
+GameInterface.prototype.runSelectionDiagnostics = runSelectionDiagnosticsMethod;
 
 export function createGameInterface(logger) {
     return new GameInterface({ logger });

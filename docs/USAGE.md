@@ -21,6 +21,15 @@ window.gameInterface.findElementByName('Fire');
 // Run quick diagnostics
 window.gameInterface.runBasicTests();
 
+// View sidebar summary with validation data
+window.gameInterface.logSidebarSummary();
+
+// Pull a specific element
+window.gameInterface.findElementByName('Fire');
+
+// List draggable elements ready for automation
+window.gameInterface.getDraggableElements();
+
 // Access the logging API
 window.Logger.log('Hello from the console');
 ```

@@ -16,10 +16,10 @@
 (function () {
     'use strict';
 
-    // === auto-play/game-interface.js ===
+    // === auto-play/sidebar-helpers.js ===
     /**
-     * GameInterface module
-     * Provides DOM access helpers for the Infinite Craft game UI.
+     * Sidebar helper utilities for GameInterface
+     * Provides DOM selectors, element mapping, and validation helpers.
      */
 
     const SELECTORS = {
@@ -41,18 +41,7 @@
         nameNodes: ['.label', '.name', '.element-name', '.title', '[data-element-name]']
     };
 
-    const DEFAULT_LOGGER = {
-        log: (...args) => console.log('[GameInterface]', ...args),
-        warn: (...args) => console.warn('[GameInterface]', ...args),
-        error: (...args) => console.error('[GameInterface]', ...args)
-    };
-
-    function callLogger(logger, level, message, ...args) {
-        if (!logger || typeof logger[level] !== 'function') {
-            return;
-        }
-        logger[level](message, ...args);
-    }
+    const DRAG_CLASS_BLOCKLIST = ['disabled', 'item-disabled'];
 
     function selectFirst(root, selectors) {
         if (!root) {
@@ -78,26 +67,11 @@
         return Array.from(elements);
     }
 
-    function getElementName(element) {
-        if (!element) {
-            return '';
+    function toPlainDataset(element) {
+        if (!element || !element.dataset) {
+            return {};
         }
-        const datasetName = element.dataset?.element || element.dataset?.name;
-        if (datasetName) {
-            return datasetName.trim();
-        }
-        const attributeName = element.getAttribute?.('data-element-name');
-        if (attributeName) {
-            return attributeName.trim();
-        }
-        const nameNode = selectFirst(element, SELECTORS.nameNodes);
-        if (nameNode && nameNode.textContent) {
-            return nameNode.textContent.trim();
-        }
-        if (element.textContent) {
-            return element.textContent.trim();
-        }
-        return '';
+        return Object.assign({}, element.dataset);
     }
 
     function isElementVisible(element) {
@@ -123,12 +97,160 @@
         };
     }
 
-    function createElementInfo(element) {
+    function getElementName(element) {
+        if (!element) {
+            return '';
+        }
+        const datasetName = element.dataset?.element || element.dataset?.name;
+        if (datasetName) {
+            return datasetName.trim();
+        }
+        const attributeName = element.getAttribute?.('data-element-name');
+        if (attributeName) {
+            return attributeName.trim();
+        }
+        const nameNode = selectFirst(element, SELECTORS.nameNodes);
+        if (nameNode && nameNode.textContent) {
+            return nameNode.textContent.trim();
+        }
+        if (element.textContent) {
+            return element.textContent.trim();
+        }
+        return '';
+    }
+
+    function getElementEmoji(element) {
+        if (!element) {
+            return '';
+        }
+        const dataset = element.dataset || {};
+        if (dataset.itemEmoji) {
+            return dataset.itemEmoji;
+        }
+        const emojiNode = element.querySelector?.('.item-emoji');
+        if (emojiNode && emojiNode.textContent) {
+            return emojiNode.textContent.trim();
+        }
+        return '';
+    }
+
+    function hasBlockedClass(element) {
+        return Boolean(element && DRAG_CLASS_BLOCKLIST.some(className => element.classList?.contains(className)));
+    }
+
+    function isPotentiallyDraggable(element) {
+        if (!element) {
+            return false;
+        }
+        if (typeof element.matches === 'function' && element.matches('[data-item]')) {
+            return true;
+        }
+        const dataset = element.dataset || {};
+        if (dataset.item !== undefined || dataset.draggable === 'true') {
+            return true;
+        }
+        if (element.getAttribute?.('draggable') === 'true') {
+            return true;
+        }
+        return false;
+    }
+
+    function createElementInfo(element, index) {
+        const dataset = toPlainDataset(element);
+        const name = getElementName(element);
+        const bounds = getElementBounds(element);
+        const isVisible = isElementVisible(element);
+        const isDraggable = isPotentiallyDraggable(element) && !hasBlockedClass(element);
+        const identifier = dataset.itemId || dataset.id || element.id || null;
+
         return {
             element,
-            name: getElementName(element),
-            bounds: getElementBounds(element)
+            index,
+            id: identifier,
+            name,
+            emoji: getElementEmoji(element),
+            dataset,
+            bounds,
+            isVisible,
+            isDraggable
         };
+    }
+
+    function toElementInfo(target) {
+        if (!target) {
+            return null;
+        }
+        if (target.element instanceof HTMLElement) {
+            return target;
+        }
+        if (target instanceof HTMLElement) {
+            return createElementInfo(target, -1);
+        }
+        return null;
+    }
+
+    function validateSidebarElement(info) {
+        if (!info) {
+            return { isValid: false, issues: ['Element info missing'], info: null };
+        }
+
+        const issues = [];
+
+        if (!info.name) {
+            issues.push('Missing element name');
+        }
+
+        if (!info.isVisible) {
+            issues.push('Element not visible');
+        }
+
+        if (!info.isDraggable) {
+            issues.push('Element not draggable');
+        }
+
+        if (!info.bounds || typeof info.bounds.width !== 'number') {
+            issues.push('Missing bounds');
+        }
+
+        return {
+            isValid: issues.length === 0,
+            issues,
+            info
+        };
+    }
+
+    function findDuplicatesByName(elements) {
+        const counts = elements.reduce((acc, info) => {
+            const key = (info.name || '').toLowerCase();
+            if (!key) {
+                return acc;
+            }
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {});
+
+        return Object.entries(counts)
+            .filter(([, count]) => count > 1)
+            .map(([name]) => name);
+    }
+
+    // === auto-play/game-interface.js ===
+    /**
+     * GameInterface module
+     * Provides DOM access helpers for the Infinite Craft game UI.
+     */
+
+    const DEFAULT_LOGGER = {
+        log: (...args) => console.log('[GameInterface]', ...args),
+        warn: (...args) => console.warn('[GameInterface]', ...args),
+        error: (...args) => console.error('[GameInterface]', ...args)
+    };
+
+    function callLogger(logger, level, message, ...args) {
+        if (!logger || typeof logger[level] !== 'function') {
+            return;
+        }
+        logger[level](message, ...args);
     }
 
     function makeTestResult(name, passed, successDetails, failureDetails) {
@@ -165,16 +287,112 @@
         return container;
     }
 
-    function getSidebarElementsMethod() {
+    function getSidebarElementsMethod(options = {}) {
         const container = this.getSidebarContainer();
         if (!container) {
             return [];
         }
-        const elements = collectAll(container, SELECTORS.sidebarItems).filter(isElementVisible);
-        if (!elements.length) {
-            callLogger(this.logger, 'warn', 'No sidebar elements detected', { selectorsTried: SELECTORS.sidebarItems });
+
+        const { includeHidden = false, limit = null } = options;
+        const infos = collectAll(container, SELECTORS.sidebarItems)
+            .map((element, index) => createElementInfo(element, index))
+            .filter(info => includeHidden || info.isVisible);
+
+        if (!infos.length) {
+            callLogger(this.logger, 'warn', 'No sidebar elements detected', { selectorsTried: SELECTORS.sidebarItems, includeHidden });
         }
-        return elements.map(createElementInfo);
+
+        if (typeof limit === 'number' && limit > 0) {
+            return infos.slice(0, limit);
+        }
+
+        return infos;
+    }
+
+    function getDraggableElementsMethod(options = {}) {
+        return this.getSidebarElements(options).filter(info => info.isDraggable);
+    }
+
+    function getElementCountMethod(options = {}) {
+        return this.getSidebarElements(options).length;
+    }
+
+    function findElementByNameMethod(name, options = {}) {
+        if (!name) {
+            return null;
+        }
+        const normalisedName = name.trim().toLowerCase();
+        return this.getSidebarElements(options).find(({ name: elementName }) => elementName.toLowerCase() === normalisedName) || null;
+    }
+
+    function findElementsByPredicateMethod(predicate, options = {}) {
+        if (typeof predicate !== 'function') {
+            return [];
+        }
+        return this.getSidebarElements(options).filter(info => {
+            try {
+                return Boolean(predicate(info));
+            } catch (error) {
+                callLogger(this.logger, 'warn', 'Predicate threw while evaluating element', { error, info });
+                return false;
+            }
+        });
+    }
+
+    function findElementByPredicateMethod(predicate, options = {}) {
+        return this.findElementsByPredicate(predicate, options)[0] || null;
+    }
+
+    function getAvailableElementNamesMethod(options = {}) {
+        return this.getSidebarElements(options).map(info => info.name).filter(Boolean);
+    }
+
+    function isElementDraggableMethod(target) {
+        const info = toElementInfo(target);
+        if (!info) {
+            return false;
+        }
+        return validateSidebarElement(info).isValid;
+    }
+
+    function validateSidebarElementMethod(target) {
+        return validateSidebarElement(toElementInfo(target));
+    }
+
+    function getSidebarSnapshotMethod(options = {}) {
+        const includeHidden = options.includeHidden !== undefined ? options.includeHidden : true;
+        const elements = this.getSidebarElements({ ...options, includeHidden });
+        const validations = elements.map(info => validateSidebarElement(info));
+        const valid = validations.filter(result => result && result.isValid).map(result => result.info);
+        const invalid = validations.filter(result => result && !result.isValid);
+
+        return {
+            timestamp: Date.now(),
+            elements,
+            valid,
+            invalid,
+            total: elements.length,
+            validCount: valid.length,
+            invalidCount: invalid.length,
+            includeHidden
+        };
+    }
+
+    function logSidebarSummaryMethod(options = {}) {
+        const snapshot = this.getSidebarSnapshot(options);
+        const message = `Sidebar summary: ${snapshot.validCount}/${snapshot.total} draggable elements`;
+        callLogger(this.logger, 'log', message);
+
+        if (snapshot.invalidCount > 0) {
+            const sample = snapshot.invalid.slice(0, 5).map(result => result.info?.name || '(unknown)');
+            callLogger(this.logger, 'warn', 'Invalid sidebar elements detected', { count: snapshot.invalidCount, sample });
+        }
+
+        return snapshot;
+    }
+
+    function isGameReadyMethod() {
+        return Boolean(this.getSidebarContainer() && this.getPlayAreaContainer());
     }
 
     function getPlayAreaContainerMethod() {
@@ -189,33 +407,17 @@
         return container;
     }
 
-    function getElementCountMethod() {
-        return this.getSidebarElements().length;
+    function getAvailableElementDataMethod(options = {}) {
+        return this.getSidebarElements(options).map(info => ({ id: info.id, name: info.name, emoji: info.emoji }));
     }
 
-    function findElementByNameMethod(name) {
-        if (!name) {
-            return null;
-        }
-        const normalisedName = name.trim().toLowerCase();
-        return this.getSidebarElements().find(({ name: elementName }) => elementName.toLowerCase() === normalisedName) || null;
-    }
-
-    function getAvailableElementNamesMethod() {
-        return this.getSidebarElements().map(info => info.name).filter(Boolean);
-    }
-
-    function logGameStateMethod() {
-        const count = this.getElementCount();
-        const names = this.getAvailableElementNames();
+    function logGameStateMethod(options = {}) {
+        const count = this.getElementCount(options);
+        const names = this.getAvailableElementNames(options);
         callLogger(this.logger, 'log', `Detected ${count} available elements`);
         if (names.length) {
             callLogger(this.logger, 'log', 'Sample elements:', names.slice(0, 10));
         }
-    }
-
-    function isGameReadyMethod() {
-        return Boolean(this.getSidebarContainer() && this.getPlayAreaContainer());
     }
 
     function runBasicTestsMethod() {
@@ -238,15 +440,56 @@
         return results;
     }
 
+    function runSelectionDiagnosticsMethod(options = {}) {
+        const snapshot = this.getSidebarSnapshot({ includeHidden: true, ...options });
+        const issues = [];
+
+        if (snapshot.total === 0) {
+            issues.push('No sidebar elements detected');
+        }
+
+        const invisible = snapshot.elements.filter(info => !info.isVisible);
+        if (invisible.length) {
+            issues.push(`Found ${invisible.length} hidden sidebar elements`);
+        }
+
+        const undraggable = snapshot.elements.filter(info => !info.isDraggable);
+        if (undraggable.length) {
+            issues.push(`Found ${undraggable.length} non-draggable sidebar elements`);
+        }
+
+        const duplicates = findDuplicatesByName(snapshot.elements).slice(0, 5);
+        if (duplicates.length) {
+            issues.push(`Duplicate element names detected (${duplicates.join(', ')})`);
+        }
+
+        if (issues.length) {
+            callLogger(this.logger, 'warn', 'Sidebar selection diagnostics reported issues', { issues, snapshot });
+        } else {
+            callLogger(this.logger, 'log', 'Sidebar selection diagnostics passed');
+        }
+
+        return { snapshot, issues };
+    }
+
     GameInterface.prototype.getSidebarContainer = getSidebarContainerMethod;
     GameInterface.prototype.getSidebarElements = getSidebarElementsMethod;
-    GameInterface.prototype.getPlayAreaContainer = getPlayAreaContainerMethod;
+    GameInterface.prototype.getDraggableElements = getDraggableElementsMethod;
     GameInterface.prototype.getElementCount = getElementCountMethod;
     GameInterface.prototype.findElementByName = findElementByNameMethod;
+    GameInterface.prototype.findElementsByPredicate = findElementsByPredicateMethod;
+    GameInterface.prototype.findElementByPredicate = findElementByPredicateMethod;
     GameInterface.prototype.getAvailableElementNames = getAvailableElementNamesMethod;
-    GameInterface.prototype.logGameState = logGameStateMethod;
+    GameInterface.prototype.isElementDraggable = isElementDraggableMethod;
+    GameInterface.prototype.validateSidebarElement = validateSidebarElementMethod;
+    GameInterface.prototype.getSidebarSnapshot = getSidebarSnapshotMethod;
+    GameInterface.prototype.logSidebarSummary = logSidebarSummaryMethod;
     GameInterface.prototype.isGameReady = isGameReadyMethod;
+    GameInterface.prototype.getPlayAreaContainer = getPlayAreaContainerMethod;
+    GameInterface.prototype.getAvailableElementData = getAvailableElementDataMethod;
+    GameInterface.prototype.logGameState = logGameStateMethod;
     GameInterface.prototype.runBasicTests = runBasicTestsMethod;
+    GameInterface.prototype.runSelectionDiagnostics = runSelectionDiagnosticsMethod;
 
     function createGameInterface(logger) {
         return new GameInterface({ logger });

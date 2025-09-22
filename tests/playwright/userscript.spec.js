@@ -20,13 +20,45 @@ test.describe('Infinite Craft Helper Userscript', () => {
         <title>Infinite Craft Test Environment</title>
         <style>
           body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-          .game-container { width: 100%; height: 500px; background: #f0f0f0; }
+          .game-container { width: 100%; min-height: 500px; background: #f0f0f0; padding: 16px; }
+          .container.infinite-craft { display: flex; gap: 24px; align-items: flex-start; }
+          #sidebar { width: 300px; border: 1px solid #ccc; padding: 12px; background: #fff; }
+          .item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin-bottom: 4px; border: 1px solid #ddd; border-radius: 4px; cursor: grab; }
+          #instances { flex: 1; min-height: 300px; border: 1px dashed #aaa; }
         </style>
       </head>
       <body>
         <div class="game-container">
           <h1>Infinite Craft Test Environment</h1>
           <p>This simulates the game environment for testing the userscript.</p>
+          <div class="container infinite-craft" data-container>
+            <div id="sidebar">
+              <div class="items">
+                <div class="item-wrapper">
+                  <div class="item" data-item data-item-text="Water" data-item-emoji="💧" data-item-id="0">
+                    <span class="item-emoji">💧</span>
+                    Water
+                  </div>
+                </div>
+                <div class="item-wrapper">
+                  <div class="item" data-item data-item-text="Fire" data-item-emoji="🔥" data-item-id="1">
+                    <span class="item-emoji">🔥</span>
+                    Fire
+                  </div>
+                </div>
+                <div class="item-wrapper">
+                  <div class="item" data-item data-item-text="Wind" data-item-emoji="🌬️" data-item-id="2">
+                    <span class="item-emoji">🌬️</span>
+                    Wind
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="instances"></div>
+            <div id="instances-top"></div>
+            <div id="select-box"></div>
+            <canvas id="particles"></canvas>
+          </div>
         </div>
       </body>
       </html>
@@ -151,5 +183,36 @@ test.describe('Infinite Craft Helper Userscript', () => {
     const diagnosticsState = await diagnosticsHandle.jsonValue();
 
     expect(diagnosticsState.attempts).toBeGreaterThan(0);
+  });
+
+  test('should provide sidebar selection helpers', async () => {
+    await page.waitForSelector('#infinite-craft-control-panel', { timeout: 5000 });
+
+    const data = await page.evaluate(() => {
+      const gi = window.gameInterface;
+      const elements = gi.getSidebarElements();
+      const draggable = gi.getDraggableElements();
+      const water = gi.findElementByName('Water');
+      const fireMatches = gi.findElementsByPredicate(info => info.name === 'Fire');
+      const diagnostics = gi.runSelectionDiagnostics();
+      const summary = gi.logSidebarSummary();
+
+      return {
+        total: elements.length,
+        draggableCount: draggable.length,
+        waterFound: Boolean(water && water.name === 'Water'),
+        predicateCount: fireMatches.length,
+        issues: diagnostics.issues,
+        invalidCount: summary.invalidCount
+      };
+    });
+
+    expect(data.total).toBeGreaterThan(0);
+    expect(data.draggableCount).toBe(data.total);
+    expect(data.waterFound).toBe(true);
+    expect(data.predicateCount).toBe(1);
+    expect(Array.isArray(data.issues)).toBe(true);
+    expect(data.issues.length).toBe(0);
+    expect(data.invalidCount).toBe(0);
   });
 });

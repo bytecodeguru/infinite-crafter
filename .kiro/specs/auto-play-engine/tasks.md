@@ -7,15 +7,12 @@
   - ✅ Bridged logging so GameInterface warnings route through the in-panel Logger
   - _Requirements: 7.1, 7.2_
 
-- [ ] 2. Implement element selection and identification
-  - Audit and backfill the GameInterface foundation (module, globals, basic counters) because the current build only exposes logging; confirm Step 1 deliverables exist before layering selectors.
-  - Stand up `src/auto-play/game-interface.js` exporting the GameInterface class (or factory) and wire it through `src/main.js` so `window.gameInterface` is available in-page tests.
-  - Implement sidebar element retrieval helpers (`getSidebarElements`, `findElementByName`, predicate-based selectors) that return structured metadata for later automation stages.
-  - Create validation utilities (`isElementDraggable`, visibility checks, playable-state guards) to filter unusable nodes and surface warnings via Logger.
-  - Implement bounds helpers (`getElementBounds`, cached rect lookups) to support drag path calculations in Task 4.
-  - Provide diagnostic hooks (`logSidebarSummary`, `runSelectionDiagnostics`) so developers can confirm selectors via console.
-  - Add Playwright coverage that mounts a static Infinite Craft DOM fixture and asserts selector/validation behavior; expose in-browser smoke tests via `window.gameInterface.runSelectionTests()`.
-  - Update `docs/USAGE.md` once new helpers land so console documentation stays accurate.
+- [x] 2. Implement element selection and identification
+  - ✅ Split reusable DOM utilities into `src/auto-play/sidebar-helpers.js` and expanded `GameInterface` to return structured element metadata.
+  - ✅ Delivered selection APIs (`getSidebarElements`, `findElementByName`, predicate helpers) plus draggable filtering and validation guards.
+  - ✅ Added diagnostics (`logSidebarSummary`, `runSelectionDiagnostics`) wired through automatic logging.
+  - ✅ Extended Playwright fixture with sidebar markup and tests asserting selection behavior.
+  - ✅ Refreshed developer docs to cover the new console helpers.
   - _Requirements: 3.2, 7.1_
 
 - [ ] 3. Create basic mouse event simulation
