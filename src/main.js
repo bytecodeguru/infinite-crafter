@@ -20,6 +20,7 @@ function init() {
     const panel = setupControlPanel();
     const { logManager, Logger } = initializeLogging(panel);
     const gameInterface = initializeGameInterface(Logger);
+    scheduleGameInterfaceDiagnostics(gameInterface);
 
     runInitializationSmokeTests(Logger, gameInterface);
     console.log('Infinite Craft Helper loaded successfully!');
@@ -104,6 +105,52 @@ function initializeGameInterface(Logger) {
     return gameInterface;
 }
 
+function scheduleGameInterfaceDiagnostics(gameInterface) {
+    if (!gameInterface) {
+        return null;
+    }
+
+    const diagnosticsState = {
+        attempts: 0,
+        lastResults: [],
+        timerId: null,
+        lastRunAt: null
+    };
+
+    const MAX_ATTEMPTS = 10;
+    const BASE_DELAY = 250;
+
+    function runDiagnostics() {
+        diagnosticsState.attempts += 1;
+        diagnosticsState.lastRunAt = Date.now();
+
+        const results = gameInterface.runBasicTests() || [];
+        diagnosticsState.lastResults = results;
+
+        const allPassed = results.length > 0 && results.every(result => result.passed);
+
+        if (allPassed) {
+            diagnosticsState.timerId = null;
+            return;
+        }
+
+        if (diagnosticsState.attempts >= MAX_ATTEMPTS) {
+            console.warn(`[Init] GameInterface diagnostics did not pass after ${diagnosticsState.attempts} attempts`);
+            diagnosticsState.timerId = null;
+            return;
+        }
+
+        const nextDelay = Math.min(2000, BASE_DELAY * (diagnosticsState.attempts + 1));
+        diagnosticsState.timerId = setTimeout(runDiagnostics, nextDelay);
+    }
+
+    const initialDelay = gameInterface.isGameReady() ? 0 : BASE_DELAY;
+    diagnosticsState.timerId = setTimeout(runDiagnostics, initialDelay);
+
+    window.__infiniteCraftHelperDiagnostics = diagnosticsState;
+    return diagnosticsState;
+}
+
 function createGameInterfaceLogger(Logger) {
     if (!Logger) {
         return null;
@@ -155,7 +202,7 @@ function runInitializationSmokeTests(Logger, gameInterface) {
     Logger.log('Collapse/expand, copy, and clear buttons should be functional');
 
     if (gameInterface) {
-        console.log('[Init] GameInterface smoke tests available via window.gameInterface.runBasicTests()');
+        console.log('[Init] GameInterface diagnostics will re-run automatically until all checks pass');
     }
 }
 
