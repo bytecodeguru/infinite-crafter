@@ -767,6 +767,49 @@
                 font-size: 15px;
                 color: #e0e0e0;
             }
+
+            #infinite-craft-control-panel .panel-actions {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            #infinite-craft-control-panel .panel-button {
+                background: #4a90e2;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 14px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            }
+
+            #infinite-craft-control-panel .panel-button:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(74, 144, 226, 0.35);
+                background: #5aa0f0;
+            }
+
+            #infinite-craft-control-panel .panel-button:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            }
+
+            #infinite-craft-control-panel .panel-button:disabled {
+                background: rgba(255, 255, 255, 0.2);
+                cursor: default;
+                box-shadow: none;
+                transform: none;
+            }
+
+            #infinite-craft-control-panel .panel-actions-hint {
+                font-size: 12px;
+                color: rgba(224, 224, 224, 0.7);
+            }
         `;
     }
 
@@ -1292,7 +1335,10 @@
             </div>
             <div class="panel-content">
                 <p>Control panel ready!</p>
-                <!-- Add your controls here -->
+                <div class="panel-actions">
+                    <button class="panel-button run-diagnostics-button" title="Run GameInterface diagnostics">Run Diagnostics</button>
+                    <span class="panel-actions-hint">Runs basic and selection tests</span>
+                </div>
             </div>
             <div class="logs-section">
                 <div class="logs-header">
@@ -1876,6 +1922,7 @@
         const panel = setupControlPanel();
         const { logManager, Logger } = initializeLogging(panel);
         const gameInterface = initializeGameInterface(Logger);
+        setupDiagnosticsControls(panel, gameInterface, Logger);
         scheduleGameInterfaceDiagnostics(gameInterface);
 
         runInitializationSmokeTests(Logger, gameInterface);
@@ -2059,6 +2106,61 @@
 
         if (gameInterface) {
             console.log('[Init] GameInterface diagnostics will re-run automatically until all checks pass');
+        }
+    }
+
+    function setupDiagnosticsControls(panel, gameInterface, Logger) {
+        if (!panel) {
+            return;
+        }
+
+        const button = panel.querySelector('.run-diagnostics-button');
+        if (!button) {
+            return;
+        }
+
+        button.dataset.originalText = button.textContent || 'Run Diagnostics';
+        button.addEventListener('click', () => runDiagnosticsSuite({ button, gameInterface, Logger }));
+    }
+
+    function runDiagnosticsSuite({ button, gameInterface, Logger }) {
+        if (!button || !gameInterface) {
+            Logger?.warn('GameInterface not ready yet – diagnostics cannot run.');
+            return;
+        }
+
+        if (button.disabled) {
+            return;
+        }
+
+        const originalText = button.dataset.originalText || button.textContent || 'Run Diagnostics';
+        button.disabled = true;
+        button.textContent = 'Running...';
+
+        try {
+            Logger?.log('Running GameInterface diagnostics...');
+
+            const basicResults = gameInterface.runBasicTests();
+            const failedBasics = basicResults.filter(result => !result.passed);
+            if (failedBasics.length) {
+                Logger?.warn(`Basic tests reported ${failedBasics.length} issue(s)`, failedBasics);
+            }
+
+            const selectionResults = gameInterface.runSelectionDiagnostics();
+            if (selectionResults.issues.length) {
+                Logger?.warn(`Selection diagnostics found ${selectionResults.issues.length} issue(s)`, selectionResults.issues);
+            } else {
+                Logger?.log('Selection diagnostics passed');
+            }
+
+            Logger?.log('Diagnostics finished');
+        } catch (error) {
+            const message = error && error.message ? error.message : 'Unknown error';
+            Logger?.error(`Diagnostics failed: ${message}`);
+            console.error('[Diagnostics] Failed to run diagnostics', error);
+        } finally {
+            button.disabled = false;
+            button.textContent = originalText;
         }
     }
 

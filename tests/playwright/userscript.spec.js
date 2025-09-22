@@ -215,4 +215,32 @@ test.describe('Infinite Craft Helper Userscript', () => {
     expect(data.issues.length).toBe(0);
     expect(data.invalidCount).toBe(0);
   });
+
+  test('diagnostics button runs tests', async () => {
+    await page.waitForSelector('#infinite-craft-control-panel', { timeout: 5000 });
+
+    const button = page.locator('.run-diagnostics-button');
+    await expect(button).toBeVisible();
+
+    const initialLogCount = await page.evaluate(() => {
+      const manager = window.logManager;
+      return manager ? manager.getLogCount() : 0;
+    });
+
+    await button.click();
+
+    await page.waitForFunction(count => {
+      const manager = window.logManager;
+      if (!manager) {
+        return false;
+      }
+      const logs = manager.getLogs();
+      if (logs.length <= count) {
+        return false;
+      }
+      return logs.some(entry => entry.message.includes('Diagnostics finished'));
+    }, initialLogCount);
+
+    await expect(button).not.toBeDisabled();
+  });
 });

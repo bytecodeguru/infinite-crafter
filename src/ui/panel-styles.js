@@ -72,5 +72,48 @@ export function getPanelStyles() {
             font-size: 15px;
             color: #e0e0e0;
         }
+
+        #infinite-craft-control-panel .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        #infinite-craft-control-panel .panel-button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #infinite-craft-control-panel .panel-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.35);
+            background: #5aa0f0;
+        }
+
+        #infinite-craft-control-panel .panel-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        #infinite-craft-control-panel .panel-button:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: default;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #infinite-craft-control-panel .panel-actions-hint {
+            font-size: 12px;
+            color: rgba(224, 224, 224, 0.7);
+        }
     `;
 }

@@ -20,6 +20,7 @@ function init() {
     const panel = setupControlPanel();
     const { logManager, Logger } = initializeLogging(panel);
     const gameInterface = initializeGameInterface(Logger);
+    setupDiagnosticsControls(panel, gameInterface, Logger);
     scheduleGameInterfaceDiagnostics(gameInterface);
 
     runInitializationSmokeTests(Logger, gameInterface);
@@ -203,6 +204,61 @@ function runInitializationSmokeTests(Logger, gameInterface) {
 
     if (gameInterface) {
         console.log('[Init] GameInterface diagnostics will re-run automatically until all checks pass');
+    }
+}
+
+function setupDiagnosticsControls(panel, gameInterface, Logger) {
+    if (!panel) {
+        return;
+    }
+
+    const button = panel.querySelector('.run-diagnostics-button');
+    if (!button) {
+        return;
+    }
+
+    button.dataset.originalText = button.textContent || 'Run Diagnostics';
+    button.addEventListener('click', () => runDiagnosticsSuite({ button, gameInterface, Logger }));
+}
+
+function runDiagnosticsSuite({ button, gameInterface, Logger }) {
+    if (!button || !gameInterface) {
+        Logger?.warn('GameInterface not ready yet – diagnostics cannot run.');
+        return;
+    }
+
+    if (button.disabled) {
+        return;
+    }
+
+    const originalText = button.dataset.originalText || button.textContent || 'Run Diagnostics';
+    button.disabled = true;
+    button.textContent = 'Running...';
+
+    try {
+        Logger?.log('Running GameInterface diagnostics...');
+
+        const basicResults = gameInterface.runBasicTests();
+        const failedBasics = basicResults.filter(result => !result.passed);
+        if (failedBasics.length) {
+            Logger?.warn(`Basic tests reported ${failedBasics.length} issue(s)`, failedBasics);
+        }
+
+        const selectionResults = gameInterface.runSelectionDiagnostics();
+        if (selectionResults.issues.length) {
+            Logger?.warn(`Selection diagnostics found ${selectionResults.issues.length} issue(s)`, selectionResults.issues);
+        } else {
+            Logger?.log('Selection diagnostics passed');
+        }
+
+        Logger?.log('Diagnostics finished');
+    } catch (error) {
+        const message = error && error.message ? error.message : 'Unknown error';
+        Logger?.error(`Diagnostics failed: ${message}`);
+        console.error('[Diagnostics] Failed to run diagnostics', error);
+    } finally {
+        button.disabled = false;
+        button.textContent = originalText;
     }
 }
 

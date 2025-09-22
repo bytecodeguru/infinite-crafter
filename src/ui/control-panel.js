@@ -24,7 +24,10 @@ export function createControlPanel() {
         </div>
         <div class="panel-content">
             <p>Control panel ready!</p>
-            <!-- Add your controls here -->
+            <div class="panel-actions">
+                <button class="panel-button run-diagnostics-button" title="Run GameInterface diagnostics">Run Diagnostics</button>
+                <span class="panel-actions-hint">Runs basic and selection tests</span>
+            </div>
         </div>
         <div class="logs-section">
             <div class="logs-header">
