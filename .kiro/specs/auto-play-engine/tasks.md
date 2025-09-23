@@ -16,10 +16,13 @@
   - _Requirements: 3.2, 7.1_
 
 - [ ] 3. Create basic mouse event simulation
-  - Implement ActionSimulator class with basic click simulation
-  - Add mouse event generation functions (mousedown, mousemove, mouseup)
-  - Create realistic timing delays between actions
-  - Test mouse event simulation on static elements
+  - Define ActionSimulator module structure in `src/auto-play/action-simulator.js` with exported factory/API surface.
+  - Implement core helpers for dispatching mouse events (`mousedown`, `mousemove`, `mouseup`, `click`) and pointer positioning.
+  - Add timing utilities (configurable delays, random jitter) so actions resemble human pacing.
+  - Provide public methods (`clickElement`, `moveMouseTo`, `performSequence`) returning Promises to enable async orchestration.
+  - Wire logging hooks so each simulated action records to Logger for debugging.
+  - Build unit tests (e.g., Node/jsdom) validating event sequences and delay handling plus a Playwright spec covering real DOM interaction.
+  - Document new console helpers or usage instructions in `docs/USAGE.md` if exposed.
   - _Requirements: 3.1, 3.4, 7.2_
 
 - [ ] 4. Implement drag and drop functionality

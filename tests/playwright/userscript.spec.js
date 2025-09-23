@@ -243,4 +243,30 @@ test.describe('Infinite Craft Helper Userscript', () => {
 
     await expect(button).not.toBeDisabled();
   });
+
+  test('action simulator can click elements', async () => {
+    await page.waitForSelector('#infinite-craft-control-panel', { timeout: 5000 });
+
+    await page.evaluate(() => {
+      const button = document.createElement('button');
+      button.id = 'sim-target';
+      button.textContent = 'Click me';
+      button.addEventListener('click', () => {
+        button.dataset.clicked = 'true';
+      });
+      document.body.appendChild(button);
+    });
+
+    await page.evaluate(async () => {
+      const simulator = window.actionSimulator;
+      const target = document.getElementById('sim-target');
+      if (!simulator || !target) {
+        throw new Error('ActionSimulator not available');
+      }
+      await simulator.clickElement(target, { delay: { min: 0, max: 0 } });
+    });
+
+    const clicked = await page.getAttribute('#sim-target', 'data-clicked');
+    expect(clicked).toBe('true');
+  });
 });

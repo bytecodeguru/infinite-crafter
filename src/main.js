@@ -9,6 +9,7 @@ import { makeDraggable } from './ui/draggable.js';
 import { LogManager, createLogger } from './core/log-manager.js';
 import { LogDisplay } from './ui/log-display-core.js';
 import { createGameInterface } from './auto-play/game-interface.js';
+import { createActionSimulator } from './auto-play/action-simulator.js';
 import { onDOMReady, appendToBody } from './utils/dom.js';
 
 /**
@@ -20,6 +21,7 @@ function init() {
     const panel = setupControlPanel();
     const { logManager, Logger } = initializeLogging(panel);
     const gameInterface = initializeGameInterface(Logger);
+    initializeActionSimulator(Logger);
     setupDiagnosticsControls(panel, gameInterface, Logger);
     scheduleGameInterfaceDiagnostics(gameInterface);
 
@@ -90,7 +92,7 @@ function exposeGameInterfaceGlobal(gameInterface) {
 function initializeGameInterface(Logger) {
     console.log('[Init] Initializing GameInterface...');
 
-    const loggerBridge = createGameInterfaceLogger(Logger);
+    const loggerBridge = createNamespacedLogger(Logger, 'GameInterface');
     const gameInterface = createGameInterface(loggerBridge);
 
     exposeGameInterfaceGlobal(gameInterface);
@@ -152,12 +154,25 @@ function scheduleGameInterfaceDiagnostics(gameInterface) {
     return diagnosticsState;
 }
 
-function createGameInterfaceLogger(Logger) {
+function initializeActionSimulator(Logger) {
+    console.log('[Init] Initializing ActionSimulator...');
+
+    const loggerBridge = createNamespacedLogger(Logger, 'ActionSimulator');
+    const actionSimulator = createActionSimulator({ logger: loggerBridge });
+
+    window.actionSimulator = actionSimulator;
+    console.log('[Init] ActionSimulator available via window.actionSimulator');
+
+    return actionSimulator;
+}
+
+function createNamespacedLogger(Logger, namespace) {
     if (!Logger) {
         return null;
     }
     const send = level => (message, ...args) => {
         const text = formatLoggerMessage(message);
+        const label = `[${namespace}]`;
         try {
             if (typeof Logger[level] === 'function') {
                 Logger[level](text);
@@ -167,11 +182,11 @@ function createGameInterfaceLogger(Logger) {
         } catch (error) {
             console.warn('[Init] Logger bridge failed, falling back to console:', error);
             const consoleLevel = console[level] ? level : 'log';
-            console[consoleLevel]('[GameInterface]', text);
+            console[consoleLevel](label, text);
         }
         if (args.length) {
             const consoleLevel = console[level] ? level : 'log';
-            console[consoleLevel]('[GameInterface]', message, ...args);
+            console[consoleLevel](label, message, ...args);
         }
     };
     return {

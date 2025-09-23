@@ -30,6 +30,12 @@ window.gameInterface.findElementByName('Fire');
 // List draggable elements ready for automation
 window.gameInterface.getDraggableElements();
 
+// Simulate a click on a sidebar element (no delay)
+await window.actionSimulator.clickElement(
+  window.gameInterface.findElementByName('Water')?.element,
+  { delay: { min: 0, max: 0 } }
+);
+
 // Access the logging API
 window.Logger.log('Hello from the console');
 ```
