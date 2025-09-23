@@ -305,6 +305,17 @@
 
     const DRAG_CLASS_BLOCKLIST = ['disabled', 'item-disabled'];
 
+    function normalizeName(raw) {
+        if (!raw) {
+            return '';
+        }
+
+        return raw
+            .replace(/[\u{1F300}-\u{1F5FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     function selectFirst(root, selectors) {
         if (!root) {
             return null;
@@ -366,18 +377,18 @@
         const dataset = element.dataset || {};
         const datasetName = dataset.element || dataset.name || dataset.itemText || dataset.itemName || dataset.item;
         if (datasetName) {
-            return datasetName.trim();
+            return normalizeName(datasetName);
         }
         const attributeName = element.getAttribute?.('data-element-name') || element.getAttribute?.('data-item-text') || element.getAttribute?.('data-item');
         if (attributeName) {
-            return attributeName.trim();
+            return normalizeName(attributeName);
         }
         const nameNode = selectFirst(element, SELECTORS.nameNodes);
         if (nameNode && nameNode.textContent) {
-            return nameNode.textContent.trim();
+            return normalizeName(nameNode.textContent);
         }
         if (element.textContent) {
-            return element.textContent.trim();
+            return normalizeName(element.textContent);
         }
         return '';
     }
@@ -431,6 +442,7 @@
             index,
             id: identifier,
             name,
+            normalizedName: normalizeName(name),
             emoji: getElementEmoji(element),
             dataset,
             bounds,
@@ -484,7 +496,7 @@
 
     function findDuplicatesByName(elements) {
         const counts = elements.reduce((acc, info) => {
-            const key = (info.name || '').toLowerCase();
+            const key = (info.normalizedName || info.name || '').toLowerCase();
             if (!key) {
                 return acc;
             }
@@ -584,8 +596,11 @@
         if (!name) {
             return null;
         }
-        const normalisedName = name.trim().toLowerCase();
-        return this.getSidebarElements(options).find(({ name: elementName }) => elementName.toLowerCase() === normalisedName) || null;
+        const normalizedTarget = normalizeName(name).toLowerCase();
+        if (!normalizedTarget) {
+            return null;
+        }
+        return this.getSidebarElements(options).find(info => (info.normalizedName || info.name || '').toLowerCase() === normalizedTarget) || null;
     }
 
     function findElementsByPredicateMethod(predicate, options = {}) {

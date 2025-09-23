@@ -3,7 +3,7 @@
  * Provides DOM access helpers for the Infinite Craft game UI.
  */
 
-import { SELECTORS, collectAll, createElementInfo, findDuplicatesByName, selectFirst, toElementInfo, validateSidebarElement } from './sidebar-helpers.js';
+import { SELECTORS, collectAll, createElementInfo, findDuplicatesByName, normalizeName, selectFirst, toElementInfo, validateSidebarElement } from './sidebar-helpers.js';
 
 const DEFAULT_LOGGER = {
     log: (...args) => console.log('[GameInterface]', ...args),
@@ -86,8 +86,11 @@ function findElementByNameMethod(name, options = {}) {
     if (!name) {
         return null;
     }
-    const normalisedName = name.trim().toLowerCase();
-    return this.getSidebarElements(options).find(({ name: elementName }) => elementName.toLowerCase() === normalisedName) || null;
+    const normalizedTarget = normalizeName(name).toLowerCase();
+    if (!normalizedTarget) {
+        return null;
+    }
+    return this.getSidebarElements(options).find(info => (info.normalizedName || info.name || '').toLowerCase() === normalizedTarget) || null;
 }
 
 function findElementsByPredicateMethod(predicate, options = {}) {
