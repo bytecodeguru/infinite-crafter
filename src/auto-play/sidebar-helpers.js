@@ -82,11 +82,12 @@ function getElementName(element) {
     if (!element) {
         return '';
     }
-    const datasetName = element.dataset?.element || element.dataset?.name;
+    const dataset = element.dataset || {};
+    const datasetName = dataset.element || dataset.name || dataset.itemText || dataset.itemName || dataset.item;
     if (datasetName) {
         return datasetName.trim();
     }
-    const attributeName = element.getAttribute?.('data-element-name');
+    const attributeName = element.getAttribute?.('data-element-name') || element.getAttribute?.('data-item-text') || element.getAttribute?.('data-item');
     if (attributeName) {
         return attributeName.trim();
     }

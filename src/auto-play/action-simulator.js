@@ -5,7 +5,7 @@
 
 const DEFAULT_DELAY_RANGE = { min: 35, max: 85 };
 
-const DEFAULT_LOGGER = {
+const ACTION_SIM_DEFAULT_LOGGER = {
     log: (...args) => console.log('[ActionSimulator]', ...args),
     warn: (...args) => console.warn('[ActionSimulator]', ...args),
     error: (...args) => console.error('[ActionSimulator]', ...args)
@@ -36,7 +36,7 @@ function defaultDelayProvider(min, max) {
 }
 
 class ActionSimulator {
-    constructor({ logger = DEFAULT_LOGGER, document = defaultDocument(), delayProvider = defaultDelayProvider } = {}) {
+    constructor({ logger = ACTION_SIM_DEFAULT_LOGGER, document = defaultDocument(), delayProvider = defaultDelayProvider } = {}) {
         this.logger = logger;
         this.document = document;
         this.delayProvider = delayProvider;
@@ -241,7 +241,7 @@ class ActionSimulator {
     }
 
     log(level, message, details) {
-        const logger = this.logger || DEFAULT_LOGGER;
+        const logger = this.logger || ACTION_SIM_DEFAULT_LOGGER;
         const method = typeof logger[level] === 'function' ? logger[level] : logger.log;
         if (typeof method === 'function') {
             if (details !== undefined) {

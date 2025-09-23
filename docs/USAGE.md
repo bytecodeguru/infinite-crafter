@@ -42,7 +42,7 @@ window.Logger.log('Hello from the console');
 
 The `LogManager` APIs (`logManager.addLog`, `logManager.getLogs`, etc.) are also attached to `window` for debugging.
 
-GameInterface diagnostics now run automatically on page load; check the control panel logs or inspect `window.__infiniteCraftHelperDiagnostics` to see the latest results/attempts.
+Use the control panel’s “Run Diagnostics” button to execute readiness checks; results appear in the Logs tab.
 
 ## Troubleshooting
 - **Panel missing** – ensure the userscript is active and the page reloaded.

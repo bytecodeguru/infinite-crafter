@@ -23,7 +23,6 @@ function init() {
     const gameInterface = initializeGameInterface(Logger);
     initializeActionSimulator(Logger);
     setupDiagnosticsControls(panel, gameInterface, Logger);
-    scheduleGameInterfaceDiagnostics(gameInterface);
 
     runInitializationSmokeTests(Logger, gameInterface);
     console.log('Infinite Craft Helper loaded successfully!');
@@ -98,60 +97,7 @@ function initializeGameInterface(Logger) {
     exposeGameInterfaceGlobal(gameInterface);
     console.log('[Init] GameInterface available via window.gameInterface');
 
-    if (gameInterface.isGameReady()) {
-        const results = gameInterface.runBasicTests();
-        console.log(`[Init] GameInterface readiness check: ${results.filter(result => result.passed).length}/${results.length} tests passed`);
-    } else {
-        console.log('[Init] GameInterface waiting for game elements – call window.gameInterface.runBasicTests() once the page finishes loading');
-    }
-
     return gameInterface;
-}
-
-function scheduleGameInterfaceDiagnostics(gameInterface) {
-    if (!gameInterface) {
-        return null;
-    }
-
-    const diagnosticsState = {
-        attempts: 0,
-        lastResults: [],
-        timerId: null,
-        lastRunAt: null
-    };
-
-    const MAX_ATTEMPTS = 10;
-    const BASE_DELAY = 250;
-
-    function runDiagnostics() {
-        diagnosticsState.attempts += 1;
-        diagnosticsState.lastRunAt = Date.now();
-
-        const results = gameInterface.runBasicTests() || [];
-        diagnosticsState.lastResults = results;
-
-        const allPassed = results.length > 0 && results.every(result => result.passed);
-
-        if (allPassed) {
-            diagnosticsState.timerId = null;
-            return;
-        }
-
-        if (diagnosticsState.attempts >= MAX_ATTEMPTS) {
-            console.warn(`[Init] GameInterface diagnostics did not pass after ${diagnosticsState.attempts} attempts`);
-            diagnosticsState.timerId = null;
-            return;
-        }
-
-        const nextDelay = Math.min(2000, BASE_DELAY * (diagnosticsState.attempts + 1));
-        diagnosticsState.timerId = setTimeout(runDiagnostics, nextDelay);
-    }
-
-    const initialDelay = gameInterface.isGameReady() ? 0 : BASE_DELAY;
-    diagnosticsState.timerId = setTimeout(runDiagnostics, initialDelay);
-
-    window.__infiniteCraftHelperDiagnostics = diagnosticsState;
-    return diagnosticsState;
 }
 
 function initializeActionSimulator(Logger) {

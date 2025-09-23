@@ -173,16 +173,6 @@ test.describe('Infinite Craft Helper Userscript', () => {
     expect(result.hasMethods).toBe(true);
     expect(result.basicTestsLength).toBeGreaterThan(0);
 
-    const diagnosticsHandle = await page.waitForFunction(() => {
-      const state = window.__infiniteCraftHelperDiagnostics;
-      if (!state || typeof state.attempts !== 'number') {
-        return false;
-      }
-      return state.attempts > 0 ? state : false;
-    });
-    const diagnosticsState = await diagnosticsHandle.jsonValue();
-
-    expect(diagnosticsState.attempts).toBeGreaterThan(0);
   });
 
   test('should provide sidebar selection helpers', async () => {
