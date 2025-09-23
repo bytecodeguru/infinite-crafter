@@ -600,7 +600,9 @@
         if (!normalizedTarget) {
             return null;
         }
-        return this.getSidebarElements(options).find(info => (info.normalizedName || info.name || '').toLowerCase() === normalizedTarget) || null;
+        const includeHidden = options.includeHidden !== undefined ? options.includeHidden : true;
+        const elements = this.getSidebarElements({ ...options, includeHidden });
+        return elements.find(info => (info.normalizedName || info.name || '').toLowerCase() === normalizedTarget) || null;
     }
 
     function findElementsByPredicateMethod(predicate, options = {}) {
