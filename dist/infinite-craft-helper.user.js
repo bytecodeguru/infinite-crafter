@@ -602,7 +602,43 @@
         }
         const includeHidden = options.includeHidden !== undefined ? options.includeHidden : true;
         const elements = this.getSidebarElements({ ...options, includeHidden });
-        return elements.find(info => (info.normalizedName || info.name || '').toLowerCase() === normalizedTarget) || null;
+        return elements.find(info => matchesName(info, normalizedTarget)) || null;
+    }
+
+    function matchesName(info, normalizedTarget) {
+        if (!info || !normalizedTarget) {
+            return false;
+        }
+
+        const candidates = [];
+
+        if (info.normalizedName) {
+            candidates.push(info.normalizedName);
+        }
+
+        if (info.name) {
+            candidates.push(normalizeName(info.name));
+        }
+
+        const datasetValues = info.dataset ? Object.values(info.dataset) : [];
+        datasetValues.forEach(value => {
+            const normalized = normalizeName(value);
+            if (normalized) {
+                candidates.push(normalized);
+            }
+        });
+
+        const textContent = info.element?.textContent;
+        if (textContent) {
+            const normalized = normalizeName(textContent);
+            if (normalized) {
+                candidates.push(normalized);
+            }
+        }
+
+        return candidates
+            .map(value => value.toLowerCase())
+            .some(value => value === normalizedTarget);
     }
 
     function findElementsByPredicateMethod(predicate, options = {}) {

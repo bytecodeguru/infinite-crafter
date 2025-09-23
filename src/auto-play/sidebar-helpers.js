@@ -227,3 +227,43 @@ export function findDuplicatesByName(elements) {
         .filter(([, count]) => count > 1)
         .map(([name]) => name);
 }
+
+export function matchesNormalizedName(info, normalizedTarget) {
+    if (!info || !normalizedTarget) {
+        return false;
+    }
+
+    const candidates = [];
+
+    if (info.normalizedName) {
+        candidates.push(info.normalizedName);
+    }
+
+    if (info.name) {
+        const normalized = normalizeName(info.name);
+        if (normalized) {
+            candidates.push(normalized);
+        }
+    }
+
+    if (info.dataset) {
+        Object.values(info.dataset).forEach(value => {
+            const normalized = normalizeName(value);
+            if (normalized) {
+                candidates.push(normalized);
+            }
+        });
+    }
+
+    const textContent = info.element?.textContent;
+    if (textContent) {
+        const normalized = normalizeName(textContent);
+        if (normalized) {
+            candidates.push(normalized);
+        }
+    }
+
+    return candidates
+        .map(value => value.toLowerCase())
+        .some(value => value === normalizedTarget);
+}
